@@ -55,13 +55,13 @@ export default function Directory() {
 
       <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-4 py-3">
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label="Category">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Category">
             {[{ value: '', short: 'All' }, ...CATEGORIES].map((c) => (
               <button
                 key={c.value || 'all'} type="button" aria-pressed={cat === c.value}
                 data-testid={`chip-${c.short.toLowerCase().replace(/[^a-z]+/g, '-')}`}
                 onClick={() => setCat(c.value)}
-                className={`press shrink-0 border-2 px-3 py-2 text-sm font-bold transition-colors ${cat === c.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card hover:border-primary'}`}
+                className={`press min-h-11 min-w-0 max-w-full whitespace-normal break-words border-2 px-3 py-2 text-sm font-bold transition-colors ${cat === c.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card hover:border-primary'}`}
               >
                 {c.short}
               </button>

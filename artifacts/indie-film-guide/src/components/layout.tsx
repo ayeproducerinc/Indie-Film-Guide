@@ -25,13 +25,13 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="min-w-0 flex-1">{children}</main>
       <footer className="mt-16 bg-foreground text-background">
         <div className="mx-auto max-w-5xl px-4 py-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-display text-2xl">Indie Film Guide</p>
           </div>
-          <nav className="flex gap-5 text-sm font-semibold" aria-label="Footer">
+          <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold" aria-label="Footer">
             <Link href="/about" data-testid="link-about" className="py-2 underline-offset-4 hover:underline">About</Link>
             <Link href="/terms" data-testid="link-terms" className="py-2 underline-offset-4 hover:underline">Terms</Link>
              <Link href="/admin" className="py-2 underline-offset-4 hover:underline">Admin</Link>
