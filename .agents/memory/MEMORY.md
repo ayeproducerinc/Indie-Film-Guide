@@ -1,0 +1,1 @@
+- [Census place data imports](census-imports.md) — inspect Gazetteer headers before parsing; formats differ between releases.

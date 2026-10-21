@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Indie Film Guide"
+description = "A free mobile-first directory of Georgia film resources, with standardized provider listing submissions."
+version = "1.0.0"
+id = "artifacts/indie-film-guide"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18978
+
+[services.development]
+run = "pnpm --filter @workspace/indie-film-guide run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/indie-film-guide", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/indie-film-guide/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18978"
+BASE_PATH = "/"

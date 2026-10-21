@@ -1,0 +1,3382 @@
+[
+  {
+    "id": "1300184",
+    "city": "Abbeville",
+    "state": "GA"
+  },
+  {
+    "id": "1300408",
+    "city": "Acworth",
+    "state": "GA"
+  },
+  {
+    "id": "1300436",
+    "city": "Adairsville",
+    "state": "GA"
+  },
+  {
+    "id": "1300576",
+    "city": "Adel",
+    "state": "GA"
+  },
+  {
+    "id": "1300660",
+    "city": "Adrian",
+    "state": "GA"
+  },
+  {
+    "id": "1300828",
+    "city": "Ailey",
+    "state": "GA"
+  },
+  {
+    "id": "1300996",
+    "city": "Alamo",
+    "state": "GA"
+  },
+  {
+    "id": "1301024",
+    "city": "Alapaha",
+    "state": "GA"
+  },
+  {
+    "id": "1301052",
+    "city": "Albany",
+    "state": "GA"
+  },
+  {
+    "id": "1301248",
+    "city": "Aldora",
+    "state": "GA"
+  },
+  {
+    "id": "1301472",
+    "city": "Allenhurst",
+    "state": "GA"
+  },
+  {
+    "id": "1301500",
+    "city": "Allentown",
+    "state": "GA"
+  },
+  {
+    "id": "1301612",
+    "city": "Alma",
+    "state": "GA"
+  },
+  {
+    "id": "1301696",
+    "city": "Alpharetta",
+    "state": "GA"
+  },
+  {
+    "id": "1301808",
+    "city": "Alston",
+    "state": "GA"
+  },
+  {
+    "id": "1301948",
+    "city": "Alto",
+    "state": "GA"
+  },
+  {
+    "id": "1302060",
+    "city": "Ambrose",
+    "state": "GA"
+  },
+  {
+    "id": "1302116",
+    "city": "Americus",
+    "state": "GA"
+  },
+  {
+    "id": "1302256",
+    "city": "Andersonville",
+    "state": "GA"
+  },
+  {
+    "id": "1302364",
+    "city": "Antioch",
+    "state": "GA"
+  },
+  {
+    "id": "1302536",
+    "city": "Appling",
+    "state": "GA"
+  },
+  {
+    "id": "1302564",
+    "city": "Arabi",
+    "state": "GA"
+  },
+  {
+    "id": "1302592",
+    "city": "Aragon",
+    "state": "GA"
+  },
+  {
+    "id": "1302648",
+    "city": "Arcade",
+    "state": "GA"
+  },
+  {
+    "id": "1302844",
+    "city": "Argyle",
+    "state": "GA"
+  },
+  {
+    "id": "1302928",
+    "city": "Arlington",
+    "state": "GA"
+  },
+  {
+    "id": "1303124",
+    "city": "Arnoldsville",
+    "state": "GA"
+  },
+  {
+    "id": "1303236",
+    "city": "Ashburn",
+    "state": "GA"
+  },
+  {
+    "id": "1303440",
+    "city": "Athens-Clarke County",
+    "state": "GA"
+  },
+  {
+    "id": "1304000",
+    "city": "Atlanta",
+    "state": "GA"
+  },
+  {
+    "id": "1304084",
+    "city": "Attapulgus",
+    "state": "GA"
+  },
+  {
+    "id": "1304140",
+    "city": "Auburn",
+    "state": "GA"
+  },
+  {
+    "id": "1304204",
+    "city": "Augusta-Richmond County",
+    "state": "GA"
+  },
+  {
+    "id": "1304252",
+    "city": "Austell",
+    "state": "GA"
+  },
+  {
+    "id": "1304392",
+    "city": "Avalon",
+    "state": "GA"
+  },
+  {
+    "id": "1304448",
+    "city": "Avera",
+    "state": "GA"
+  },
+  {
+    "id": "1304644",
+    "city": "Avondale Estates",
+    "state": "GA"
+  },
+  {
+    "id": "1304700",
+    "city": "Axson",
+    "state": "GA"
+  },
+  {
+    "id": "1304840",
+    "city": "Baconton",
+    "state": "GA"
+  },
+  {
+    "id": "1304896",
+    "city": "Bainbridge",
+    "state": "GA"
+  },
+  {
+    "id": "1304980",
+    "city": "Baldwin",
+    "state": "GA"
+  },
+  {
+    "id": "1305036",
+    "city": "Ball Ground",
+    "state": "GA"
+  },
+  {
+    "id": "1305344",
+    "city": "Barnesville",
+    "state": "GA"
+  },
+  {
+    "id": "1305680",
+    "city": "Bartow",
+    "state": "GA"
+  },
+  {
+    "id": "1305708",
+    "city": "Barwick",
+    "state": "GA"
+  },
+  {
+    "id": "1306016",
+    "city": "Baxley",
+    "state": "GA"
+  },
+  {
+    "id": "1306688",
+    "city": "Bellville",
+    "state": "GA"
+  },
+  {
+    "id": "1306884",
+    "city": "Belvedere Park",
+    "state": "GA"
+  },
+  {
+    "id": "1306968",
+    "city": "Bemiss",
+    "state": "GA"
+  },
+  {
+    "id": "1307248",
+    "city": "Berkeley Lake",
+    "state": "GA"
+  },
+  {
+    "id": "1307304",
+    "city": "Berlin",
+    "state": "GA"
+  },
+  {
+    "id": "1307380",
+    "city": "Berry College",
+    "state": "GA"
+  },
+  {
+    "id": "1307612",
+    "city": "Bethlehem",
+    "state": "GA"
+  },
+  {
+    "id": "1307640",
+    "city": "Between",
+    "state": "GA"
+  },
+  {
+    "id": "1308200",
+    "city": "Bishop",
+    "state": "GA"
+  },
+  {
+    "id": "1308284",
+    "city": "Blackshear",
+    "state": "GA"
+  },
+  {
+    "id": "1308480",
+    "city": "Blairsville",
+    "state": "GA"
+  },
+  {
+    "id": "1308536",
+    "city": "Blakely",
+    "state": "GA"
+  },
+  {
+    "id": "1308844",
+    "city": "Bloomingdale",
+    "state": "GA"
+  },
+  {
+    "id": "1308928",
+    "city": "Blue Ridge",
+    "state": "GA"
+  },
+  {
+    "id": "1308956",
+    "city": "Bluffton",
+    "state": "GA"
+  },
+  {
+    "id": "1309040",
+    "city": "Blythe",
+    "state": "GA"
+  },
+  {
+    "id": "1309068",
+    "city": "Bogart",
+    "state": "GA"
+  },
+  {
+    "id": "1309152",
+    "city": "Bolingbroke",
+    "state": "GA"
+  },
+  {
+    "id": "1309272",
+    "city": "Bonanza",
+    "state": "GA"
+  },
+  {
+    "id": "1309460",
+    "city": "Boston",
+    "state": "GA"
+  },
+  {
+    "id": "1309488",
+    "city": "Bostwick",
+    "state": "GA"
+  },
+  {
+    "id": "1309544",
+    "city": "Bowdon",
+    "state": "GA"
+  },
+  {
+    "id": "1309656",
+    "city": "Bowersville",
+    "state": "GA"
+  },
+  {
+    "id": "1309712",
+    "city": "Bowman",
+    "state": "GA"
+  },
+  {
+    "id": "1309768",
+    "city": "Box Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1309852",
+    "city": "Boykin",
+    "state": "GA"
+  },
+  {
+    "id": "1310076",
+    "city": "Braselton",
+    "state": "GA"
+  },
+  {
+    "id": "1310104",
+    "city": "Braswell",
+    "state": "GA"
+  },
+  {
+    "id": "1310132",
+    "city": "Bremen",
+    "state": "GA"
+  },
+  {
+    "id": "1310608",
+    "city": "Brinson",
+    "state": "GA"
+  },
+  {
+    "id": "1310664",
+    "city": "Bristol",
+    "state": "GA"
+  },
+  {
+    "id": "1310860",
+    "city": "Bronwood",
+    "state": "GA"
+  },
+  {
+    "id": "1310944",
+    "city": "Brookhaven",
+    "state": "GA"
+  },
+  {
+    "id": "1311000",
+    "city": "Brooklet",
+    "state": "GA"
+  },
+  {
+    "id": "1311056",
+    "city": "Brooks",
+    "state": "GA"
+  },
+  {
+    "id": "1311504",
+    "city": "Broxton",
+    "state": "GA"
+  },
+  {
+    "id": "1311560",
+    "city": "Brunswick",
+    "state": "GA"
+  },
+  {
+    "id": "1311616",
+    "city": "Buchanan",
+    "state": "GA"
+  },
+  {
+    "id": "1311626",
+    "city": "Buckhead",
+    "state": "GA"
+  },
+  {
+    "id": "1311672",
+    "city": "Buckhead",
+    "state": "GA"
+  },
+  {
+    "id": "1311728",
+    "city": "Buena Vista",
+    "state": "GA"
+  },
+  {
+    "id": "1311784",
+    "city": "Buford",
+    "state": "GA"
+  },
+  {
+    "id": "1312120",
+    "city": "Butler",
+    "state": "GA"
+  },
+  {
+    "id": "1312232",
+    "city": "Byromville",
+    "state": "GA"
+  },
+  {
+    "id": "1312260",
+    "city": "Byron",
+    "state": "GA"
+  },
+  {
+    "id": "1312344",
+    "city": "Cadwell",
+    "state": "GA"
+  },
+  {
+    "id": "1312400",
+    "city": "Cairo",
+    "state": "GA"
+  },
+  {
+    "id": "1312456",
+    "city": "Calhoun",
+    "state": "GA"
+  },
+  {
+    "id": "1312484",
+    "city": "Calvary",
+    "state": "GA"
+  },
+  {
+    "id": "1312512",
+    "city": "Camak",
+    "state": "GA"
+  },
+  {
+    "id": "1312624",
+    "city": "Camilla",
+    "state": "GA"
+  },
+  {
+    "id": "1312834",
+    "city": "Candler-McAfee",
+    "state": "GA"
+  },
+  {
+    "id": "1312932",
+    "city": "Canon",
+    "state": "GA"
+  },
+  {
+    "id": "1312960",
+    "city": "Canoochee",
+    "state": "GA"
+  },
+  {
+    "id": "1312988",
+    "city": "Canton",
+    "state": "GA"
+  },
+  {
+    "id": "1313184",
+    "city": "Carl",
+    "state": "GA"
+  },
+  {
+    "id": "1313212",
+    "city": "Carlton",
+    "state": "GA"
+  },
+  {
+    "id": "1313352",
+    "city": "Carnesville",
+    "state": "GA"
+  },
+  {
+    "id": "1313492",
+    "city": "Carrollton",
+    "state": "GA"
+  },
+  {
+    "id": "1313688",
+    "city": "Cartersville",
+    "state": "GA"
+  },
+  {
+    "id": "1314024",
+    "city": "Cataula",
+    "state": "GA"
+  },
+  {
+    "id": "1314108",
+    "city": "Cave Spring",
+    "state": "GA"
+  },
+  {
+    "id": "1314192",
+    "city": "Cecil",
+    "state": "GA"
+  },
+  {
+    "id": "1314472",
+    "city": "Cedar Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1314500",
+    "city": "Cedartown",
+    "state": "GA"
+  },
+  {
+    "id": "1314920",
+    "city": "Centerville",
+    "state": "GA"
+  },
+  {
+    "id": "1315026",
+    "city": "Centralhatchee",
+    "state": "GA"
+  },
+  {
+    "id": "1315172",
+    "city": "Chamblee",
+    "state": "GA"
+  },
+  {
+    "id": "1315508",
+    "city": "Chatsworth",
+    "state": "GA"
+  },
+  {
+    "id": "1315552",
+    "city": "Chattahoochee Hills",
+    "state": "GA"
+  },
+  {
+    "id": "1315585",
+    "city": "Chattanooga Valley",
+    "state": "GA"
+  },
+  {
+    "id": "1315648",
+    "city": "Chauncey",
+    "state": "GA"
+  },
+  {
+    "id": "1315844",
+    "city": "Cherry Log",
+    "state": "GA"
+  },
+  {
+    "id": "1315900",
+    "city": "Chester",
+    "state": "GA"
+  },
+  {
+    "id": "1315984",
+    "city": "Chickamauga",
+    "state": "GA"
+  },
+  {
+    "id": "1316460",
+    "city": "Clarkesville",
+    "state": "GA"
+  },
+  {
+    "id": "1316544",
+    "city": "Clarkston",
+    "state": "GA"
+  },
+  {
+    "id": "1316600",
+    "city": "Claxton",
+    "state": "GA"
+  },
+  {
+    "id": "1316656",
+    "city": "Clayton",
+    "state": "GA"
+  },
+  {
+    "id": "1316796",
+    "city": "Clermont",
+    "state": "GA"
+  },
+  {
+    "id": "1316824",
+    "city": "Cleveland",
+    "state": "GA"
+  },
+  {
+    "id": "1316908",
+    "city": "Climax",
+    "state": "GA"
+  },
+  {
+    "id": "1317132",
+    "city": "Clyattville",
+    "state": "GA"
+  },
+  {
+    "id": "1317272",
+    "city": "Cobbtown",
+    "state": "GA"
+  },
+  {
+    "id": "1317328",
+    "city": "Cochran",
+    "state": "GA"
+  },
+  {
+    "id": "1317468",
+    "city": "Cogdell",
+    "state": "GA"
+  },
+  {
+    "id": "1317496",
+    "city": "Cohutta",
+    "state": "GA"
+  },
+  {
+    "id": "1317552",
+    "city": "Colbert",
+    "state": "GA"
+  },
+  {
+    "id": "1317580",
+    "city": "Coleman",
+    "state": "GA"
+  },
+  {
+    "id": "1317776",
+    "city": "College Park",
+    "state": "GA"
+  },
+  {
+    "id": "1317832",
+    "city": "Collins",
+    "state": "GA"
+  },
+  {
+    "id": "1318000",
+    "city": "Colquitt",
+    "state": "GA"
+  },
+  {
+    "id": "1319000",
+    "city": "Columbus",
+    "state": "GA"
+  },
+  {
+    "id": "1319084",
+    "city": "Comer",
+    "state": "GA"
+  },
+  {
+    "id": "1319112",
+    "city": "Commerce",
+    "state": "GA"
+  },
+  {
+    "id": "1319168",
+    "city": "Concord",
+    "state": "GA"
+  },
+  {
+    "id": "1319280",
+    "city": "Conley",
+    "state": "GA"
+  },
+  {
+    "id": "1319336",
+    "city": "Conyers",
+    "state": "GA"
+  },
+  {
+    "id": "1319392",
+    "city": "Coolidge",
+    "state": "GA"
+  },
+  {
+    "id": "1319616",
+    "city": "Cordele",
+    "state": "GA"
+  },
+  {
+    "id": "1319728",
+    "city": "Cornelia",
+    "state": "GA"
+  },
+  {
+    "id": "1319830",
+    "city": "Country Club Estates",
+    "state": "GA"
+  },
+  {
+    "id": "1320064",
+    "city": "Covington",
+    "state": "GA"
+  },
+  {
+    "id": "1320288",
+    "city": "Crawford",
+    "state": "GA"
+  },
+  {
+    "id": "1320316",
+    "city": "Crawfordville",
+    "state": "GA"
+  },
+  {
+    "id": "1320372",
+    "city": "Crescent",
+    "state": "GA"
+  },
+  {
+    "id": "1320550",
+    "city": "Crooked Creek",
+    "state": "GA"
+  },
+  {
+    "id": "1320848",
+    "city": "Culloden",
+    "state": "GA"
+  },
+  {
+    "id": "1320932",
+    "city": "Cumming",
+    "state": "GA"
+  },
+  {
+    "id": "1321017",
+    "city": "Cusseta-Chattahoochee County",
+    "state": "GA"
+  },
+  {
+    "id": "1321072",
+    "city": "Cuthbert",
+    "state": "GA"
+  },
+  {
+    "id": "1321184",
+    "city": "Dacula",
+    "state": "GA"
+  },
+  {
+    "id": "1321240",
+    "city": "Dahlonega",
+    "state": "GA"
+  },
+  {
+    "id": "1321268",
+    "city": "Daisy",
+    "state": "GA"
+  },
+  {
+    "id": "1321324",
+    "city": "Dallas",
+    "state": "GA"
+  },
+  {
+    "id": "1321380",
+    "city": "Dalton",
+    "state": "GA"
+  },
+  {
+    "id": "1321436",
+    "city": "Damascus",
+    "state": "GA"
+  },
+  {
+    "id": "1321632",
+    "city": "Danielsville",
+    "state": "GA"
+  },
+  {
+    "id": "1321688",
+    "city": "Danville",
+    "state": "GA"
+  },
+  {
+    "id": "1321716",
+    "city": "Darien",
+    "state": "GA"
+  },
+  {
+    "id": "1321744",
+    "city": "Dasher",
+    "state": "GA"
+  },
+  {
+    "id": "1321800",
+    "city": "Davisboro",
+    "state": "GA"
+  },
+  {
+    "id": "1321912",
+    "city": "Dawson",
+    "state": "GA"
+  },
+  {
+    "id": "1321940",
+    "city": "Dawsonville",
+    "state": "GA"
+  },
+  {
+    "id": "1322472",
+    "city": "De Soto",
+    "state": "GA"
+  },
+  {
+    "id": "1322024",
+    "city": "Dearing",
+    "state": "GA"
+  },
+  {
+    "id": "1322052",
+    "city": "Decatur",
+    "state": "GA"
+  },
+  {
+    "id": "1322080",
+    "city": "Deenwood",
+    "state": "GA"
+  },
+  {
+    "id": "1322108",
+    "city": "Deepstep",
+    "state": "GA"
+  },
+  {
+    "id": "1322304",
+    "city": "Demorest",
+    "state": "GA"
+  },
+  {
+    "id": "1322388",
+    "city": "Denton",
+    "state": "GA"
+  },
+  {
+    "id": "1322724",
+    "city": "Dewy Rose",
+    "state": "GA"
+  },
+  {
+    "id": "1322752",
+    "city": "Dexter",
+    "state": "GA"
+  },
+  {
+    "id": "1322976",
+    "city": "Dillard",
+    "state": "GA"
+  },
+  {
+    "id": "1323060",
+    "city": "Dixie",
+    "state": "GA"
+  },
+  {
+    "id": "1323144",
+    "city": "Dixie Union",
+    "state": "GA"
+  },
+  {
+    "id": "1323200",
+    "city": "Dock Junction",
+    "state": "GA"
+  },
+  {
+    "id": "1323284",
+    "city": "Doerun",
+    "state": "GA"
+  },
+  {
+    "id": "1323368",
+    "city": "Donalsonville",
+    "state": "GA"
+  },
+  {
+    "id": "1323480",
+    "city": "Dooling",
+    "state": "GA"
+  },
+  {
+    "id": "1323536",
+    "city": "Doraville",
+    "state": "GA"
+  },
+  {
+    "id": "1323872",
+    "city": "Douglas",
+    "state": "GA"
+  },
+  {
+    "id": "1323900",
+    "city": "Douglasville",
+    "state": "GA"
+  },
+  {
+    "id": "1324264",
+    "city": "Druid Hills",
+    "state": "GA"
+  },
+  {
+    "id": "1324796",
+    "city": "Du Pont",
+    "state": "GA"
+  },
+  {
+    "id": "1324376",
+    "city": "Dublin",
+    "state": "GA"
+  },
+  {
+    "id": "1324488",
+    "city": "Dudley",
+    "state": "GA"
+  },
+  {
+    "id": "1324600",
+    "city": "Duluth",
+    "state": "GA"
+  },
+  {
+    "id": "1324768",
+    "city": "Dunwoody",
+    "state": "GA"
+  },
+  {
+    "id": "1324876",
+    "city": "Dutch Island",
+    "state": "GA"
+  },
+  {
+    "id": "1324964",
+    "city": "Eagle Grove",
+    "state": "GA"
+  },
+  {
+    "id": "1325300",
+    "city": "East Dublin",
+    "state": "GA"
+  },
+  {
+    "id": "1325356",
+    "city": "East Ellijay",
+    "state": "GA"
+  },
+  {
+    "id": "1325440",
+    "city": "East Griffin",
+    "state": "GA"
+  },
+  {
+    "id": "1325692",
+    "city": "East Newnan",
+    "state": "GA"
+  },
+  {
+    "id": "1325720",
+    "city": "East Point",
+    "state": "GA"
+  },
+  {
+    "id": "1325552",
+    "city": "Eastman",
+    "state": "GA"
+  },
+  {
+    "id": "1326084",
+    "city": "Eatonton",
+    "state": "GA"
+  },
+  {
+    "id": "1326156",
+    "city": "Echols County",
+    "state": "GA"
+  },
+  {
+    "id": "1326224",
+    "city": "Edge Hill",
+    "state": "GA"
+  },
+  {
+    "id": "1326448",
+    "city": "Edison",
+    "state": "GA"
+  },
+  {
+    "id": "1326616",
+    "city": "Elberton",
+    "state": "GA"
+  },
+  {
+    "id": "1326980",
+    "city": "Ellaville",
+    "state": "GA"
+  },
+  {
+    "id": "1327008",
+    "city": "Ellenton",
+    "state": "GA"
+  },
+  {
+    "id": "1327064",
+    "city": "Ellerslie",
+    "state": "GA"
+  },
+  {
+    "id": "1327092",
+    "city": "Ellijay",
+    "state": "GA"
+  },
+  {
+    "id": "1327344",
+    "city": "Emerson",
+    "state": "GA"
+  },
+  {
+    "id": "1327512",
+    "city": "Empire",
+    "state": "GA"
+  },
+  {
+    "id": "1327596",
+    "city": "Enigma",
+    "state": "GA"
+  },
+  {
+    "id": "1327708",
+    "city": "Ephesus",
+    "state": "GA"
+  },
+  {
+    "id": "1327736",
+    "city": "Epworth",
+    "state": "GA"
+  },
+  {
+    "id": "1327932",
+    "city": "Eton",
+    "state": "GA"
+  },
+  {
+    "id": "1327988",
+    "city": "Euharlee",
+    "state": "GA"
+  },
+  {
+    "id": "1328016",
+    "city": "Eulonia",
+    "state": "GA"
+  },
+  {
+    "id": "1328044",
+    "city": "Evans",
+    "state": "GA"
+  },
+  {
+    "id": "1328100",
+    "city": "Everett",
+    "state": "GA"
+  },
+  {
+    "id": "1328296",
+    "city": "Experiment",
+    "state": "GA"
+  },
+  {
+    "id": "1328324",
+    "city": "Faceville",
+    "state": "GA"
+  },
+  {
+    "id": "1328520",
+    "city": "Fair Oaks",
+    "state": "GA"
+  },
+  {
+    "id": "1328380",
+    "city": "Fairburn",
+    "state": "GA"
+  },
+  {
+    "id": "1328440",
+    "city": "Fairfield Plantation",
+    "state": "GA"
+  },
+  {
+    "id": "1328492",
+    "city": "Fairmount",
+    "state": "GA"
+  },
+  {
+    "id": "1328548",
+    "city": "Fairplay",
+    "state": "GA"
+  },
+  {
+    "id": "1328632",
+    "city": "Fairview",
+    "state": "GA"
+  },
+  {
+    "id": "1328744",
+    "city": "Fargo",
+    "state": "GA"
+  },
+  {
+    "id": "1328968",
+    "city": "Fayetteville",
+    "state": "GA"
+  },
+  {
+    "id": "1329528",
+    "city": "Fitzgerald",
+    "state": "GA"
+  },
+  {
+    "id": "1330088",
+    "city": "Flemington",
+    "state": "GA"
+  },
+  {
+    "id": "1330312",
+    "city": "Flovilla",
+    "state": "GA"
+  },
+  {
+    "id": "1330340",
+    "city": "Flowery Branch",
+    "state": "GA"
+  },
+  {
+    "id": "1330424",
+    "city": "Folkston",
+    "state": "GA"
+  },
+  {
+    "id": "1330536",
+    "city": "Forest Park",
+    "state": "GA"
+  },
+  {
+    "id": "1330732",
+    "city": "Forsyth",
+    "state": "GA"
+  },
+  {
+    "id": "1330816",
+    "city": "Fort Gaines",
+    "state": "GA"
+  },
+  {
+    "id": "1330956",
+    "city": "Fort Oglethorpe",
+    "state": "GA"
+  },
+  {
+    "id": "1331068",
+    "city": "Fort Stewart",
+    "state": "GA"
+  },
+  {
+    "id": "1331096",
+    "city": "Fort Valley",
+    "state": "GA"
+  },
+  {
+    "id": "1331292",
+    "city": "Franklin",
+    "state": "GA"
+  },
+  {
+    "id": "1331320",
+    "city": "Franklin Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1331684",
+    "city": "Funston",
+    "state": "GA"
+  },
+  {
+    "id": "1331908",
+    "city": "Gainesville",
+    "state": "GA"
+  },
+  {
+    "id": "1332048",
+    "city": "Garden City",
+    "state": "GA"
+  },
+  {
+    "id": "1332132",
+    "city": "Gardi",
+    "state": "GA"
+  },
+  {
+    "id": "1332188",
+    "city": "Garfield",
+    "state": "GA"
+  },
+  {
+    "id": "1332384",
+    "city": "Gay",
+    "state": "GA"
+  },
+  {
+    "id": "1332412",
+    "city": "Geneva",
+    "state": "GA"
+  },
+  {
+    "id": "1332482",
+    "city": "Georgetown",
+    "state": "GA"
+  },
+  {
+    "id": "1332528",
+    "city": "Georgetown-Quitman County",
+    "state": "GA"
+  },
+  {
+    "id": "1332748",
+    "city": "Gibson",
+    "state": "GA"
+  },
+  {
+    "id": "1332860",
+    "city": "Gillsville",
+    "state": "GA"
+  },
+  {
+    "id": "1332916",
+    "city": "Girard",
+    "state": "GA"
+  },
+  {
+    "id": "1333280",
+    "city": "Glenn",
+    "state": "GA"
+  },
+  {
+    "id": "1333336",
+    "city": "Glennville",
+    "state": "GA"
+  },
+  {
+    "id": "1333392",
+    "city": "Glenwood",
+    "state": "GA"
+  },
+  {
+    "id": "1333672",
+    "city": "Godfrey",
+    "state": "GA"
+  },
+  {
+    "id": "1333896",
+    "city": "Good Hope",
+    "state": "GA"
+  },
+  {
+    "id": "1333980",
+    "city": "Gordon",
+    "state": "GA"
+  },
+  {
+    "id": "1334176",
+    "city": "Gough",
+    "state": "GA"
+  },
+  {
+    "id": "1334260",
+    "city": "Graham",
+    "state": "GA"
+  },
+  {
+    "id": "1334428",
+    "city": "Grantville",
+    "state": "GA"
+  },
+  {
+    "id": "1334512",
+    "city": "Gray",
+    "state": "GA"
+  },
+  {
+    "id": "1334596",
+    "city": "Grayson",
+    "state": "GA"
+  },
+  {
+    "id": "1334876",
+    "city": "Greensboro",
+    "state": "GA"
+  },
+  {
+    "id": "1335016",
+    "city": "Greenville",
+    "state": "GA"
+  },
+  {
+    "id": "1335240",
+    "city": "Gresham Park",
+    "state": "GA"
+  },
+  {
+    "id": "1335324",
+    "city": "Griffin",
+    "state": "GA"
+  },
+  {
+    "id": "1335716",
+    "city": "Grovetown",
+    "state": "GA"
+  },
+  {
+    "id": "1335800",
+    "city": "Gumbranch",
+    "state": "GA"
+  },
+  {
+    "id": "1335814",
+    "city": "Gumlog",
+    "state": "GA"
+  },
+  {
+    "id": "1335884",
+    "city": "Guyton",
+    "state": "GA"
+  },
+  {
+    "id": "1336024",
+    "city": "Hagan",
+    "state": "GA"
+  },
+  {
+    "id": "1336052",
+    "city": "Hahira",
+    "state": "GA"
+  },
+  {
+    "id": "1336220",
+    "city": "Hamilton",
+    "state": "GA"
+  },
+  {
+    "id": "1336276",
+    "city": "Hampton",
+    "state": "GA"
+  },
+  {
+    "id": "1336416",
+    "city": "Hannahs Mill",
+    "state": "GA"
+  },
+  {
+    "id": "1336472",
+    "city": "Hapeville",
+    "state": "GA"
+  },
+  {
+    "id": "1336528",
+    "city": "Haralson",
+    "state": "GA"
+  },
+  {
+    "id": "1336668",
+    "city": "Hardwick",
+    "state": "GA"
+  },
+  {
+    "id": "1336696",
+    "city": "Harlem",
+    "state": "GA"
+  },
+  {
+    "id": "1336920",
+    "city": "Harrison",
+    "state": "GA"
+  },
+  {
+    "id": "1337144",
+    "city": "Hartwell",
+    "state": "GA"
+  },
+  {
+    "id": "1337396",
+    "city": "Hawkinsville",
+    "state": "GA"
+  },
+  {
+    "id": "1337564",
+    "city": "Hazlehurst",
+    "state": "GA"
+  },
+  {
+    "id": "1337788",
+    "city": "Helen",
+    "state": "GA"
+  },
+  {
+    "id": "1337910",
+    "city": "Henderson",
+    "state": "GA"
+  },
+  {
+    "id": "1338040",
+    "city": "Hephzibah",
+    "state": "GA"
+  },
+  {
+    "id": "1338105",
+    "city": "Heron Bay",
+    "state": "GA"
+  },
+  {
+    "id": "1338124",
+    "city": "Hiawassee",
+    "state": "GA"
+  },
+  {
+    "id": "1338292",
+    "city": "Hickox",
+    "state": "GA"
+  },
+  {
+    "id": "1338348",
+    "city": "Higgston",
+    "state": "GA"
+  },
+  {
+    "id": "1338866",
+    "city": "Hilltop",
+    "state": "GA"
+  },
+  {
+    "id": "1338920",
+    "city": "Hiltonia",
+    "state": "GA"
+  },
+  {
+    "id": "1338964",
+    "city": "Hinesville",
+    "state": "GA"
+  },
+  {
+    "id": "1339076",
+    "city": "Hiram",
+    "state": "GA"
+  },
+  {
+    "id": "1339216",
+    "city": "Hoboken",
+    "state": "GA"
+  },
+  {
+    "id": "1339244",
+    "city": "Hogansville",
+    "state": "GA"
+  },
+  {
+    "id": "1339524",
+    "city": "Holly Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1339692",
+    "city": "Homeland",
+    "state": "GA"
+  },
+  {
+    "id": "1339720",
+    "city": "Homer",
+    "state": "GA"
+  },
+  {
+    "id": "1339748",
+    "city": "Homerville",
+    "state": "GA"
+  },
+  {
+    "id": "1340028",
+    "city": "Hortense",
+    "state": "GA"
+  },
+  {
+    "id": "1340056",
+    "city": "Hoschton",
+    "state": "GA"
+  },
+  {
+    "id": "1340196",
+    "city": "Howard",
+    "state": "GA"
+  },
+  {
+    "id": "1340532",
+    "city": "Hull",
+    "state": "GA"
+  },
+  {
+    "id": "1340812",
+    "city": "Ideal",
+    "state": "GA"
+  },
+  {
+    "id": "1340840",
+    "city": "Ila",
+    "state": "GA"
+  },
+  {
+    "id": "1341036",
+    "city": "Indian Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1341344",
+    "city": "Iron City",
+    "state": "GA"
+  },
+  {
+    "id": "1341347",
+    "city": "Irondale",
+    "state": "GA"
+  },
+  {
+    "id": "1341400",
+    "city": "Irwinton",
+    "state": "GA"
+  },
+  {
+    "id": "1341484",
+    "city": "Isle of Hope",
+    "state": "GA"
+  },
+  {
+    "id": "1341540",
+    "city": "Ivey",
+    "state": "GA"
+  },
+  {
+    "id": "1341596",
+    "city": "Jackson",
+    "state": "GA"
+  },
+  {
+    "id": "1341708",
+    "city": "Jacksonville",
+    "state": "GA"
+  },
+  {
+    "id": "1341792",
+    "city": "Jakin",
+    "state": "GA"
+  },
+  {
+    "id": "1341932",
+    "city": "Jasper",
+    "state": "GA"
+  },
+  {
+    "id": "1341988",
+    "city": "Jefferson",
+    "state": "GA"
+  },
+  {
+    "id": "1342100",
+    "city": "Jeffersonville",
+    "state": "GA"
+  },
+  {
+    "id": "1342128",
+    "city": "Jekyll Island",
+    "state": "GA"
+  },
+  {
+    "id": "1342156",
+    "city": "Jenkinsburg",
+    "state": "GA"
+  },
+  {
+    "id": "1342184",
+    "city": "Jersey",
+    "state": "GA"
+  },
+  {
+    "id": "1342268",
+    "city": "Jesup",
+    "state": "GA"
+  },
+  {
+    "id": "1342425",
+    "city": "Johns Creek",
+    "state": "GA"
+  },
+  {
+    "id": "1342604",
+    "city": "Jonesboro",
+    "state": "GA"
+  },
+  {
+    "id": "1342772",
+    "city": "Juliette",
+    "state": "GA"
+  },
+  {
+    "id": "1342800",
+    "city": "Junction City",
+    "state": "GA"
+  },
+  {
+    "id": "1343192",
+    "city": "Kennesaw",
+    "state": "GA"
+  },
+  {
+    "id": "1343210",
+    "city": "Kennesaw State University",
+    "state": "GA"
+  },
+  {
+    "id": "1343360",
+    "city": "Keysville",
+    "state": "GA"
+  },
+  {
+    "id": "1343580",
+    "city": "Kings Bay Base",
+    "state": "GA"
+  },
+  {
+    "id": "1343640",
+    "city": "Kingsland",
+    "state": "GA"
+  },
+  {
+    "id": "1343668",
+    "city": "Kingston",
+    "state": "GA"
+  },
+  {
+    "id": "1343892",
+    "city": "Kite",
+    "state": "GA"
+  },
+  {
+    "id": "1344060",
+    "city": "Knoxville",
+    "state": "GA"
+  },
+  {
+    "id": "1344312",
+    "city": "LaFayette",
+    "state": "GA"
+  },
+  {
+    "id": "1344340",
+    "city": "LaGrange",
+    "state": "GA"
+  },
+  {
+    "id": "1344508",
+    "city": "Lake City",
+    "state": "GA"
+  },
+  {
+    "id": "1344704",
+    "city": "Lake Park",
+    "state": "GA"
+  },
+  {
+    "id": "1344592",
+    "city": "Lakeland",
+    "state": "GA"
+  },
+  {
+    "id": "1344900",
+    "city": "Lakeview",
+    "state": "GA"
+  },
+  {
+    "id": "1344956",
+    "city": "Lakeview Estates",
+    "state": "GA"
+  },
+  {
+    "id": "1345460",
+    "city": "Lavonia",
+    "state": "GA"
+  },
+  {
+    "id": "1345488",
+    "city": "Lawrenceville",
+    "state": "GA"
+  },
+  {
+    "id": "1345600",
+    "city": "Leary",
+    "state": "GA"
+  },
+  {
+    "id": "1345768",
+    "city": "Leesburg",
+    "state": "GA"
+  },
+  {
+    "id": "1345936",
+    "city": "Lenox",
+    "state": "GA"
+  },
+  {
+    "id": "1346020",
+    "city": "Leslie",
+    "state": "GA"
+  },
+  {
+    "id": "1346188",
+    "city": "Lexington",
+    "state": "GA"
+  },
+  {
+    "id": "1346356",
+    "city": "Lilburn",
+    "state": "GA"
+  },
+  {
+    "id": "1346384",
+    "city": "Lilly",
+    "state": "GA"
+  },
+  {
+    "id": "1346524",
+    "city": "Lincoln Park",
+    "state": "GA"
+  },
+  {
+    "id": "1346552",
+    "city": "Lincolnton",
+    "state": "GA"
+  },
+  {
+    "id": "1346580",
+    "city": "Lindale",
+    "state": "GA"
+  },
+  {
+    "id": "1346832",
+    "city": "Lithia Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1346860",
+    "city": "Lithonia",
+    "state": "GA"
+  },
+  {
+    "id": "1347140",
+    "city": "Locust Grove",
+    "state": "GA"
+  },
+  {
+    "id": "1347196",
+    "city": "Loganville",
+    "state": "GA"
+  },
+  {
+    "id": "1347252",
+    "city": "Lone Oak",
+    "state": "GA"
+  },
+  {
+    "id": "1347336",
+    "city": "Lookout Mountain",
+    "state": "GA"
+  },
+  {
+    "id": "1347560",
+    "city": "Louisville",
+    "state": "GA"
+  },
+  {
+    "id": "1347616",
+    "city": "Lovejoy",
+    "state": "GA"
+  },
+  {
+    "id": "1347784",
+    "city": "Ludowici",
+    "state": "GA"
+  },
+  {
+    "id": "1347896",
+    "city": "Lula",
+    "state": "GA"
+  },
+  {
+    "id": "1347952",
+    "city": "Lumber City",
+    "state": "GA"
+  },
+  {
+    "id": "1347980",
+    "city": "Lumpkin",
+    "state": "GA"
+  },
+  {
+    "id": "1348008",
+    "city": "Luthersville",
+    "state": "GA"
+  },
+  {
+    "id": "1348092",
+    "city": "Lyerly",
+    "state": "GA"
+  },
+  {
+    "id": "1348232",
+    "city": "Lyons",
+    "state": "GA"
+  },
+  {
+    "id": "1348288",
+    "city": "Mableton",
+    "state": "GA"
+  },
+  {
+    "id": "1349008",
+    "city": "Macon-Bibb County",
+    "state": "GA"
+  },
+  {
+    "id": "1349196",
+    "city": "Madison",
+    "state": "GA"
+  },
+  {
+    "id": "1349504",
+    "city": "Manassas",
+    "state": "GA"
+  },
+  {
+    "id": "1349532",
+    "city": "Manchester",
+    "state": "GA"
+  },
+  {
+    "id": "1349588",
+    "city": "Manor",
+    "state": "GA"
+  },
+  {
+    "id": "1349616",
+    "city": "Mansfield",
+    "state": "GA"
+  },
+  {
+    "id": "1349756",
+    "city": "Marietta",
+    "state": "GA"
+  },
+  {
+    "id": "1349924",
+    "city": "Marshallville",
+    "state": "GA"
+  },
+  {
+    "id": "1350008",
+    "city": "Martin",
+    "state": "GA"
+  },
+  {
+    "id": "1350036",
+    "city": "Martinez",
+    "state": "GA"
+  },
+  {
+    "id": "1350176",
+    "city": "Matthews",
+    "state": "GA"
+  },
+  {
+    "id": "1350260",
+    "city": "Maxeys",
+    "state": "GA"
+  },
+  {
+    "id": "1350484",
+    "city": "Maysville",
+    "state": "GA"
+  },
+  {
+    "id": "1348428",
+    "city": "McCaysville",
+    "state": "GA"
+  },
+  {
+    "id": "1348624",
+    "city": "McDonough",
+    "state": "GA"
+  },
+  {
+    "id": "1348848",
+    "city": "McIntyre",
+    "state": "GA"
+  },
+  {
+    "id": "1349100",
+    "city": "McRae-Helena",
+    "state": "GA"
+  },
+  {
+    "id": "1350596",
+    "city": "Meansville",
+    "state": "GA"
+  },
+  {
+    "id": "1350680",
+    "city": "Meigs",
+    "state": "GA"
+  },
+  {
+    "id": "1350820",
+    "city": "Mendes",
+    "state": "GA"
+  },
+  {
+    "id": "1350848",
+    "city": "Menlo",
+    "state": "GA"
+  },
+  {
+    "id": "1350960",
+    "city": "Mershon",
+    "state": "GA"
+  },
+  {
+    "id": "1351072",
+    "city": "Metter",
+    "state": "GA"
+  },
+  {
+    "id": "1351240",
+    "city": "Midville",
+    "state": "GA"
+  },
+  {
+    "id": "1351352",
+    "city": "Midway",
+    "state": "GA"
+  },
+  {
+    "id": "1351408",
+    "city": "Milan",
+    "state": "GA"
+  },
+  {
+    "id": "1351492",
+    "city": "Milledgeville",
+    "state": "GA"
+  },
+  {
+    "id": "1351520",
+    "city": "Millen",
+    "state": "GA"
+  },
+  {
+    "id": "1351576",
+    "city": "Millwood",
+    "state": "GA"
+  },
+  {
+    "id": "1351604",
+    "city": "Milner",
+    "state": "GA"
+  },
+  {
+    "id": "1351660",
+    "city": "Milstead",
+    "state": "GA"
+  },
+  {
+    "id": "1351670",
+    "city": "Milton",
+    "state": "GA"
+  },
+  {
+    "id": "1351744",
+    "city": "Mineral Bluff",
+    "state": "GA"
+  },
+  {
+    "id": "1351968",
+    "city": "Mitchell",
+    "state": "GA"
+  },
+  {
+    "id": "1352108",
+    "city": "Molena",
+    "state": "GA"
+  },
+  {
+    "id": "1352192",
+    "city": "Monroe",
+    "state": "GA"
+  },
+  {
+    "id": "1352304",
+    "city": "Montezuma",
+    "state": "GA"
+  },
+  {
+    "id": "1352332",
+    "city": "Montgomery",
+    "state": "GA"
+  },
+  {
+    "id": "1352416",
+    "city": "Monticello",
+    "state": "GA"
+  },
+  {
+    "id": "1352500",
+    "city": "Montrose",
+    "state": "GA"
+  },
+  {
+    "id": "1352556",
+    "city": "Moody AFB",
+    "state": "GA"
+  },
+  {
+    "id": "1352668",
+    "city": "Moreland",
+    "state": "GA"
+  },
+  {
+    "id": "1352696",
+    "city": "Morgan",
+    "state": "GA"
+  },
+  {
+    "id": "1352724",
+    "city": "Morganton",
+    "state": "GA"
+  },
+  {
+    "id": "1353004",
+    "city": "Morrow",
+    "state": "GA"
+  },
+  {
+    "id": "1353032",
+    "city": "Morven",
+    "state": "GA"
+  },
+  {
+    "id": "1353060",
+    "city": "Moultrie",
+    "state": "GA"
+  },
+  {
+    "id": "1353284",
+    "city": "Mount Airy",
+    "state": "GA"
+  },
+  {
+    "id": "1353508",
+    "city": "Mount Vernon",
+    "state": "GA"
+  },
+  {
+    "id": "1353620",
+    "city": "Mount Zion",
+    "state": "GA"
+  },
+  {
+    "id": "1353116",
+    "city": "Mountain City",
+    "state": "GA"
+  },
+  {
+    "id": "1353172",
+    "city": "Mountain Park",
+    "state": "GA"
+  },
+  {
+    "id": "1353186",
+    "city": "Mountain Park",
+    "state": "GA"
+  },
+  {
+    "id": "1353706",
+    "city": "Mulberry",
+    "state": "GA"
+  },
+  {
+    "id": "1354012",
+    "city": "Musella",
+    "state": "GA"
+  },
+  {
+    "id": "1354124",
+    "city": "Nahunta",
+    "state": "GA"
+  },
+  {
+    "id": "1354264",
+    "city": "Nashville",
+    "state": "GA"
+  },
+  {
+    "id": "1354404",
+    "city": "Naylor",
+    "state": "GA"
+  },
+  {
+    "id": "1354572",
+    "city": "Nelson",
+    "state": "GA"
+  },
+  {
+    "id": "1354768",
+    "city": "New England",
+    "state": "GA"
+  },
+  {
+    "id": "1354656",
+    "city": "Newborn",
+    "state": "GA"
+  },
+  {
+    "id": "1354992",
+    "city": "Newington",
+    "state": "GA"
+  },
+  {
+    "id": "1355020",
+    "city": "Newnan",
+    "state": "GA"
+  },
+  {
+    "id": "1355244",
+    "city": "Newton",
+    "state": "GA"
+  },
+  {
+    "id": "1355440",
+    "city": "Nicholls",
+    "state": "GA"
+  },
+  {
+    "id": "1355468",
+    "city": "Nicholson",
+    "state": "GA"
+  },
+  {
+    "id": "1355776",
+    "city": "Norcross",
+    "state": "GA"
+  },
+  {
+    "id": "1355860",
+    "city": "Norman Park",
+    "state": "GA"
+  },
+  {
+    "id": "1355944",
+    "city": "Norristown",
+    "state": "GA"
+  },
+  {
+    "id": "1356112",
+    "city": "North Decatur",
+    "state": "GA"
+  },
+  {
+    "id": "1356168",
+    "city": "North Druid Hills",
+    "state": "GA"
+  },
+  {
+    "id": "1356308",
+    "city": "North High Shoals",
+    "state": "GA"
+  },
+  {
+    "id": "1356560",
+    "city": "Norwood",
+    "state": "GA"
+  },
+  {
+    "id": "1356644",
+    "city": "Nunez",
+    "state": "GA"
+  },
+  {
+    "id": "1357232",
+    "city": "Oak Park",
+    "state": "GA"
+  },
+  {
+    "id": "1357260",
+    "city": "Oakwood",
+    "state": "GA"
+  },
+  {
+    "id": "1357372",
+    "city": "Ochlocknee",
+    "state": "GA"
+  },
+  {
+    "id": "1357428",
+    "city": "Ocilla",
+    "state": "GA"
+  },
+  {
+    "id": "1357456",
+    "city": "Oconee",
+    "state": "GA"
+  },
+  {
+    "id": "1357540",
+    "city": "Odum",
+    "state": "GA"
+  },
+  {
+    "id": "1357568",
+    "city": "Offerman",
+    "state": "GA"
+  },
+  {
+    "id": "1357736",
+    "city": "Oglethorpe",
+    "state": "GA"
+  },
+  {
+    "id": "1357876",
+    "city": "Ohoopee",
+    "state": "GA"
+  },
+  {
+    "id": "1358100",
+    "city": "Oliver",
+    "state": "GA"
+  },
+  {
+    "id": "1358184",
+    "city": "Omega",
+    "state": "GA"
+  },
+  {
+    "id": "1358296",
+    "city": "Orchard Hill",
+    "state": "GA"
+  },
+  {
+    "id": "1358744",
+    "city": "Oxford",
+    "state": "GA"
+  },
+  {
+    "id": "1358884",
+    "city": "Palmetto",
+    "state": "GA"
+  },
+  {
+    "id": "1359080",
+    "city": "Panthersville",
+    "state": "GA"
+  },
+  {
+    "id": "1359416",
+    "city": "Parrott",
+    "state": "GA"
+  },
+  {
+    "id": "1359500",
+    "city": "Patterson",
+    "state": "GA"
+  },
+  {
+    "id": "1359556",
+    "city": "Pavo",
+    "state": "GA"
+  },
+  {
+    "id": "1359724",
+    "city": "Peachtree City",
+    "state": "GA"
+  },
+  {
+    "id": "1359735",
+    "city": "Peachtree Corners",
+    "state": "GA"
+  },
+  {
+    "id": "1359808",
+    "city": "Pearson",
+    "state": "GA"
+  },
+  {
+    "id": "1359976",
+    "city": "Pelham",
+    "state": "GA"
+  },
+  {
+    "id": "1360004",
+    "city": "Pembroke",
+    "state": "GA"
+  },
+  {
+    "id": "1360032",
+    "city": "Pendergrass",
+    "state": "GA"
+  },
+  {
+    "id": "1360312",
+    "city": "Perkins",
+    "state": "GA"
+  },
+  {
+    "id": "1360340",
+    "city": "Perry",
+    "state": "GA"
+  },
+  {
+    "id": "1360508",
+    "city": "Phillipsburg",
+    "state": "GA"
+  },
+  {
+    "id": "1361040",
+    "city": "Pine Lake",
+    "state": "GA"
+  },
+  {
+    "id": "1361124",
+    "city": "Pine Mountain",
+    "state": "GA"
+  },
+  {
+    "id": "1360984",
+    "city": "Pinehurst",
+    "state": "GA"
+  },
+  {
+    "id": "1361320",
+    "city": "Pineview",
+    "state": "GA"
+  },
+  {
+    "id": "1361376",
+    "city": "Piney Grove",
+    "state": "GA"
+  },
+  {
+    "id": "1361544",
+    "city": "Pitts",
+    "state": "GA"
+  },
+  {
+    "id": "1361628",
+    "city": "Plains",
+    "state": "GA"
+  },
+  {
+    "id": "1361684",
+    "city": "Plainville",
+    "state": "GA"
+  },
+  {
+    "id": "1362104",
+    "city": "Pooler",
+    "state": "GA"
+  },
+  {
+    "id": "1362328",
+    "city": "Port Wentworth",
+    "state": "GA"
+  },
+  {
+    "id": "1362216",
+    "city": "Portal",
+    "state": "GA"
+  },
+  {
+    "id": "1362244",
+    "city": "Porterdale",
+    "state": "GA"
+  },
+  {
+    "id": "1362496",
+    "city": "Poulan",
+    "state": "GA"
+  },
+  {
+    "id": "1362524",
+    "city": "Powder Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1363000",
+    "city": "Pulaski",
+    "state": "GA"
+  },
+  {
+    "id": "1363084",
+    "city": "Putney",
+    "state": "GA"
+  },
+  {
+    "id": "1363224",
+    "city": "Quitman",
+    "state": "GA"
+  },
+  {
+    "id": "1363560",
+    "city": "Ranger",
+    "state": "GA"
+  },
+  {
+    "id": "1363588",
+    "city": "Raoul",
+    "state": "GA"
+  },
+  {
+    "id": "1363728",
+    "city": "Ray City",
+    "state": "GA"
+  },
+  {
+    "id": "1363756",
+    "city": "Rayle",
+    "state": "GA"
+  },
+  {
+    "id": "1363840",
+    "city": "Rebecca",
+    "state": "GA"
+  },
+  {
+    "id": "1363952",
+    "city": "Redan",
+    "state": "GA"
+  },
+  {
+    "id": "1364288",
+    "city": "Reed Creek",
+    "state": "GA"
+  },
+  {
+    "id": "1364372",
+    "city": "Register",
+    "state": "GA"
+  },
+  {
+    "id": "1364512",
+    "city": "Reidsville",
+    "state": "GA"
+  },
+  {
+    "id": "1364596",
+    "city": "Remerton",
+    "state": "GA"
+  },
+  {
+    "id": "1364680",
+    "city": "Rentz",
+    "state": "GA"
+  },
+  {
+    "id": "1364736",
+    "city": "Resaca",
+    "state": "GA"
+  },
+  {
+    "id": "1364792",
+    "city": "Rest Haven",
+    "state": "GA"
+  },
+  {
+    "id": "1364876",
+    "city": "Reynolds",
+    "state": "GA"
+  },
+  {
+    "id": "1364932",
+    "city": "Rhine",
+    "state": "GA"
+  },
+  {
+    "id": "1364960",
+    "city": "Riceboro",
+    "state": "GA"
+  },
+  {
+    "id": "1365016",
+    "city": "Richland",
+    "state": "GA"
+  },
+  {
+    "id": "1365044",
+    "city": "Richmond Hill",
+    "state": "GA"
+  },
+  {
+    "id": "1365156",
+    "city": "Riddleville",
+    "state": "GA"
+  },
+  {
+    "id": "1365296",
+    "city": "Rincon",
+    "state": "GA"
+  },
+  {
+    "id": "1365324",
+    "city": "Ringgold",
+    "state": "GA"
+  },
+  {
+    "id": "1365464",
+    "city": "Riverdale",
+    "state": "GA"
+  },
+  {
+    "id": "1365856",
+    "city": "Roberta",
+    "state": "GA"
+  },
+  {
+    "id": "1365968",
+    "city": "Robins AFB",
+    "state": "GA"
+  },
+  {
+    "id": "1366024",
+    "city": "Rochelle",
+    "state": "GA"
+  },
+  {
+    "id": "1366304",
+    "city": "Rock Spring",
+    "state": "GA"
+  },
+  {
+    "id": "1366220",
+    "city": "Rockingham",
+    "state": "GA"
+  },
+  {
+    "id": "1366276",
+    "city": "Rockmart",
+    "state": "GA"
+  },
+  {
+    "id": "1366444",
+    "city": "Rocky Ford",
+    "state": "GA"
+  },
+  {
+    "id": "1366668",
+    "city": "Rome",
+    "state": "GA"
+  },
+  {
+    "id": "1366696",
+    "city": "Roopville",
+    "state": "GA"
+  },
+  {
+    "id": "1367256",
+    "city": "Rossville",
+    "state": "GA"
+  },
+  {
+    "id": "1367284",
+    "city": "Roswell",
+    "state": "GA"
+  },
+  {
+    "id": "1367452",
+    "city": "Royston",
+    "state": "GA"
+  },
+  {
+    "id": "1367676",
+    "city": "Russell",
+    "state": "GA"
+  },
+  {
+    "id": "1367760",
+    "city": "Rutledge",
+    "state": "GA"
+  },
+  {
+    "id": "1368096",
+    "city": "Sale City",
+    "state": "GA"
+  },
+  {
+    "id": "1368129",
+    "city": "Salem",
+    "state": "GA"
+  },
+  {
+    "id": "1368208",
+    "city": "Sandersville",
+    "state": "GA"
+  },
+  {
+    "id": "1368516",
+    "city": "Sandy Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1368600",
+    "city": "Santa Claus",
+    "state": "GA"
+  },
+  {
+    "id": "1368740",
+    "city": "Sardis",
+    "state": "GA"
+  },
+  {
+    "id": "1368796",
+    "city": "Sasser",
+    "state": "GA"
+  },
+  {
+    "id": "1368805",
+    "city": "Satilla",
+    "state": "GA"
+  },
+  {
+    "id": "1368880",
+    "city": "Sautee-Nacoochee",
+    "state": "GA"
+  },
+  {
+    "id": "1369000",
+    "city": "Savannah",
+    "state": "GA"
+  },
+  {
+    "id": "1369336",
+    "city": "Scotland",
+    "state": "GA"
+  },
+  {
+    "id": "1369392",
+    "city": "Scottdale",
+    "state": "GA"
+  },
+  {
+    "id": "1369448",
+    "city": "Screven",
+    "state": "GA"
+  },
+  {
+    "id": "1369672",
+    "city": "Senoia",
+    "state": "GA"
+  },
+  {
+    "id": "1369728",
+    "city": "Seville",
+    "state": "GA"
+  },
+  {
+    "id": "1369784",
+    "city": "Shady Dale",
+    "state": "GA"
+  },
+  {
+    "id": "1369868",
+    "city": "Shannon",
+    "state": "GA"
+  },
+  {
+    "id": "1369896",
+    "city": "Sharon",
+    "state": "GA"
+  },
+  {
+    "id": "1369980",
+    "city": "Sharpsburg",
+    "state": "GA"
+  },
+  {
+    "id": "1370120",
+    "city": "Shellman",
+    "state": "GA"
+  },
+  {
+    "id": "1370428",
+    "city": "Shiloh",
+    "state": "GA"
+  },
+  {
+    "id": "1370932",
+    "city": "Siloam",
+    "state": "GA"
+  },
+  {
+    "id": "1371184",
+    "city": "Skidaway Island",
+    "state": "GA"
+  },
+  {
+    "id": "1371282",
+    "city": "Sky Valley",
+    "state": "GA"
+  },
+  {
+    "id": "1371296",
+    "city": "Smarr",
+    "state": "GA"
+  },
+  {
+    "id": "1371464",
+    "city": "Smithville",
+    "state": "GA"
+  },
+  {
+    "id": "1371492",
+    "city": "Smyrna",
+    "state": "GA"
+  },
+  {
+    "id": "1371604",
+    "city": "Snellville",
+    "state": "GA"
+  },
+  {
+    "id": "1371660",
+    "city": "Social Circle",
+    "state": "GA"
+  },
+  {
+    "id": "1371772",
+    "city": "Soperton",
+    "state": "GA"
+  },
+  {
+    "id": "1372122",
+    "city": "South Fulton",
+    "state": "GA"
+  },
+  {
+    "id": "1372556",
+    "city": "Sparks",
+    "state": "GA"
+  },
+  {
+    "id": "1372584",
+    "city": "Sparta",
+    "state": "GA"
+  },
+  {
+    "id": "1372780",
+    "city": "Springfield",
+    "state": "GA"
+  },
+  {
+    "id": "1367984",
+    "city": "St. Marys",
+    "state": "GA"
+  },
+  {
+    "id": "1368040",
+    "city": "St. Simons",
+    "state": "GA"
+  },
+  {
+    "id": "1373004",
+    "city": "Stapleton",
+    "state": "GA"
+  },
+  {
+    "id": "1373256",
+    "city": "Statesboro",
+    "state": "GA"
+  },
+  {
+    "id": "1373312",
+    "city": "Statham",
+    "state": "GA"
+  },
+  {
+    "id": "1373452",
+    "city": "Sterling",
+    "state": "GA"
+  },
+  {
+    "id": "1373620",
+    "city": "Stillmore",
+    "state": "GA"
+  },
+  {
+    "id": "1373704",
+    "city": "Stockbridge",
+    "state": "GA"
+  },
+  {
+    "id": "1373760",
+    "city": "Stockton",
+    "state": "GA"
+  },
+  {
+    "id": "1373816",
+    "city": "Stone Mountain",
+    "state": "GA"
+  },
+  {
+    "id": "1373784",
+    "city": "Stonecrest",
+    "state": "GA"
+  },
+  {
+    "id": "1374180",
+    "city": "Sugar Hill",
+    "state": "GA"
+  },
+  {
+    "id": "1374348",
+    "city": "Summertown",
+    "state": "GA"
+  },
+  {
+    "id": "1374376",
+    "city": "Summerville",
+    "state": "GA"
+  },
+  {
+    "id": "1374432",
+    "city": "Sumner",
+    "state": "GA"
+  },
+  {
+    "id": "1374572",
+    "city": "Sunny Side",
+    "state": "GA"
+  },
+  {
+    "id": "1374628",
+    "city": "Sunnyside",
+    "state": "GA"
+  },
+  {
+    "id": "1374768",
+    "city": "Sunset Village",
+    "state": "GA"
+  },
+  {
+    "id": "1374852",
+    "city": "Surrency",
+    "state": "GA"
+  },
+  {
+    "id": "1374936",
+    "city": "Suwanee",
+    "state": "GA"
+  },
+  {
+    "id": "1374964",
+    "city": "Swainsboro",
+    "state": "GA"
+  },
+  {
+    "id": "1375104",
+    "city": "Sycamore",
+    "state": "GA"
+  },
+  {
+    "id": "1375160",
+    "city": "Sylvania",
+    "state": "GA"
+  },
+  {
+    "id": "1375188",
+    "city": "Sylvester",
+    "state": "GA"
+  },
+  {
+    "id": "1375239",
+    "city": "Talahi Island",
+    "state": "GA"
+  },
+  {
+    "id": "1375244",
+    "city": "Talbotton",
+    "state": "GA"
+  },
+  {
+    "id": "1375272",
+    "city": "Talking Rock",
+    "state": "GA"
+  },
+  {
+    "id": "1375300",
+    "city": "Tallapoosa",
+    "state": "GA"
+  },
+  {
+    "id": "1375328",
+    "city": "Tallulah Falls",
+    "state": "GA"
+  },
+  {
+    "id": "1375412",
+    "city": "Talmo",
+    "state": "GA"
+  },
+  {
+    "id": "1375496",
+    "city": "Tarrytown",
+    "state": "GA"
+  },
+  {
+    "id": "1375580",
+    "city": "Tate City",
+    "state": "GA"
+  },
+  {
+    "id": "1375664",
+    "city": "Taylorsville",
+    "state": "GA"
+  },
+  {
+    "id": "1375692",
+    "city": "Tazewell",
+    "state": "GA"
+  },
+  {
+    "id": "1375832",
+    "city": "Temple",
+    "state": "GA"
+  },
+  {
+    "id": "1375888",
+    "city": "Tennille",
+    "state": "GA"
+  },
+  {
+    "id": "1376112",
+    "city": "The Rock",
+    "state": "GA"
+  },
+  {
+    "id": "1376168",
+    "city": "Thomaston",
+    "state": "GA"
+  },
+  {
+    "id": "1376224",
+    "city": "Thomasville",
+    "state": "GA"
+  },
+  {
+    "id": "1376280",
+    "city": "Thomson",
+    "state": "GA"
+  },
+  {
+    "id": "1376364",
+    "city": "Thunderbolt",
+    "state": "GA"
+  },
+  {
+    "id": "1376476",
+    "city": "Tifton",
+    "state": "GA"
+  },
+  {
+    "id": "1376504",
+    "city": "Tiger",
+    "state": "GA"
+  },
+  {
+    "id": "1376532",
+    "city": "Tignall",
+    "state": "GA"
+  },
+  {
+    "id": "1376756",
+    "city": "Toccoa",
+    "state": "GA"
+  },
+  {
+    "id": "1376952",
+    "city": "Toomsboro",
+    "state": "GA"
+  },
+  {
+    "id": "1377372",
+    "city": "Trenton",
+    "state": "GA"
+  },
+  {
+    "id": "1377540",
+    "city": "Trion",
+    "state": "GA"
+  },
+  {
+    "id": "1377652",
+    "city": "Tucker",
+    "state": "GA"
+  },
+  {
+    "id": "1377736",
+    "city": "Tunnel Hill",
+    "state": "GA"
+  },
+  {
+    "id": "1377764",
+    "city": "Turin",
+    "state": "GA"
+  },
+  {
+    "id": "1377988",
+    "city": "Twin City",
+    "state": "GA"
+  },
+  {
+    "id": "1378100",
+    "city": "Ty Ty",
+    "state": "GA"
+  },
+  {
+    "id": "1378036",
+    "city": "Tybee Island",
+    "state": "GA"
+  },
+  {
+    "id": "1378044",
+    "city": "Tyrone",
+    "state": "GA"
+  },
+  {
+    "id": "1378156",
+    "city": "Unadilla",
+    "state": "GA"
+  },
+  {
+    "id": "1378324",
+    "city": "Union City",
+    "state": "GA"
+  },
+  {
+    "id": "1378380",
+    "city": "Union Point",
+    "state": "GA"
+  },
+  {
+    "id": "1378464",
+    "city": "Unionville",
+    "state": "GA"
+  },
+  {
+    "id": "1378744",
+    "city": "Uvalda",
+    "state": "GA"
+  },
+  {
+    "id": "1378800",
+    "city": "Valdosta",
+    "state": "GA"
+  },
+  {
+    "id": "1378996",
+    "city": "Varnell",
+    "state": "GA"
+  },
+  {
+    "id": "1379164",
+    "city": "Vernonburg",
+    "state": "GA"
+  },
+  {
+    "id": "1379388",
+    "city": "Vidalia",
+    "state": "GA"
+  },
+  {
+    "id": "1379416",
+    "city": "Vidette",
+    "state": "GA"
+  },
+  {
+    "id": "1379444",
+    "city": "Vienna",
+    "state": "GA"
+  },
+  {
+    "id": "1379528",
+    "city": "Villa Rica",
+    "state": "GA"
+  },
+  {
+    "id": "1379612",
+    "city": "Vinings",
+    "state": "GA"
+  },
+  {
+    "id": "1379808",
+    "city": "Waco",
+    "state": "GA"
+  },
+  {
+    "id": "1379864",
+    "city": "Wadley",
+    "state": "GA"
+  },
+  {
+    "id": "1379948",
+    "city": "Waleska",
+    "state": "GA"
+  },
+  {
+    "id": "1380228",
+    "city": "Walnut Grove",
+    "state": "GA"
+  },
+  {
+    "id": "1380256",
+    "city": "Walthourville",
+    "state": "GA"
+  },
+  {
+    "id": "1380368",
+    "city": "Waresboro",
+    "state": "GA"
+  },
+  {
+    "id": "1380480",
+    "city": "Warm Springs",
+    "state": "GA"
+  },
+  {
+    "id": "1380508",
+    "city": "Warner Robins",
+    "state": "GA"
+  },
+  {
+    "id": "1380592",
+    "city": "Warrenton",
+    "state": "GA"
+  },
+  {
+    "id": "1380648",
+    "city": "Warthen",
+    "state": "GA"
+  },
+  {
+    "id": "1380676",
+    "city": "Warwick",
+    "state": "GA"
+  },
+  {
+    "id": "1380704",
+    "city": "Washington",
+    "state": "GA"
+  },
+  {
+    "id": "1380788",
+    "city": "Watkinsville",
+    "state": "GA"
+  },
+  {
+    "id": "1380816",
+    "city": "Waverly",
+    "state": "GA"
+  },
+  {
+    "id": "1380844",
+    "city": "Waverly Hall",
+    "state": "GA"
+  },
+  {
+    "id": "1380956",
+    "city": "Waycross",
+    "state": "GA"
+  },
+  {
+    "id": "1380984",
+    "city": "Waynesboro",
+    "state": "GA"
+  },
+  {
+    "id": "1381012",
+    "city": "Waynesville",
+    "state": "GA"
+  },
+  {
+    "id": "1381128",
+    "city": "Webster County",
+    "state": "GA"
+  },
+  {
+    "id": "1381208",
+    "city": "Wenona",
+    "state": "GA"
+  },
+  {
+    "id": "1381488",
+    "city": "West Brow",
+    "state": "GA"
+  },
+  {
+    "id": "1382132",
+    "city": "West Point",
+    "state": "GA"
+  },
+  {
+    "id": "1382412",
+    "city": "Whigham",
+    "state": "GA"
+  },
+  {
+    "id": "1382468",
+    "city": "White",
+    "state": "GA"
+  },
+  {
+    "id": "1382692",
+    "city": "White Plains",
+    "state": "GA"
+  },
+  {
+    "id": "1382636",
+    "city": "Whitemarsh Island",
+    "state": "GA"
+  },
+  {
+    "id": "1382720",
+    "city": "Whitesburg",
+    "state": "GA"
+  },
+  {
+    "id": "1382916",
+    "city": "Wildwood",
+    "state": "GA"
+  },
+  {
+    "id": "1382972",
+    "city": "Willacoochee",
+    "state": "GA"
+  },
+  {
+    "id": "1383084",
+    "city": "Williamson",
+    "state": "GA"
+  },
+  {
+    "id": "1383168",
+    "city": "Wilmington Island",
+    "state": "GA"
+  },
+  {
+    "id": "1383420",
+    "city": "Winder",
+    "state": "GA"
+  },
+  {
+    "id": "1383728",
+    "city": "Winterville",
+    "state": "GA"
+  },
+  {
+    "id": "1383868",
+    "city": "Woodbine",
+    "state": "GA"
+  },
+  {
+    "id": "1383896",
+    "city": "Woodbury",
+    "state": "GA"
+  },
+  {
+    "id": "1383952",
+    "city": "Woodland",
+    "state": "GA"
+  },
+  {
+    "id": "1384176",
+    "city": "Woodstock",
+    "state": "GA"
+  },
+  {
+    "id": "1384260",
+    "city": "Woodville",
+    "state": "GA"
+  },
+  {
+    "id": "1384288",
+    "city": "Woolsey",
+    "state": "GA"
+  },
+  {
+    "id": "1384456",
+    "city": "Wrens",
+    "state": "GA"
+  },
+  {
+    "id": "1384512",
+    "city": "Wrightsville",
+    "state": "GA"
+  },
+  {
+    "id": "1384708",
+    "city": "Yatesville",
+    "state": "GA"
+  },
+  {
+    "id": "1384832",
+    "city": "Yonah",
+    "state": "GA"
+  },
+  {
+    "id": "1384960",
+    "city": "Young Harris",
+    "state": "GA"
+  },
+  {
+    "id": "1385128",
+    "city": "Zebulon",
+    "state": "GA"
+  }
+]

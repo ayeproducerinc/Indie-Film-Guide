@@ -1,10 +1,11 @@
-# [Project name]
+# Indie Film Guide
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A mobile-first Georgia film-resource directory: filmmakers browse free, providers submit listings, and only approved, eligible listings appear publicly.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/indie-film-guide run dev` — frontend; use its managed workflow to supply routing and port configuration.
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,23 +23,35 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- API contract: `lib/api-spec/openapi.yaml`; regenerate hooks and validation after changes.
+- Database: `lib/db/src/schema/listings.ts`.
+- Directory/submission API: `artifacts/api-server/src/routes/listings.ts`.
+- Frontend: `artifacts/indie-film-guide`.
+- Canonical places: `artifacts/api-server/src/data/georgia-locations.json`; source documented beside it.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Use a bundled Census place list instead of a paid geocoding service so standardized Georgia city selection requires no external credentials or runtime network dependency.
+- Preserve Statewide and Nationwide as service coverage, not pretend cities.
+- This first milestone covers public directory/detail, provider submissions, About, and Terms. Stripe and protected admin are subsequent milestones; do not imply paid submissions have been charged or approved.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Public listing search, city/category/stage/rate filters, listing details, and pending provider submissions. Standard $499/year, Indie Partner $199/year, Government free. Payment never changes alphabetical ordering.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Build from scratch using the supplied requirements and screenshots.
+- Separate Website and Phone fields; autocomplete city/state to standardize location data.
+- No fake businesses or seeded sample listings. Never publicly expose provider email.
+- Keep scope small and straightforward. Show working milestones before progressing to payments/admin.
+- Mobile-first at 375px, device light/dark mode, strong blue accent, neutral background, bold condensed headings.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Launch-special claims require a valid future `SPECIAL_END_DATE`; never invent a deadline.
+- Paid submissions are currently saved Unpaid and Pending. Stripe Checkout/webhooks and admin are not enabled in this milestone.
+- Location labels/state are derived server-side from a selected Census GEOID, not trusted client strings.
 
 ## Pointers
 

@@ -11,6 +11,62 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /directory:
+    get:
+      operationId: getDirectory
+      responses:
+        "200":
+          description: Live directory and filter options
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Directory"
+  /listings/{slug}:
+    get:
+      operationId: getListing
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Public listing without email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+  /locations:
+    get:
+      operationId: getLocations
+      responses:
+        "200":
+          description: Canonical Georgia cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Location" }
+  /submissions:
+    post:
+      operationId: submitListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingInput" }
+      responses:
+        "201":
+          description: Saved pending submission
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Submission" }
+  /listing-config:
+    get:
+      operationId: getListingConfig
+      responses:
+        "200":
+          description: Launch special and billing availability
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingConfig" }
   /healthz:
     get:
       operationId: healthCheck
@@ -26,6 +82,72 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    Location:
+      type: object
+      required: [id, city, state]
+      properties:
+        id: { type: string }
+        city: { type: string }
+        state: { type: string }
+    Listing:
+      type: object
+      required: [id, slug, name, description, category, stages, city, state, coverage, providerType, indieRate, indieRateDetails, website, phone]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        stages: { type: array, items: { type: string } }
+        city: { type: string }
+        state: { type: string }
+        coverage: { type: string, enum: [City, Statewide, Nationwide] }
+        providerType: { type: string, enum: [Business, Nonprofit, Government] }
+        indieRate: { type: boolean }
+        indieRateDetails: { type: string }
+        website: { type: string }
+        phone: { type: string }
+    Directory:
+      type: object
+      required: [listings, cities, categories, stages]
+      properties:
+        listings: { type: array, items: { $ref: "#/components/schemas/Listing" } }
+        cities: { type: array, items: { type: string } }
+        categories: { type: array, items: { type: string } }
+        stages: { type: array, items: { type: string } }
+    ListingInput:
+      type: object
+      required: [name, description, category, stages, coverage, email, providerType, plan]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, minLength: 1, maxLength: 200 }
+        category: { type: string, enum: [Locations, Equipment & Props, "Talent, Crew & On-Set", Business Services & Licensing, Funding & Banking, Distribution & Marketing] }
+        stages:
+          type: array
+          minItems: 1
+          items: { type: string, enum: [Idea, Production, Post-Production, Distribution] }
+        coverage: { type: string, enum: [City, Statewide, Nationwide] }
+        locationId: { type: string }
+        website: { type: string, maxLength: 500 }
+        phone: { type: string, maxLength: 40 }
+        email: { type: string, format: email, maxLength: 254 }
+        providerType: { type: string, enum: [Business, Nonprofit, Government] }
+        plan: { type: string, enum: [Indie Partner, Standard, Government] }
+        indieRateDetails: { type: string, maxLength: 200 }
+    Submission:
+      type: object
+      required: [reference, status, paymentStatus, message]
+      properties:
+        reference: { type: string }
+        status: { type: string }
+        paymentStatus: { type: string }
+        message: { type: string }
+    ListingConfig:
+      type: object
+      required: [specialActive, billingAvailable]
+      properties:
+        specialActive: { type: boolean }
+        billingAvailable: { type: boolean }
     HealthStatus:
       type: object
       properties:
