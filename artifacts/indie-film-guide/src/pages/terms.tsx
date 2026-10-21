@@ -13,6 +13,7 @@ export default function Terms() {
     <Layout>
       <div className="mx-auto max-w-2xl px-4 py-10 rise">
         <h1 className="font-display text-5xl sm:text-6xl">Terms</h1>
+        <p className="mt-4">Indie Film Guide is owned and operated by AYe Producer, Inc.</p>
         <ol className="mt-6 space-y-3">
           {items.map((t, i) => (
             <li key={i} className="flex gap-4 border-b border-border pb-3">
