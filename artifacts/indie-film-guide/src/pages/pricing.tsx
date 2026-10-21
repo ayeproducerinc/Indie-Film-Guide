@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { ChevronDown } from 'lucide-react';
 import { getGetListingConfigQueryKey, useGetListingConfig } from '@workspace/api-client-react';
 import type { PlanDefinition } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
@@ -94,7 +95,10 @@ export default function Pricing() {
           <div className="mt-4 divide-y-2 divide-input border-y-2 border-input">
             {FAQS.map(([q, a], i) => (
               <details key={q} className="group py-3" data-testid={`faq-${i + 1}`}>
-                <summary className="cursor-pointer list-none font-bold">{q}</summary>
+                <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-4 font-bold [&::-webkit-details-marker]:hidden">
+                  <span className="min-w-0">{q}</span>
+                  <ChevronDown aria-hidden="true" className="h-5 w-5 shrink-0 text-primary transition-transform group-open:rotate-180" />
+                </summary>
                 <p className="mt-2 text-muted-foreground">{a}</p>
               </details>
             ))}

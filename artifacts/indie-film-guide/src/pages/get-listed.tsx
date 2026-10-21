@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import { useLocation } from 'wouter';
 import { getGetListingConfigQueryKey, useGetListingConfig, useGetLocations, useSubmitListing } from '@workspace/api-client-react';
 import type { ListingInput, Location } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
@@ -152,13 +152,8 @@ export default function GetListed() {
       <div className="mx-auto max-w-2xl px-4 py-8">
         <h1 className="font-display mt-2 text-5xl sm:text-6xl">Get listed</h1>
         <p className="mt-3 text-muted-foreground">Listings are reviewed before they go live. Your email stays private unless you choose to list it publicly.</p>
-        <div className="mt-4 border-2 border-input bg-card p-3 text-sm" data-testid="summary-pricing">
-          {cfg ? (
-            <p><span className="font-bold">Pricing: </span>Indie Partner {planLabel('Indie Partner')}, Standard {planLabel('Standard')}, Lifetime {planLabel('Lifetime Indie Partner')}, Nonprofit {planLabel('Nonprofit Indie Partner')} or {planLabel('Nonprofit Standard')}, Government {planLabel('Government')}. <Link href="/pricing" data-testid="link-see-pricing" className="font-bold text-primary underline underline-offset-4">See full pricing</Link></p>
-          ) : cfgError ? (
-            <p role="alert" className="font-semibold text-destructive">Couldn't load pricing. <button type="button" onClick={() => refetchCfg()} data-testid="button-retry-config" className="underline">Retry</button></p>
-          ) : <p className="text-muted-foreground">Loading pricing</p>}
-        </div>
+        {cfgError && <p role="alert" className="mt-3 text-sm font-semibold text-destructive">Couldn't load pricing. <button type="button" onClick={() => refetchCfg()} data-testid="button-retry-config" className="underline">Retry</button></p>}
+        {!cfg && !cfgError && <p className="mt-3 text-sm text-muted-foreground" role="status">Loading pricing</p>}
         {cfg?.specialActive && <p className="mt-3 inline-block bg-primary px-3 py-1 text-sm font-bold uppercase tracking-wide text-primary-foreground" data-testid="text-special">Lock in your price for life</p>}
         {cfg?.billingMode === 'test' && <p className="mt-3 border-l-4 border-primary bg-card p-3 text-sm">Test checkout mode. Live billing requires Stripe live-account setup.</p>}
 
@@ -272,15 +267,15 @@ export default function GetListed() {
           ) : (
             <fieldset>
               <legend className={label}>{providerType === 'Nonprofit' ? 'Do you offer a promo code to indie filmmakers?' : 'Do you offer a promo code to indie filmmakers?'}</legend>
-              <div id="field-plan" tabIndex={-1} className="mt-2 grid gap-2">
+              <div id="field-plan" tabIndex={-1} className="mt-2 grid grid-cols-2 items-stretch gap-2">
                 {([
                   { v: 'yes' as const, title: 'Yes, I offer a promo code', sub: 'You give indie filmmakers a deal', price: providerType === 'Nonprofit' ? planLabel('Nonprofit Indie Partner') : planLabel(effCadence === 'lifetime' ? 'Lifetime Indie Partner' : 'Indie Partner') },
                   { v: 'no' as const, title: 'No', sub: providerType === 'Nonprofit' ? 'Nonprofit Standard' : 'Standard', price: providerType === 'Nonprofit' ? planLabel('Nonprofit Standard') : planLabel('Standard') },
                 ]).map((o) => (
-                  <label key={o.v} className={`press flex cursor-pointer items-center justify-between gap-3 border-2 p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${offer === o.v ? 'border-primary bg-accent' : 'border-input bg-card'}`}>
+                  <label key={o.v} className={`press flex min-w-0 cursor-pointer flex-col items-start gap-2 border-2 p-3 [overflow-wrap:anywhere] transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${offer === o.v ? 'border-primary bg-accent' : 'border-input bg-card'}`}>
                     <input type="radio" name="offer" className="sr-only" data-testid={`radio-offer-${o.v}`} checked={offer === o.v} onChange={() => setOffer(o.v)} />
-                    <span><span className="block font-bold">{o.title}</span><span className="text-sm text-muted-foreground">{o.sub}</span></span>
-                    <span className="font-display text-2xl text-primary">{o.price}</span>
+                    <span className="w-full min-w-0 text-sm"><span className="block font-bold">{o.title}</span><span className="block text-muted-foreground">{o.sub}</span></span>
+                    <span className="mt-auto max-w-full font-display text-2xl text-primary">{o.price}</span>
                   </label>
                 ))}
               </div>
