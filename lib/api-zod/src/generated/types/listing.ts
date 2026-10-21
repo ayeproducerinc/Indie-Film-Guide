@@ -23,4 +23,5 @@ export interface Listing {
   indieRateDetails: string;
   website: string;
   phone: string;
+  email?: string;
 }

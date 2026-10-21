@@ -15,7 +15,7 @@ function Err({ id, msg }: { id: string; msg?: string }) {
 }
 
 export default function GetListed() {
-  useMeta('Get Listed | Indie Film Guide', 'Submit your business, nonprofit or government office to the Indie Film Guide, the free Georgia directory for independent filmmakers.');
+  useMeta('Get Listed | Indie Film Guide', 'Submit your business, nonprofit or government office to the Indie Film Guide directory.');
   const [, nav] = useLocation();
   const { data: cfg } = useGetListingConfig();
   const { data: locations = [], isLoading: locLoading, isError: locError, refetch } = useGetLocations();
@@ -30,6 +30,7 @@ export default function GetListed() {
   const [website, setWebsite] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [publicEmail, setPublicEmail] = useState(false);
   const [providerType, setProviderType] = useState<ListingInput['providerType']>('Business');
   const [plan, setPlan] = useState<Plan | ''>('');
   const [indie, setIndie] = useState('');
@@ -52,7 +53,17 @@ export default function GetListed() {
     if (!category) e.category = 'Pick one category.';
     if (stages.length === 0) e.stages = 'Pick at least one stage.';
     if (coverage === 'City' && !loc) e.location = 'Choose a city from the suggestions. Typed text alone is not enough.';
-    if (!email.trim()) e.email = 'Enter an email. It is never shown publicly.';
+    if (!website.trim()) e.website = 'Enter your website.';
+    else {
+      try {
+        const url = new URL(/^[a-z][a-z0-9+.-]*:/i.test(website.trim()) ? website.trim() : `https://${website.trim()}`);
+        if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.') || url.username || url.password) e.website = 'Enter a valid website.';
+      } catch { e.website = 'Enter a valid website.'; }
+    }
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!phone.trim()) e.phone = 'Enter your phone number.';
+    else if (!/^[+\d\s().-]+$/.test(phone) || !(phoneDigits.length === 10 || (phoneDigits.length === 11 && phoneDigits.startsWith('1')))) e.phone = 'Enter a 10-digit U.S. phone number.';
+    if (!email.trim()) e.email = 'Enter your email address.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Enter a valid email address.';
     if (!plan) e.plan = 'Choose a plan.';
     if (gov && plan !== 'Government') e.plan = 'Government providers use the Government plan.';
@@ -74,9 +85,8 @@ export default function GetListed() {
       stages: stages as ListingInput['stages'],
       coverage,
       ...(coverage === 'City' && loc ? { locationId: loc.id } : {}),
-      ...(website.trim() ? { website: website.trim() } : {}),
-      ...(phone.trim() ? { phone: phone.trim() } : {}),
-      email: email.trim(), providerType, plan: plan as Plan,
+      website: website.trim(), phone: phone.trim(),
+      email: email.trim(), publicEmail, providerType, plan: plan as Plan,
       ...(plan === 'Indie Partner' ? { indieRateDetails: indie.trim() } : {}),
     };
     submit.mutate({ data }, {
@@ -84,7 +94,11 @@ export default function GetListed() {
         sessionStorage.setItem('ifg-submission', JSON.stringify({ ...r, plan, name: data.name }));
         nav('/submitted');
       },
-      onError: () => setServerError('We could not save your submission. Check the fields above and try again.'),
+      onError: (error) => {
+        const detail = (error as unknown as { data?: { error?: string; fields?: Record<string, string[]> } }).data;
+        if (detail?.fields) setErrors(Object.fromEntries(Object.entries(detail.fields).map(([key, value]) => [key === 'locationId' ? 'location' : key === 'indieRateDetails' ? 'indie' : key, value[0]])));
+        setServerError(detail?.error ?? 'We could not save your submission. Please try again.');
+      },
     });
   };
 
@@ -98,11 +112,10 @@ export default function GetListed() {
   return (
     <Layout>
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">For providers</p>
         <h1 className="font-display mt-2 text-5xl sm:text-6xl">Get listed</h1>
-        <p className="mt-3 text-muted-foreground">Filmmakers browse free. Listings are reviewed before they go live. Your email is never shown publicly.</p>
+        <p className="mt-3 text-muted-foreground">Listings are reviewed before they go live. Your email stays private unless you choose to list it publicly.</p>
         {cfg?.specialActive && <p className="mt-3 inline-block bg-primary px-3 py-1 text-sm font-bold uppercase tracking-wide text-primary-foreground" data-testid="text-special">Lock in your price for life</p>}
-        {cfg && !cfg.billingAvailable && <p className="mt-3 border-l-4 border-primary bg-card p-3 text-sm" data-testid="text-billing-notice">Online payments are not enabled yet. Your submission will be saved unpaid and you will not be charged.</p>}
+        {cfg?.billingMode === 'test' && <p className="mt-3 border-l-4 border-primary bg-card p-3 text-sm">Test checkout mode. Live billing requires Stripe live-account setup.</p>}
 
         <form onSubmit={onSubmit} noValidate className="mt-8 space-y-6" data-testid="form-get-listed">
           <div>
@@ -168,17 +181,23 @@ export default function GetListed() {
           </fieldset>
 
           <div>
-            <label htmlFor="field-website" className={label}>Website <span className="font-normal text-muted-foreground">(optional)</span></label>
-            <input id="field-website" data-testid="input-website" type="url" inputMode="url" className="field mt-1" value={website} maxLength={500} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />
+            <label htmlFor="field-website" className={label}>Website</label>
+            <input id="field-website" required data-testid="input-website" type="url" inputMode="url" className="field mt-1" value={website} maxLength={500} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" aria-invalid={!!errors.website} aria-describedby="website" />
+            <Err id="website" msg={errors.website} />
           </div>
           <div>
-            <label htmlFor="field-phone" className={label}>Phone <span className="font-normal text-muted-foreground">(optional)</span></label>
-            <input id="field-phone" data-testid="input-phone" type="tel" className="field mt-1" value={phone} maxLength={40} onChange={(e) => setPhone(e.target.value)} />
+            <label htmlFor="field-phone" className={label}>Phone</label>
+            <input id="field-phone" required data-testid="input-phone" type="tel" className="field mt-1" value={phone} maxLength={40} onChange={(e) => setPhone(e.target.value)} aria-invalid={!!errors.phone} aria-describedby="phone" />
+            <Err id="phone" msg={errors.phone} />
           </div>
           <div>
-            <label htmlFor="field-email" className={label}>Email <span className="font-normal text-muted-foreground">(never shown publicly)</span></label>
+            <label htmlFor="field-email" className={label}>Email</label>
             <input id="field-email" data-testid="input-email" type="email" className="field mt-1" value={email} maxLength={254} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!errors.email} aria-describedby="email" />
             <Err id="email" msg={errors.email} />
+            <label className="mt-3 flex items-start gap-2 text-sm font-semibold">
+              <input type="checkbox" data-testid="checkbox-public-email" checked={publicEmail} onChange={(e) => setPublicEmail(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[hsl(var(--primary))]" />
+              <span>List email publicly<span className="block font-normal text-muted-foreground">Allow visitors to contact you by email from your approved listing.</span></span>
+            </label>
           </div>
           <div>
             <label htmlFor="field-provider" className={label}>Provider type</label>
@@ -193,27 +212,29 @@ export default function GetListed() {
               {plans.map((p) => {
                 const price = PRICES[p.id];
                 return (
-                  <label key={p.id} className={`flex cursor-pointer items-center justify-between gap-3 border-2 p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${p.disabled ? 'cursor-not-allowed opacity-50' : ''} ${plan === p.id ? 'border-primary bg-accent' : 'border-input bg-card'}`}>
+                  <div key={p.id}>
+                  <label className={`flex cursor-pointer items-center justify-between gap-3 border-2 p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${p.disabled ? 'cursor-not-allowed opacity-50' : ''} ${plan === p.id ? 'border-primary bg-accent' : 'border-input bg-card'}`}>
                     <input type="radio" name="plan" className="sr-only" disabled={p.disabled} data-testid={`radio-plan-${p.id.replace(' ', '-')}`} checked={plan === p.id} onChange={() => setPlan(p.id)} />
                     <span><span className="block font-bold">{p.title}</span><span className="text-sm text-muted-foreground">{p.sub}</span></span>
                     <span className="font-display text-3xl text-primary">{price === 0 ? 'Free' : `$${price}`}{price > 0 && <span className="text-sm">/yr</span>}</span>
                   </label>
+                  {p.id === 'Indie Partner' && plan === 'Indie Partner' && (
+                    <div className="border-x-2 border-b-2 border-primary bg-card p-4 rise">
+                      <label htmlFor="field-indie" className={label}>Describe your indie rate</label>
+                      <input id="field-indie" required data-testid="input-indie-details" className="field mt-1" maxLength={200} value={indie} onChange={(e) => setIndie(e.target.value)} placeholder="One line, e.g. discount, waived fee, free hour" aria-invalid={!!errors.indie} aria-describedby="indie" />
+                      <Err id="indie" msg={errors.indie} />
+                    </div>
+                  )}
+                  </div>
                 );
               })}
             </div>
             <Err id="plan" msg={errors.plan} />
-            {plan === 'Indie Partner' && (
-              <div className="mt-3 rise">
-                <label htmlFor="field-indie" className={label}>Describe your indie rate</label>
-                <input id="field-indie" data-testid="input-indie-details" className="field mt-1" maxLength={200} value={indie} onChange={(e) => setIndie(e.target.value)} placeholder="One line, e.g. discount, waived fee, free hour" aria-invalid={!!errors.indie} aria-describedby="indie" />
-                <Err id="indie" msg={errors.indie} />
-              </div>
-            )}
           </fieldset>
 
           {serverError && <p role="alert" data-testid="error-server" className="border-2 border-destructive p-3 text-sm font-semibold text-destructive">{serverError}</p>}
-          <button type="submit" disabled={submit.isPending} data-testid="button-submit" className="btn w-full text-base">{submit.isPending ? 'Saving' : 'Submit listing'}</button>
-          <p className="text-xs text-muted-foreground">Submitting saves your listing for review. {cfg?.billingAvailable ? '' : 'You will not be charged at this step.'}</p>
+          <button type="submit" disabled={submit.isPending} data-testid="button-submit" className="btn w-full text-base">{submit.isPending ? 'Saving' : gov ? 'Submit for review' : 'Continue to payment'}</button>
+          <p className="text-xs text-muted-foreground">{gov ? 'Government offices list free and are reviewed before publication.' : 'Paid plans renew annually. Complete your secure Stripe checkout, then your listing will be reviewed.'}</p>
         </form>
       </div>
     </Layout>

@@ -44,6 +44,7 @@ export interface Listing {
   indieRateDetails: string;
   website: string;
   phone: string;
+  email?: string;
 }
 
 export interface Directory {
@@ -118,12 +119,19 @@ export interface ListingInput {
   stages: ListingInputStagesItem[];
   coverage: ListingInputCoverage;
   locationId?: string;
-  /** @maxLength 500 */
-  website?: string;
-  /** @maxLength 40 */
-  phone?: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  website: string;
+  /**
+     * @minLength 1
+     * @maxLength 40
+     */
+  phone: string;
   /** @maxLength 254 */
   email: string;
+  publicEmail?: boolean;
   providerType: ListingInputProviderType;
   plan: ListingInputPlan;
   /** @maxLength 200 */
@@ -135,11 +143,100 @@ export interface Submission {
   status: string;
   paymentStatus: string;
   message: string;
+  accessToken: string;
 }
+
+export type ListingConfigBillingMode = typeof ListingConfigBillingMode[keyof typeof ListingConfigBillingMode];
+
+
+export const ListingConfigBillingMode = {
+  test: 'test',
+  live: 'live',
+  unavailable: 'unavailable',
+} as const;
 
 export interface ListingConfig {
   specialActive: boolean;
   billingAvailable: boolean;
+  billingMode?: ListingConfigBillingMode;
+}
+
+export interface AdminSession {
+  authenticated: boolean;
+  configured: boolean;
+}
+
+export interface AdminLogin {
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
+  password: string;
+}
+
+export interface PaymentAccess {
+  /**
+     * @minLength 32
+     * @maxLength 128
+     */
+  token: string;
+}
+
+export interface CheckoutLink {
+  url: string;
+}
+
+export interface SubmissionState {
+  reference: string;
+  name: string;
+  plan: string;
+  status: string;
+  paymentStatus: string;
+  foundingPriceLocked: boolean;
+  checkoutAvailable: boolean;
+  billingMode: string;
+}
+
+export type ListingStatusInputStatus = typeof ListingStatusInputStatus[keyof typeof ListingStatusInputStatus];
+
+
+export const ListingStatusInputStatus = {
+  Pending: 'Pending',
+  Live: 'Live',
+  Rejected: 'Rejected',
+} as const;
+
+export interface ListingStatusInput {
+  status: ListingStatusInputStatus;
+}
+
+export type AdminListing = Listing & ({
+  reference: string;
+  email: string;
+  publicEmail: boolean;
+  /** @nullable */
+  locationId: string | null;
+  plan: string;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+  foundingPriceLocked: boolean;
+  /** @nullable */
+  stripeSubscriptionId: string | null;
+});
+
+export interface PlanPaymentLink {
+  plan: string;
+  url: string;
+}
+
+export interface AdminDashboard {
+  listings: AdminListing[];
+  liveCount: number;
+  paidCount: number;
+  yearlyRevenue: number;
+  billingMode: string;
+  paymentLinks: PlanPaymentLink[];
 }
 
 export interface HealthStatus {

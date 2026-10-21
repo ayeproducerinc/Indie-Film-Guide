@@ -11,4 +11,5 @@ export interface Submission {
   status: string;
   paymentStatus: string;
   message: string;
+  accessToken: string;
 }

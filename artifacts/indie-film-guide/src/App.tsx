@@ -10,6 +10,7 @@ import GetListed from '@/pages/get-listed';
 import Submitted from '@/pages/submitted';
 import About from '@/pages/about';
 import Terms from '@/pages/terms';
+import Admin from '@/pages/admin';
 import {
   Route,
   Switch,
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/submitted" component={Submitted} />
         <Route path="/about" component={About} />
         <Route path="/terms" component={Terms} />
+        <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>

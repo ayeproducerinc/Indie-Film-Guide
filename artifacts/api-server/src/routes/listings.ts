@@ -1,16 +1,18 @@
 import { Router, type IRouter } from "express";
-import { randomUUID } from "node:crypto";
-import { and, asc, eq, or } from "drizzle-orm";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { and, asc, eq, isNull, or, sql } from "drizzle-orm";
 import { db, listingsTable } from "@workspace/db";
 import {
-  GetDirectoryResponse, GetListingParams, GetListingResponse,
-  GetLocationsResponse, GetListingConfigResponse, SubmitListingBody, SubmitListingResponse,
+  GetDirectoryResponse, GetListingParams, GetListingResponse, GetLocationsResponse,
+  GetListingConfigResponse, SubmitListingResponse, GetSubmissionStatusBody,
+  GetSubmissionStatusResponse, CreateListingCheckoutResponse,
 } from "@workspace/api-zod";
 import locations from "../data/georgia-locations.json";
-import { categories, stages, listingConfig } from "../lib/listing-config";
+import { billingState, categories, stages, listingConfig } from "../lib/listing-config";
+import { validateListing } from "../lib/listing-validation";
+import { beginCheckout } from "../lib/billing";
 
 const router: IRouter = Router();
-const locationMap = new Map(locations.map(location => [location.id, location]));
 const publicFields = {
   id: listingsTable.id, slug: listingsTable.slug, name: listingsTable.name,
   description: listingsTable.description, category: listingsTable.category,
@@ -18,13 +20,20 @@ const publicFields = {
   city: listingsTable.city, state: listingsTable.state, website: listingsTable.website,
   phone: listingsTable.phone, providerType: listingsTable.providerType,
   indieRate: listingsTable.indieRate, indieRateDetails: listingsTable.indieRateDetails,
+  email: sql<string | null>`CASE WHEN ${listingsTable.publicEmail} THEN ${listingsTable.email} ELSE NULL END`,
 };
-const visible = and(eq(listingsTable.status, "Live"),
+const visible = and(isNull(listingsTable.deletedAt), eq(listingsTable.status, "Live"),
   or(eq(listingsTable.paymentStatus, "Paid"),
     and(eq(listingsTable.providerType, "Government"), eq(listingsTable.plan, "Government"), eq(listingsTable.paymentStatus, "Not required"))));
+function publicView<T extends { email: string | null }>(row: T) {
+  const { email, ...rest } = row;
+  return email ? { ...rest, email } : rest;
+}
+const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
 router.get("/directory", async (_req, res): Promise<void> => {
-  const listings = await db.select(publicFields).from(listingsTable).where(visible).orderBy(asc(listingsTable.name));
+  const rows = await db.select(publicFields).from(listingsTable).where(visible).orderBy(asc(listingsTable.name));
+  const listings = rows.map(publicView);
   const cities = [...new Set(listings.filter(l => l.coverage === "City").map(l => l.city))].sort((a, b) => a.localeCompare(b));
   res.json(GetDirectoryResponse.parse({ listings, cities, categories, stages }));
 });
@@ -34,74 +43,63 @@ router.get("/listings/:slug", async (req, res): Promise<void> => {
   if (!params.success) { res.status(400).json({ error: "Invalid listing URL." }); return; }
   const [listing] = await db.select(publicFields).from(listingsTable).where(and(visible, eq(listingsTable.slug, params.data.slug)));
   if (!listing) { res.status(404).json({ error: "Listing not found." }); return; }
-  res.json(GetListingResponse.parse(listing));
+  res.json(GetListingResponse.parse(publicView(listing)));
 });
-
 router.get("/locations", (_req, res): void => {
   res.setHeader("Cache-Control", "public, max-age=86400");
   res.json(GetLocationsResponse.parse(locations));
 });
-
 router.get("/listing-config", (_req, res): void => {
   res.json(GetListingConfigResponse.parse(listingConfig()));
 });
-
 router.post("/submissions", async (req, res): Promise<void> => {
-  const parsed = SubmitListingBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Please check the highlighted fields.", fields: parsed.error.flatten().fieldErrors });
-    return;
-  }
-  const input = parsed.data;
-  const fail = (field: string, message: string) => { res.status(400).json({ error: message, fields: { [field]: [message] } }); };
-  const name = input.name.trim();
-  const description = input.description.trim();
-  if (!name) { fail("name", "Enter your business name."); return; }
-  if (!description) { fail("description", "Describe what you offer."); return; }
-  const location = input.locationId ? locationMap.get(input.locationId) : undefined;
-  if (input.coverage === "City" && !location) { fail("locationId", "Choose a city from the Georgia suggestions."); return; }
-  if ((input.providerType === "Government") !== (input.plan === "Government")) {
-    fail("plan", "The free plan is available only to government offices."); return;
-  }
-  const indieRateDetails = input.plan === "Indie Partner" ? input.indieRateDetails?.trim() ?? "" : "";
-  if (input.plan === "Indie Partner" && !indieRateDetails) { fail("indieRateDetails", "Describe your indie filmmaker rate."); return; }
-  let website = input.website?.trim() ?? "";
-  if (website) {
-    if (!/^[a-z][a-z0-9+.-]*:/i.test(website)) website = `https://${website}`;
-    try {
-      const url = new URL(website);
-      if (!["http:", "https:"].includes(url.protocol) || !url.hostname.includes(".") || url.username || url.password) throw new Error("Invalid URL");
-      website = url.toString();
-    } catch { fail("website", "Enter a valid website, such as https://example.com."); return; }
-  }
-  let phone = input.phone?.trim() ?? "";
-  if (phone) {
-    if (!/^[+\d\s().-]+$/.test(phone)) { fail("phone", "Enter a valid U.S. phone number."); return; }
-    const digits = phone.replace(/\D/g, "");
-    if (digits.length === 10) phone = `+1${digits}`;
-    else if (digits.length === 11 && digits.startsWith("1")) phone = `+${digits}`;
-    else { fail("phone", "Enter a 10-digit U.S. phone number."); return; }
-  }
+  const values = validateListing(req.body);
   const reference = randomUUID();
-  const slugBase = name.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "provider";
-  const government = input.plan === "Government";
+  const accessToken = randomBytes(32).toString("hex");
+  const slugBase = values.name.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "provider";
+  const paymentStatus = values.plan === "Government" ? "Not required" : "Unpaid";
   await db.insert(listingsTable).values({
-    reference, slug: `${slugBase}-${reference.slice(0, 8)}`, name, description,
-    category: input.category, stages: [...new Set(input.stages)], coverage: input.coverage,
-    locationId: input.coverage === "City" ? location!.id : null,
-    city: input.coverage === "City" ? location!.city : input.coverage,
-    state: input.coverage === "Nationwide" ? "" : "GA",
-    website, phone, email: input.email.trim().toLowerCase(),
-    providerType: input.providerType, indieRate: input.plan === "Indie Partner",
-    indieRateDetails, plan: input.plan, status: "Pending",
-    paymentStatus: government ? "Not required" : "Unpaid",
-    foundingPriceLocked: listingConfig().specialActive,
+    ...values, reference, accessTokenHash: hashToken(accessToken),
+    slug: `${slugBase}-${reference.slice(0, 8)}`, status: "Pending",
+    paymentStatus, foundingPriceLocked: values.plan !== "Government" && listingConfig().specialActive,
   });
   res.status(201).json(SubmitListingResponse.parse({
-    reference, status: "Pending", paymentStatus: government ? "Not required" : "Unpaid",
-    message: government ? "Your listing has been submitted for review. It is not public yet."
-      : "Your listing is saved but not paid yet. Online payments are not enabled yet. You have not been charged, and your listing is not public.",
+    reference, accessToken, status: "Pending", paymentStatus,
+    message: values.plan === "Government" ? "Your listing has been submitted for review."
+      : "Your listing is saved. Complete your annual subscription payment before review.",
   }));
 });
-
+router.post("/submissions/:reference/status", async (req, res): Promise<void> => {
+  const body = GetSubmissionStatusBody.safeParse(req.body);
+  if (!body.success || typeof req.params.reference !== "string") { res.status(400).json({ error: "Invalid submission access." }); return; }
+  const [listing] = await db.select().from(listingsTable).where(and(
+    eq(listingsTable.reference, req.params.reference), eq(listingsTable.accessTokenHash, hashToken(body.data.token)), isNull(listingsTable.deletedAt),
+  ));
+  if (!listing) { res.status(404).json({ error: "Submission not found on this device." }); return; }
+  res.json(GetSubmissionStatusResponse.parse({
+    reference: listing.reference, name: listing.name, plan: listing.plan,
+    status: listing.status, paymentStatus: listing.paymentStatus,
+    foundingPriceLocked: listing.foundingPriceLocked,
+    checkoutAvailable: billingState.available && listing.plan !== "Government" && !listing.stripeSubscriptionId && listing.paymentStatus !== "Paid",
+    billingMode: billingState.mode,
+  }));
+});
+router.post("/submissions/:reference/checkout", async (req, res): Promise<void> => {
+  const body = GetSubmissionStatusBody.safeParse(req.body);
+  if (!body.success || typeof req.params.reference !== "string") { res.status(400).json({ error: "Invalid submission access." }); return; }
+  const [listing] = await db.select({ reference: listingsTable.reference }).from(listingsTable).where(and(
+    eq(listingsTable.reference, req.params.reference), eq(listingsTable.accessTokenHash, hashToken(body.data.token)), isNull(listingsTable.deletedAt),
+  ));
+  if (!listing) { res.status(404).json({ error: "Submission not found." }); return; }
+  // Use the deployed request origin. Never accept an arbitrary return URL from a client.
+  const host = req.get("x-forwarded-host")?.split(",")[0]?.trim() || req.get("host");
+  if (!host || !/^[a-z0-9.:-]+$/i.test(host)) { res.status(400).json({ error: "Invalid application host." }); return; }
+  const protocol = req.get("x-forwarded-proto") === "https" || req.secure ? "https" : "http";
+  try {
+    const url = await beginCheckout(listing.reference, `${protocol}://${host}`);
+    res.json(CreateListingCheckoutResponse.parse({ url }));
+  } catch (error) {
+    res.status(billingState.available ? 409 : 503).json({ error: error instanceof Error ? error.message : "Checkout could not be opened." });
+  }
+});
 export default router;

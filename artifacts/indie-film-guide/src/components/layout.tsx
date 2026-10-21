@@ -9,16 +9,17 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-[100dvh] flex flex-col">
       <header className="sticky top-0 z-30 border-b-2 border-foreground bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 h-14">
-          <Link href="/" data-testid="link-home" className="font-display text-2xl text-foreground flex items-center gap-2">
-            <span className="inline-block h-5 w-5 bg-primary" aria-hidden="true" />
+          <Link href="/" data-testid="link-home" className="font-display text-xl sm:text-2xl text-foreground flex items-center gap-2">
+            <span className="hidden sm:inline-block h-5 w-5 bg-primary" aria-hidden="true" />
             Indie Film Guide
           </Link>
           <nav className="flex items-center gap-1" aria-label="Main">
             <Link href="/about" data-testid="link-about-nav" className={`${navCls('/about')} hidden sm:block`}>About</Link>
+            <Link href="/admin" data-testid="link-admin-nav" className={navCls('/admin')}>Admin</Link>
             <Link
               href="/get-listed"
               data-testid="button-get-listed-header"
-              className="press bg-primary text-primary-foreground px-4 py-2 text-sm font-bold uppercase tracking-wide hover:opacity-90 transition"
+              className="press bg-primary text-primary-foreground px-3 py-2 text-sm font-bold uppercase tracking-wide hover:opacity-90 transition whitespace-nowrap"
             >
               Get Listed
             </Link>
@@ -30,11 +31,11 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-5xl px-4 py-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-display text-2xl">Indie Film Guide</p>
-            <p className="text-sm opacity-70">Free for filmmakers. Georgia.</p>
           </div>
           <nav className="flex gap-5 text-sm font-semibold" aria-label="Footer">
             <Link href="/about" data-testid="link-about" className="py-2 underline-offset-4 hover:underline">About</Link>
             <Link href="/terms" data-testid="link-terms" className="py-2 underline-offset-4 hover:underline">Terms</Link>
+             <Link href="/admin" className="py-2 underline-offset-4 hover:underline">Admin</Link>
             <Link href="/get-listed" data-testid="link-get-listed-footer" className="py-2 underline-offset-4 hover:underline">Get Listed</Link>
           </nav>
         </div>

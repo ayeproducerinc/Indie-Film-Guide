@@ -27,12 +27,19 @@ export interface ListingInput {
   stages: ListingInputStagesItem[];
   coverage: ListingInputCoverage;
   locationId?: string;
-  /** @maxLength 500 */
-  website?: string;
-  /** @maxLength 40 */
-  phone?: string;
+  /**
+     * @minLength 1
+     * @maxLength 500
+     */
+  website: string;
+  /**
+     * @minLength 1
+     * @maxLength 40
+     */
+  phone: string;
   /** @maxLength 254 */
   email: string;
+  publicEmail?: boolean;
   providerType: ListingInputProviderType;
   plan: ListingInputPlan;
   /** @maxLength 200 */

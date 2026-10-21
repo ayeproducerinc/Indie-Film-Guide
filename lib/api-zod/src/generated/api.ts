@@ -8,6 +8,306 @@
 import * as zod from 'zod';
 
 
+export const GetAdminSessionResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "configured": zod.boolean()
+})
+
+
+export const loginAdminBodyPasswordMax = 1000;
+
+
+
+export const LoginAdminBody = zod.object({
+  "password": zod.string().min(1).max(loginAdminBodyPasswordMax)
+})
+
+export const LoginAdminResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "configured": zod.boolean()
+})
+
+
+export const LogoutAdminResponse = zod.void()
+
+
+export const GetAdminDashboardResponse = zod.object({
+  "listings": zod.array(zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "stages": zod.array(zod.string()),
+  "city": zod.string(),
+  "state": zod.string(),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "indieRate": zod.boolean(),
+  "indieRateDetails": zod.string(),
+  "website": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+}).and(zod.object({
+  "reference": zod.string(),
+  "email": zod.string(),
+  "publicEmail": zod.boolean(),
+  "locationId": zod.string().nullable(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "paymentStatus": zod.string(),
+  "createdAt": zod.string(),
+  "foundingPriceLocked": zod.boolean(),
+  "stripeSubscriptionId": zod.string().nullable()
+}))),
+  "liveCount": zod.number().int(),
+  "paidCount": zod.number().int(),
+  "yearlyRevenue": zod.number(),
+  "billingMode": zod.string(),
+  "paymentLinks": zod.array(zod.object({
+  "plan": zod.string(),
+  "url": zod.string()
+}))
+})
+
+
+export const addAdminListingBodyNameMax = 160;
+
+export const addAdminListingBodyDescriptionMax = 200;
+
+
+export const addAdminListingBodyWebsiteMax = 500;
+
+export const addAdminListingBodyPhoneMax = 40;
+
+export const addAdminListingBodyEmailMax = 254;
+
+export const addAdminListingBodyPublicEmailDefault = false;
+export const addAdminListingBodyIndieRateDetailsMax = 200;
+
+
+
+export const AddAdminListingBody = zod.object({
+  "name": zod.string().min(1).max(addAdminListingBodyNameMax),
+  "description": zod.string().min(1).max(addAdminListingBodyDescriptionMax),
+  "category": zod.enum(['Locations', 'Equipment & Props', 'Talent, Crew & On-Set', 'Business Services & Licensing', 'Funding & Banking', 'Distribution & Marketing']),
+  "stages": zod.array(zod.enum(['Idea', 'Production', 'Post-Production', 'Distribution'])).min(1),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "locationId": zod.string().optional(),
+  "website": zod.string().min(1).max(addAdminListingBodyWebsiteMax),
+  "phone": zod.string().min(1).max(addAdminListingBodyPhoneMax),
+  "email": zod.string().email().max(addAdminListingBodyEmailMax),
+  "publicEmail": zod.boolean().default(addAdminListingBodyPublicEmailDefault),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "plan": zod.enum(['Indie Partner', 'Standard', 'Government']),
+  "indieRateDetails": zod.string().max(addAdminListingBodyIndieRateDetailsMax).optional()
+})
+
+export const AddAdminListingResponse = zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "stages": zod.array(zod.string()),
+  "city": zod.string(),
+  "state": zod.string(),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "indieRate": zod.boolean(),
+  "indieRateDetails": zod.string(),
+  "website": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+}).and(zod.object({
+  "reference": zod.string(),
+  "email": zod.string(),
+  "publicEmail": zod.boolean(),
+  "locationId": zod.string().nullable(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "paymentStatus": zod.string(),
+  "createdAt": zod.string(),
+  "foundingPriceLocked": zod.boolean(),
+  "stripeSubscriptionId": zod.string().nullable()
+}))
+
+
+
+
+
+export const UpdateAdminListingParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateAdminListingBodyNameMax = 160;
+
+export const updateAdminListingBodyDescriptionMax = 200;
+
+
+export const updateAdminListingBodyWebsiteMax = 500;
+
+export const updateAdminListingBodyPhoneMax = 40;
+
+export const updateAdminListingBodyEmailMax = 254;
+
+export const updateAdminListingBodyPublicEmailDefault = false;
+export const updateAdminListingBodyIndieRateDetailsMax = 200;
+
+
+
+export const UpdateAdminListingBody = zod.object({
+  "name": zod.string().min(1).max(updateAdminListingBodyNameMax),
+  "description": zod.string().min(1).max(updateAdminListingBodyDescriptionMax),
+  "category": zod.enum(['Locations', 'Equipment & Props', 'Talent, Crew & On-Set', 'Business Services & Licensing', 'Funding & Banking', 'Distribution & Marketing']),
+  "stages": zod.array(zod.enum(['Idea', 'Production', 'Post-Production', 'Distribution'])).min(1),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "locationId": zod.string().optional(),
+  "website": zod.string().min(1).max(updateAdminListingBodyWebsiteMax),
+  "phone": zod.string().min(1).max(updateAdminListingBodyPhoneMax),
+  "email": zod.string().email().max(updateAdminListingBodyEmailMax),
+  "publicEmail": zod.boolean().default(updateAdminListingBodyPublicEmailDefault),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "plan": zod.enum(['Indie Partner', 'Standard', 'Government']),
+  "indieRateDetails": zod.string().max(updateAdminListingBodyIndieRateDetailsMax).optional()
+})
+
+export const UpdateAdminListingResponse = zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "stages": zod.array(zod.string()),
+  "city": zod.string(),
+  "state": zod.string(),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "indieRate": zod.boolean(),
+  "indieRateDetails": zod.string(),
+  "website": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+}).and(zod.object({
+  "reference": zod.string(),
+  "email": zod.string(),
+  "publicEmail": zod.boolean(),
+  "locationId": zod.string().nullable(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "paymentStatus": zod.string(),
+  "createdAt": zod.string(),
+  "foundingPriceLocked": zod.boolean(),
+  "stripeSubscriptionId": zod.string().nullable()
+}))
+
+
+
+
+
+export const DeleteAdminListingParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteAdminListingResponse = zod.void()
+
+
+
+
+
+export const SetAdminListingStatusParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const SetAdminListingStatusBody = zod.object({
+  "status": zod.enum(['Pending', 'Live', 'Rejected'])
+})
+
+export const SetAdminListingStatusResponse = zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "stages": zod.array(zod.string()),
+  "city": zod.string(),
+  "state": zod.string(),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "indieRate": zod.boolean(),
+  "indieRateDetails": zod.string(),
+  "website": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+}).and(zod.object({
+  "reference": zod.string(),
+  "email": zod.string(),
+  "publicEmail": zod.boolean(),
+  "locationId": zod.string().nullable(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "paymentStatus": zod.string(),
+  "createdAt": zod.string(),
+  "foundingPriceLocked": zod.boolean(),
+  "stripeSubscriptionId": zod.string().nullable()
+}))
+
+
+
+
+
+export const CreateAdminListingCheckoutParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const CreateAdminListingCheckoutResponse = zod.object({
+  "url": zod.string()
+})
+
+
+export const GetSubmissionStatusParams = zod.object({
+  "reference": zod.coerce.string()
+})
+
+export const getSubmissionStatusBodyTokenMin = 32;
+export const getSubmissionStatusBodyTokenMax = 128;
+
+
+
+export const GetSubmissionStatusBody = zod.object({
+  "token": zod.string().min(getSubmissionStatusBodyTokenMin).max(getSubmissionStatusBodyTokenMax)
+})
+
+export const GetSubmissionStatusResponse = zod.object({
+  "reference": zod.string(),
+  "name": zod.string(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "paymentStatus": zod.string(),
+  "foundingPriceLocked": zod.boolean(),
+  "checkoutAvailable": zod.boolean(),
+  "billingMode": zod.string()
+})
+
+
+export const CreateListingCheckoutParams = zod.object({
+  "reference": zod.coerce.string()
+})
+
+export const createListingCheckoutBodyTokenMin = 32;
+export const createListingCheckoutBodyTokenMax = 128;
+
+
+
+export const CreateListingCheckoutBody = zod.object({
+  "token": zod.string().min(createListingCheckoutBodyTokenMin).max(createListingCheckoutBodyTokenMax)
+})
+
+export const CreateListingCheckoutResponse = zod.object({
+  "url": zod.string()
+})
+
+
 export const GetDirectoryResponse = zod.object({
   "listings": zod.array(zod.object({
   "id": zod.number().int(),
@@ -23,7 +323,8 @@ export const GetDirectoryResponse = zod.object({
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
   "website": zod.string(),
-  "phone": zod.string()
+  "phone": zod.string(),
+  "email": zod.string().optional()
 })),
   "cities": zod.array(zod.string()),
   "categories": zod.array(zod.string()),
@@ -49,7 +350,8 @@ export const GetListingResponse = zod.object({
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
   "website": zod.string(),
-  "phone": zod.string()
+  "phone": zod.string(),
+  "email": zod.string().optional()
 })
 
 
@@ -72,6 +374,7 @@ export const submitListingBodyPhoneMax = 40;
 
 export const submitListingBodyEmailMax = 254;
 
+export const submitListingBodyPublicEmailDefault = false;
 export const submitListingBodyIndieRateDetailsMax = 200;
 
 
@@ -83,9 +386,10 @@ export const SubmitListingBody = zod.object({
   "stages": zod.array(zod.enum(['Idea', 'Production', 'Post-Production', 'Distribution'])).min(1),
   "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
   "locationId": zod.string().optional(),
-  "website": zod.string().max(submitListingBodyWebsiteMax).optional(),
-  "phone": zod.string().max(submitListingBodyPhoneMax).optional(),
+  "website": zod.string().min(1).max(submitListingBodyWebsiteMax),
+  "phone": zod.string().min(1).max(submitListingBodyPhoneMax),
   "email": zod.string().email().max(submitListingBodyEmailMax),
+  "publicEmail": zod.boolean().default(submitListingBodyPublicEmailDefault),
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
   "plan": zod.enum(['Indie Partner', 'Standard', 'Government']),
   "indieRateDetails": zod.string().max(submitListingBodyIndieRateDetailsMax).optional()
@@ -95,13 +399,15 @@ export const SubmitListingResponse = zod.object({
   "reference": zod.string(),
   "status": zod.string(),
   "paymentStatus": zod.string(),
-  "message": zod.string()
+  "message": zod.string(),
+  "accessToken": zod.string()
 })
 
 
 export const GetListingConfigResponse = zod.object({
   "specialActive": zod.boolean(),
-  "billingAvailable": zod.boolean()
+  "billingAvailable": zod.boolean(),
+  "billingMode": zod.enum(['test', 'live', 'unavailable']).optional()
 })
 
 

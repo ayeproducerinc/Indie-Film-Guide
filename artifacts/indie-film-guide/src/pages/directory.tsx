@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
-import { useGetDirectory } from '@workspace/api-client-react';
+import { useGetDirectory, getGetDirectoryQueryKey } from '@workspace/api-client-react';
 import { ArrowRight, Phone, Search } from 'lucide-react';
 import { Layout, Badge } from '@/components/layout';
 import { CATEGORIES, STAGES, placeLabel, shortCategory } from '@/lib/constants';
@@ -8,7 +8,7 @@ import { useMeta } from '@/lib/use-meta';
 
 export default function Directory() {
   useMeta('Indie Film Guide | Georgia resources for independent filmmakers', 'Free directory of locations, gear, crew, legal, funding and distribution resources for independent filmmakers in Georgia.');
-  const { data, isLoading, isError, refetch } = useGetDirectory();
+  const { data, isLoading, isError, refetch } = useGetDirectory({ query: { queryKey: getGetDirectoryQueryKey(), staleTime: 0, refetchInterval: 30000 } });
   const [q, setQ] = useState('');
   const [city, setCity] = useState('');
   const [cat, setCat] = useState('');
@@ -35,12 +35,11 @@ export default function Directory() {
     <Layout>
       <section className="border-b border-border">
         <div className="mx-auto max-w-5xl px-4 pt-10 pb-8 rise">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Georgia / Free for filmmakers</p>
           <h1 className="font-display mt-3 text-[3.2rem] sm:text-7xl text-balance" data-testid="text-headline">
             Every indie film resource in <span className="text-primary">Georgia</span>, in one place.
           </h1>
           <p className="mt-4 max-w-xl text-base text-muted-foreground">
-            Locations, gear, crew, legal, funding and distribution, sorted by where your project is. Free for filmmakers.
+            Locations, gear, crew, legal, funding and distribution, sorted by where your project is.
           </p>
           <div className="relative mt-6">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
@@ -48,7 +47,7 @@ export default function Directory() {
               type="search" aria-label="Search resources" data-testid="input-search"
               value={q} onChange={(e) => setQ(e.target.value)}
               placeholder="Search by name or what they offer"
-              className="field pl-10"
+              className="field field-search"
             />
           </div>
         </div>

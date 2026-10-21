@@ -11,7 +11,7 @@ export default function About() {
         <p className="mt-5 text-lg leading-relaxed">
           Indie Film Guide is a free reference for independent filmmakers in Georgia. It collects locations, equipment, crew, legal and licensing help, funding and distribution services in one place, sorted by where your project is and what stage it is at. Filmmakers never need an account. Providers pay a yearly fee to be listed, and government offices list free.
         </p>
-        <p className="mt-4 text-muted-foreground">Listings are reviewed before they go live, and provider emails are never shown publicly.</p>
+        <p className="mt-4 text-muted-foreground">Listings are reviewed before they go live. Provider emails are private unless the provider chooses to list their email publicly.</p>
         <Link href="/get-listed" className="btn mt-6">Get Listed</Link>
       </div>
     </Layout>

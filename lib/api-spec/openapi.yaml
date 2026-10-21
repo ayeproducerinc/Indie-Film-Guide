@@ -11,6 +11,138 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /admin/session:
+    get:
+      operationId: getAdminSession
+      responses:
+        "200":
+          description: Current admin session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminSession" }
+    post:
+      operationId: loginAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminLogin" }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminSession" }
+    delete:
+      operationId: logoutAdmin
+      responses:
+        "204": { description: Signed out }
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      responses:
+        "200":
+          description: Private listings and summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminDashboard" }
+  /admin/listings:
+    post:
+      operationId: addAdminListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingInput" }
+      responses:
+        "201":
+          description: Added pending listing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminListing" }
+  /admin/listings/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    put:
+      operationId: updateAdminListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingInput" }
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminListing" }
+    delete:
+      operationId: deleteAdminListing
+      responses:
+        "204": { description: Deleted listing }
+  /admin/listings/{id}/status:
+    post:
+      operationId: setAdminListingStatus
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingStatusInput" }
+      responses:
+        "200":
+          description: Updated review status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminListing" }
+  /admin/listings/{id}/checkout:
+    post:
+      operationId: createAdminListingCheckout
+      tags: [admin]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        "200":
+          description: Listing-specific Stripe checkout link
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutLink" }
+  /submissions/{reference}/status:
+    post:
+      operationId: getSubmissionStatus
+      parameters:
+        - { name: reference, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PaymentAccess" }
+      responses:
+        "200":
+          description: Current saved submission state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmissionState" }
+  /submissions/{reference}/checkout:
+    post:
+      operationId: createListingCheckout
+      parameters:
+        - { name: reference, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PaymentAccess" }
+      responses:
+        "200":
+          description: Stripe checkout URL
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutLink" }
   /directory:
     get:
       operationId: getDirectory
@@ -28,7 +160,7 @@ paths:
         - { name: slug, in: path, required: true, schema: { type: string } }
       responses:
         "200":
-          description: Public listing without email
+          description: Public listing with email only when consented
           content:
             application/json:
               schema:
@@ -107,6 +239,7 @@ components:
         indieRateDetails: { type: string }
         website: { type: string }
         phone: { type: string }
+        email: { type: string }
     Directory:
       type: object
       required: [listings, cities, categories, stages]
@@ -117,7 +250,7 @@ components:
         stages: { type: array, items: { type: string } }
     ListingInput:
       type: object
-      required: [name, description, category, stages, coverage, email, providerType, plan]
+      required: [name, description, category, stages, coverage, website, phone, email, providerType, plan]
       properties:
         name: { type: string, minLength: 1, maxLength: 160 }
         description: { type: string, minLength: 1, maxLength: 200 }
@@ -128,26 +261,99 @@ components:
           items: { type: string, enum: [Idea, Production, Post-Production, Distribution] }
         coverage: { type: string, enum: [City, Statewide, Nationwide] }
         locationId: { type: string }
-        website: { type: string, maxLength: 500 }
-        phone: { type: string, maxLength: 40 }
+        website: { type: string, minLength: 1, maxLength: 500 }
+        phone: { type: string, minLength: 1, maxLength: 40 }
         email: { type: string, format: email, maxLength: 254 }
+        publicEmail: { type: boolean, default: false }
         providerType: { type: string, enum: [Business, Nonprofit, Government] }
         plan: { type: string, enum: [Indie Partner, Standard, Government] }
         indieRateDetails: { type: string, maxLength: 200 }
     Submission:
       type: object
-      required: [reference, status, paymentStatus, message]
+      required: [reference, status, paymentStatus, message, accessToken]
       properties:
         reference: { type: string }
         status: { type: string }
         paymentStatus: { type: string }
         message: { type: string }
+        accessToken: { type: string }
     ListingConfig:
       type: object
       required: [specialActive, billingAvailable]
       properties:
         specialActive: { type: boolean }
         billingAvailable: { type: boolean }
+        billingMode: { type: string, enum: [test, live, unavailable] }
+    AdminSession:
+      type: object
+      required: [authenticated, configured]
+      properties:
+        authenticated: { type: boolean }
+        configured: { type: boolean }
+    AdminLogin:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string, minLength: 1, maxLength: 1000 }
+    PaymentAccess:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string, minLength: 32, maxLength: 128 }
+    CheckoutLink:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
+    SubmissionState:
+      type: object
+      required: [reference, name, plan, status, paymentStatus, foundingPriceLocked, checkoutAvailable, billingMode]
+      properties:
+        reference: { type: string }
+        name: { type: string }
+        plan: { type: string }
+        status: { type: string }
+        paymentStatus: { type: string }
+        foundingPriceLocked: { type: boolean }
+        checkoutAvailable: { type: boolean }
+        billingMode: { type: string }
+    ListingStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [Pending, Live, Rejected] }
+    AdminListing:
+      allOf:
+        - $ref: "#/components/schemas/Listing"
+        - type: object
+          required: [reference, email, publicEmail, locationId, plan, status, paymentStatus, createdAt, foundingPriceLocked, stripeSubscriptionId]
+          properties:
+            reference: { type: string }
+            email: { type: string }
+            publicEmail: { type: boolean }
+            locationId: { type: ["string", "null"] }
+            plan: { type: string }
+            status: { type: string }
+            paymentStatus: { type: string }
+            createdAt: { type: string }
+            foundingPriceLocked: { type: boolean }
+            stripeSubscriptionId: { type: ["string", "null"] }
+    AdminDashboard:
+      type: object
+      required: [listings, liveCount, paidCount, yearlyRevenue, billingMode, paymentLinks]
+      properties:
+        listings: { type: array, items: { $ref: "#/components/schemas/AdminListing" } }
+        liveCount: { type: integer }
+        paidCount: { type: integer }
+        yearlyRevenue: { type: number }
+        billingMode: { type: string }
+        paymentLinks: { type: array, items: { $ref: "#/components/schemas/PlanPaymentLink" } }
+    PlanPaymentLink:
+      type: object
+      required: [plan, url]
+      properties:
+        plan: { type: string }
+        url: { type: string }
     HealthStatus:
       type: object
       properties:

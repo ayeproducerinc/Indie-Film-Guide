@@ -1,50 +1,82 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
+import { createListingCheckout, getSubmissionStatus, type SubmissionState } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
 import { useMeta } from '@/lib/use-meta';
 
-type Saved = { reference: string; status: string; paymentStatus: string; message: string; plan: string; name: string };
-
+type Saved = { reference: string; accessToken: string };
+function readSaved(): Saved | null {
+  try {
+    const value = JSON.parse(sessionStorage.getItem('ifg-submission') ?? 'null');
+    return value?.reference && value?.accessToken ? value : null;
+  } catch { return null; }
+}
+function errorText(error: unknown) {
+  return (error as { data?: { error?: string } })?.data?.error ?? 'Could not load the latest payment status. Please try again.';
+}
 export default function Submitted() {
-  useMeta('Submission saved | Indie Film Guide', 'Your Indie Film Guide submission has been saved.');
-  let s: Saved | null = null;
-  try { s = JSON.parse(sessionStorage.getItem('ifg-submission') ?? 'null'); } catch { s = null; }
-  const gov = s?.plan === 'Government';
-  return (
-    <Layout>
-      <div className="mx-auto max-w-2xl px-4 py-10 rise">
-        {!s ? (
-          <div data-testid="status-no-submission">
-            <h1 className="font-display text-5xl">No recent submission</h1>
-            <p className="mt-3 text-muted-foreground">Nothing to confirm on this device. Start a listing below.</p>
-            <Link href="/get-listed" className="btn mt-5">Get Listed</Link>
-          </div>
-        ) : (
-          <>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Reference {s.reference}</p>
-            <h1 className="font-display mt-2 text-5xl sm:text-6xl" data-testid="text-confirmation-title">
-              {gov ? 'Saved. Pending review.' : 'Saved. Not yet paid.'}
-            </h1>
-            <div className="mt-5 border-2 border-foreground bg-card p-5 space-y-3" data-testid="text-confirmation">
-              <p><strong>{s.name}</strong> has been saved.</p>
-              {gov ? (
-                <p>Government listings are free. Your submission is saved with status Pending review, and nothing is owed.</p>
-              ) : (
-                <>
-                  <p>Your submission is saved as <strong>unpaid</strong>. Payments are not yet enabled, so you have not been charged and no payment has been taken.</p>
-                  <p>Your listing is not live. It will be reviewed once payment is available.</p>
-                </>
-              )}
-              <dl className="grid grid-cols-2 gap-2 border-t border-border pt-3 text-sm">
-                <dt className="text-muted-foreground">Status</dt><dd data-testid="text-status" className="font-semibold">{s.status}</dd>
-                <dt className="text-muted-foreground">Payment</dt><dd data-testid="text-payment-status" className="font-semibold">{gov ? 'Not required' : 'Unpaid'}</dd>
-              </dl>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <Link href="/" className="btn" data-testid="link-directory">Back to directory</Link>
-            </div>
-          </>
-        )}
-      </div>
-    </Layout>
-  );
+  useMeta('Your submission | Indie Film Guide', 'Complete payment and check the review status of your listing.');
+  const [saved] = useState(readSaved);
+  const [state, setState] = useState<SubmissionState | null>(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [url, setUrl] = useState('');
+  const cancelled = new URLSearchParams(window.location.search).get('checkout') === 'cancelled';
+  useEffect(() => {
+    if (!saved) return;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const response = await getSubmissionStatus(saved.reference, { token: saved.accessToken });
+        if (active) { setState(response); setError(''); }
+      } catch (e) { if (active) setError(errorText(e)); }
+    };
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 5000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [saved]);
+  const checkout = async () => {
+    if (!saved || busy) return;
+    setBusy(true); setError('');
+    try {
+      const result = await createListingCheckout(saved.reference, { token: saved.accessToken });
+      setUrl(result.url);
+    } catch (e) { setError(errorText(e)); }
+    finally { setBusy(false); }
+  };
+  const government = state?.plan === 'Government';
+  const paid = state?.paymentStatus === 'Paid';
+  return <Layout><div className="mx-auto max-w-2xl px-4 py-10 rise">
+    {!saved ? <>
+      <h1 className="font-display text-5xl">No recent submission</h1>
+      <p className="mt-3 text-muted-foreground">Start a listing to submit your details and choose a plan.</p>
+      <Link href="/get-listed" className="btn mt-5">Get Listed</Link>
+    </> : <>
+      <p className="break-all text-xs font-bold uppercase tracking-wider text-primary">Reference {saved.reference}</p>
+      <h1 className="font-display mt-3 text-5xl" data-testid="text-confirmation-title">
+        {!state ? 'Checking your submission' : state.status === 'Live' ? 'Your listing is live' : paid || government ? 'Submitted for review' : 'Complete your payment'}
+      </h1>
+      {state && <div className="mt-5 border-2 border-foreground bg-card p-5 space-y-3" data-testid="text-confirmation">
+        <p><strong>{state.name}</strong> is saved.</p>
+        {government ? <p>Government listings are free. Your listing will be reviewed before publication.</p>
+          : paid ? <p>Your payment is confirmed. {state.status === 'Live' ? 'Your approved listing is now in the directory.' : 'Your listing will go live after admin approval.'}</p>
+            : <><p>{state.plan}: <strong>${state.plan === 'Indie Partner' ? '199' : '499'}/year</strong>, renewing annually.</p>
+              {cancelled && <p>Checkout was cancelled. Your saved listing is ready when you want to complete payment.</p>}
+              <p>Payment must be confirmed before your listing can be approved. Returning from Stripe alone does not confirm payment.</p></>}
+        {state.status === 'Rejected' && <p>Your listing was not approved. Contact the directory administrator about its review.</p>}
+        {paid && state.foundingPriceLocked && <p>Your founding subscription price is locked for life.</p>}
+        {state.billingMode === 'test' && <p className="font-semibold">Stripe test mode — this is not live billing.</p>}
+        <dl className="grid grid-cols-2 gap-2 border-t border-border pt-3 text-sm">
+          <dt>Review status</dt><dd data-testid="text-status">{state.status}</dd>
+          <dt>Payment</dt><dd data-testid="text-payment-status">{state.paymentStatus}</dd>
+        </dl>
+        {state.checkoutAvailable && !url && <button type="button" disabled={busy} onClick={() => void checkout()} className="btn" data-testid="button-checkout">{busy ? 'Preparing checkout…' : 'Continue to secure checkout'}</button>}
+        {url && !paid && <a href={url} target="_blank" rel="noopener noreferrer" className="btn" data-testid="link-stripe-checkout">Open Stripe checkout</a>}
+        {!government && !paid && state.billingMode === 'unavailable' && <p role="status">Checkout is temporarily unavailable. Your details are saved; please try again shortly.</p>}
+        {!government && !paid && !state.checkoutAvailable && state.billingMode !== 'unavailable' && <p>We are checking your subscription payment. Please do not start another subscription.</p>}
+      </div>}
+      {error && <p role="alert" className="mt-4 text-destructive">{error}</p>}
+      <Link href="/" className="btn-outline mt-6">Back to directory</Link>
+    </>}
+  </div></Layout>;
 }
