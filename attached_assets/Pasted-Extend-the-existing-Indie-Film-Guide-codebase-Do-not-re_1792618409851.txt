@@ -1,0 +1,103 @@
+Extend the existing Indie Film Guide codebase. Do not rebuild or restyle what exists; follow the current patterns (OpenAPI spec in lib/api-spec/openapi.yaml → run codegen, Drizzle schema in lib/db/src/schema/listings.ts → db push, Express routes in artifacts/api-server/src/routes, React pages in artifacts/indie-film-guide/src/pages). Keep the existing security rules: payment is granted only by the verified Stripe webhook, never by redirects; admin approval stays separate from payment; payment never changes alphabetical order.
+
+## 1. Plans and prices
+Current plan enum: Indie Partner, Standard, Government. Add three plans:
+
+| Plan (enum value) | Provider type allowed | Price | Stripe lookup_key | Billing |
+|---|---|---|---|---|
+| Indie Partner | Business | $199/yr | ifg_indie_annual (exists) | subscription |
+| Standard | Business | $499/yr | ifg_standard_annual (exists) | subscription |
+| Lifetime Indie Partner | Business | $1,999 once | ifg_lifetime_once | one-time payment |
+| Nonprofit Indie Partner | Nonprofit | $99/yr | ifg_nonprofit_indie_annual | subscription |
+| Nonprofit Standard | Nonprofit | $199/yr | ifg_nonprofit_standard_annual | subscription |
+| Government | Government | Free | none | none |
+
+- Indie Partner, Lifetime Indie Partner and Nonprofit Indie Partner all require the indie deal fields (section 2) and set indieRate = true.
+- Update validation in artifacts/api-server/src/lib/listing-validation.ts so each plan is accepted only with its allowed provider type, with clear field errors (e.g. "Nonprofit plans are only for verified nonprofits.").
+- Put plan prices in ONE shared place (a plan table the API exposes through GET /listing-config) and remove the hardcoded 199/499 in: artifacts/indie-film-guide/src/lib/constants.ts (PRICES), pages/submitted.tsx, and the yearlyRevenue calculation in routes/admin.ts.
+
+## 2. Indie promo code (the provider's deal for filmmakers)
+The "indie rate" is now a promo code the provider gives filmmakers. Add listing columns:
+- indiePromoCode (uppercase letters/numbers, 3–20 chars, required for indie plans)
+- indieRateDetails (keep this column; relabel it "What filmmakers get", max 200)
+- indieRedeemHow (required, max 120, e.g. "Mention the code when you book")
+- indieWhoQualifies (optional, max 120, e.g. "Productions under $500K")
+Expose these in the public listing response and admin views. In the Get Listed form, use the placeholder "INDIEFILMGUIDE" for the code field, with helper text "Use a code unique to the guide so you can count bookings we send you."
+
+On pages/listing.tsx, replace the "Indie filmmaker rate" section with an "Indie filmmaker deal" box: the code in large monospace text with a "Copy code" button (navigator.clipboard, falling back to selecting the text), then What filmmakers get, How to redeem, Who qualifies. Listings without a code keep "This provider hasn't posted an indie deal." The directory's "Indie rate" badge and filter keep working off indieRate.
+
+## 3. Nonprofit verification
+- Add listing columns ein (text) and einVerified (boolean, default false).
+- When provider type is Nonprofit, the form shows "EIN, checked before approval" (required, format 12-3456789, validated server-side too).
+- Admin shows a "Nonprofit · check EIN" badge and an "EIN verified" checkbox. Block approving a Nonprofit listing until einVerified is true, with the message "Verify the EIN before approving this nonprofit."
+
+## 4. Lifetime Indie Partner
+- One-time Checkout (mode: "payment") using the ifg_lifetime_once price, created in lib/billing.ts beginCheckout alongside the existing subscription path.
+- Cap: 10 total. Count listings with plan Lifetime Indie Partner and paymentStatus Paid. Check the cap inside the checkout transaction with an advisory lock so two buyers can't take the last spot. When sold out, the API returns "All 10 lifetime spots are taken." and the form disables the option.
+- Webhook: on checkout.session.completed for a lifetime session (metadata app + listingReference, matching stripeCheckoutId), retrieve the session; if payment_status is "paid", set paymentStatus "Paid" and store the payment intent ID in a new column stripePaymentIntentId. On charge.refunded for that payment intent, set paymentStatus "Refunded" (not publicly visible).
+- Lifetime listings never renew and never go Past due.
+- Expose lifetimeSpotsLeft in GET /listing-config.
+
+## 5. Stripe setup and startup checks
+- Extend scripts/src/setup-stripe.ts with the three new prices (two yearly, one one-time) and a payment link for each, same metadata pattern (app: indie-film-guide, plan).
+- Update initializeBilling in lib/billing.ts to validate every plan's price by lookup_key: yearly plans must be USD, recurring yearly, exact amount; Lifetime must be USD, one-time, 199900. Billing stays unavailable if any plan is missing, as it does now.
+- Founding price lock: today updateFromSubscription rejects any subscription whose price isn't the current plan price. Change it to accept a set of allowed price IDs per plan, so if prices change later, locked subscriptions on the older price stay valid. Store the price ID each listing subscribed at in a new column stripePriceId.
+
+## 6. 30-day grace period
+- Add column pastDueSince (timestamp, nullable). Set it when paymentStatus first becomes "Past due"; clear it when it returns to "Paid".
+- Public visibility: treat "Past due" as visible while pastDueSince is within 30 days.
+- When a subscription ends as "Cancelled", set foundingPriceLocked = false.
+
+## 7. New Pricing page: /pricing
+- Add the route in App.tsx, and a "Pricing" link in the header nav (components/layout.tsx, beside About) and the footer.
+- Headline "Simple pricing. Free for filmmakers." Subline "Providers pay to be listed. Give indie filmmakers a promo code and pay less."
+- Plan cards from /listing-config, in this order: Indie Partner ("Most popular"), Standard, Lifetime Indie Partner (shows "X of 10 spots left", or sold out), Nonprofit (show both nonprofit prices on one card), Government.
+- Each card: price, who it's for, what's included, and a "Get listed" button to /get-listed?plan=<plan>.
+- Show "Lock in your price for life" only when specialActive is true, as the form already does.
+- FAQ below the cards:
+  1. What counts as an indie promo code? Any discount or deal for independent productions: a lower day rate, a weekday discount, a free add-on, or a budget-based package. You choose the code and the deal.
+  2. Why use a promo code? When a filmmaker uses your code, you know the booking came from the Indie Film Guide.
+  3. What does "locked for life" mean? If you sign up during the launch special, your yearly price never goes up as long as your listing renews without a break. If it's canceled, or a renewal fails and isn't fixed within 30 days, the lock ends.
+  4. What does Lifetime include? One payment, no renewals. Your listing stays up for as long as the Indie Film Guide operates, as long as it stays accurate and you keep honoring your promo code. It can't be transferred to another business. If the guide shuts down within 3 years of your purchase, you get a prorated refund.
+  5. Do nonprofits get a discount? Yes. Verified nonprofits pay $99/yr with a promo code or $199/yr without one. We check your EIN before approving.
+  6. Does paying change where I show up? No. Results are always alphabetical.
+  7. Can I change my code? Yes, anytime. Removing your code moves you to the Standard price at renewal.
+
+## 8. Get Listed form changes (pages/get-listed.tsx)
+- Turn "Provider type" from a select into three large tappable options (Business / Nonprofit / Government), matching the existing coverage buttons.
+- The plan step shows only plans allowed for the chosen provider type:
+  - Business: "Yes, I offer a promo code" → Indie Partner $199/yr or Lifetime $1,999 (a Yearly/Lifetime choice, Lifetime disabled when sold out); "No" → Standard $499/yr.
+  - Nonprofit: EIN field, then Yes → Nonprofit Indie Partner $99/yr; No → Nonprofit Standard $199/yr.
+  - Government: Government, free (current behavior).
+- Show the indie deal fields (section 2) when a Yes option is selected.
+- Add a compact pricing summary at the top with a "See full pricing" link, and a live "Your plan" line above the submit button (e.g. "Indie Partner · $199/yr").
+- Preselect from ?plan= when arriving from the Pricing page.
+
+## 9. Submitted page (pages/submitted.tsx)
+- Show the plan's real price from config, not hardcoded values.
+- Lifetime: "$1,999 one-time payment. No renewals." and, once paid, "You're listed for as long as the Indie Film Guide operates."
+- Keep all existing status handling and the "Returning from Stripe alone does not confirm payment" rule.
+
+## 10. Disclosure
+Under the directory result count (pages/directory.tsx) and in the footer, add: "Providers pay to be listed. Payment never affects the order of results."
+
+## 11. Admin
+- Plan filter and badges for the new plans, plus "Lifetime", "Nonprofit · check EIN", "Refunded", and "Past due (X days left)".
+- Totals: replace yearlyRevenue with recurring revenue (sum of active yearly plans from the shared price table), lifetime revenue, and lifetime spots left (X of 10).
+- The admin listing form (components/admin-listing-form.tsx) gets the new fields.
+
+## 12. Terms page (pages/terms.tsx): add items
+- Providers must honor their posted promo code while it's listed; listings that don't are removed without refund.
+- Founding price lock definition (FAQ 3).
+- Lifetime definition, including the 3-year prorated refund (FAQ 4).
+- Nonprofit pricing requires a valid EIN; misrepresented listings are removed without refund.
+
+## Order of work
+Do these in order, running `pnpm run typecheck` after each, and show me each step working:
+1) schema + OpenAPI + codegen (new plans and columns)
+2) validation and shared price table
+3) promo code fields and the listing deal box
+4) Get Listed form and Pricing page
+5) Stripe setup script, initializeBilling, Lifetime checkout and webhook, allowed-price lock, grace period
+6) Submitted page, Admin, disclosure, Terms
+Update replit.md with the new plans, lookup keys, and rules.
