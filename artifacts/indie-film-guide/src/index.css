@@ -363,6 +363,12 @@ html{color-scheme:light dark}
 .field{width:100%;min-height:46px;padding:.55rem .75rem;background:hsl(var(--card));color:hsl(var(--foreground));border:2px solid hsl(var(--input));border-radius:0;font-size:16px;transition:border-color .15s}
 .field:hover{border-color:hsl(var(--foreground))}
 .field.field-search{padding-left:2.75rem}
+.category-row{display:flex;flex-wrap:nowrap;gap:2px;width:100%}
+.category-button{flex:1 0 auto;min-height:44px;padding:8px 2px;white-space:nowrap;font-size:12px;line-height:1.25}
+@media(min-width:1024px){
+  .category-row{gap:6px}
+  .category-button{padding:8px;font-size:12px}
+}
 .field[aria-invalid="true"]{border-color:hsl(var(--destructive))}
 .btn,.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:.5rem 1.1rem;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.04em;border:2px solid hsl(var(--primary));transition:transform .12s,background-color .15s,opacity .15s}
 .btn{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}

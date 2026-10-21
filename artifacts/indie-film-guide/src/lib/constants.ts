@@ -1,10 +1,10 @@
 export const CATEGORIES = [
-  { value: 'Locations', short: 'Locations' },
-  { value: 'Equipment & Props', short: 'Equipment & Props' },
-  { value: 'Talent, Crew & On-Set', short: 'Talent, Crew & On-Set' },
-  { value: 'Business Services & Licensing', short: 'Business & Licensing' },
-  { value: 'Funding & Banking', short: 'Funding & Banking' },
-  { value: 'Distribution & Marketing', short: 'Distribution & Marketing' },
+  { value: 'Locations', short: 'Locations', mobile: 'Places' },
+  { value: 'Equipment & Props', short: 'Equipment & Props', mobile: 'Gear' },
+  { value: 'Talent, Crew & On-Set', short: 'Talent, Crew & On-Set', mobile: 'Crew' },
+  { value: 'Business Services & Licensing', short: 'Business & Licensing', mobile: 'Biz' },
+  { value: 'Funding & Banking', short: 'Funding & Banking', mobile: 'Funding' },
+  { value: 'Distribution & Marketing', short: 'Distribution & Marketing', mobile: 'Release' },
 ] as const;
 export const STAGES = ['Idea', 'Production', 'Post-Production', 'Distribution'] as const;
 export const PRICES = { 'Indie Partner': 199, Standard: 499, Government: 0 } as const;

@@ -38,8 +38,9 @@ export default function Directory() {
           <h1 className="font-display mt-3 text-[3.2rem] sm:text-7xl text-balance" data-testid="text-headline">
             Every indie film resource in <span className="text-primary">Georgia</span>, in one place.
           </h1>
-          <p className="mt-4 max-w-xl text-base text-muted-foreground">
-            Locations, gear, crew, legal, funding and distribution, sorted by where your project is.
+          <p className="mt-4 whitespace-nowrap text-sm lg:text-base text-muted-foreground">
+            <span className="lg:hidden">Find film resources in Georgia.</span>
+            <span className="hidden lg:inline">Locations, gear, crew, legal, funding and distribution, sorted by where your project is.</span>
           </p>
           <div className="relative mt-6">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
@@ -55,15 +56,16 @@ export default function Directory() {
 
       <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-4 py-3">
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Category">
-            {[{ value: '', short: 'All' }, ...CATEGORIES].map((c) => (
+          <div className="category-row" role="group" aria-label="Category">
+            {[{ value: '', short: 'All', mobile: 'All' }, ...CATEGORIES].map((c) => (
               <button
-                key={c.value || 'all'} type="button" aria-pressed={cat === c.value}
+                key={c.value || 'all'} type="button" aria-pressed={cat === c.value} aria-label={c.value || 'All categories'} title={c.value || 'All categories'}
                 data-testid={`chip-${c.short.toLowerCase().replace(/[^a-z]+/g, '-')}`}
                 onClick={() => setCat(c.value)}
-                className={`press min-h-11 min-w-0 max-w-full whitespace-normal break-words border-2 px-3 py-2 text-sm font-bold transition-colors ${cat === c.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card hover:border-primary'}`}
+                className={`category-button press border-2 font-bold transition-colors ${cat === c.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card hover:border-primary'}`}
               >
-                {c.short}
+                <span className="lg:hidden" aria-hidden="true">{c.mobile}</span>
+                <span className="hidden lg:inline" aria-hidden="true">{c.short}</span>
               </button>
             ))}
           </div>
