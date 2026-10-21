@@ -11,10 +11,9 @@ import { isAdmin, adminConfigured, requireAdmin, requireAdminMutation, login, lo
 import { validateListing } from "../lib/listing-validation";
 import { listingConfig, billingState, specialActive } from "../lib/listing-config";
 import { beginCheckout } from "../lib/billing";
-import { getUncachableStripeClient } from "../lib/stripe-client";
+import { deleteListing } from "../lib/delete-listing";
 import { eligible, graceDaysLeft } from "../lib/payment-policy";
 import { scheduleStandardAtRenewal, previewStandardAtRenewal } from "../lib/subscription-billing";
-import { lifetimeLock } from "../lib/lifetime-inventory";
 import { GRACE_MS } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -125,27 +124,8 @@ router.post("/admin/listings/:id/checkout", requireAdminMutation, async (req, re
 router.delete("/admin/listings/:id", requireAdminMutation, async (req, res): Promise<void> => {
   const params = DeleteAdminListingParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid listing." }); return; }
-  const result = await db.transaction(async tx => {
-    await tx.execute(lifetimeLock);
-    const [row] = await tx.select().from(listingsTable).where(and(eq(listingsTable.id, params.data.id), isNull(listingsTable.deletedAt))).for("update");
-    if (!row) return { status: 404, body: { error: "Listing not found." } };
-    if (row.stripeSubscriptionId && row.paymentStatus !== "Cancelled") {
-      return { status: 409, body: { error: "Cancel the subscription in Stripe before deleting this listing so the provider is not billed for a deleted listing." } };
-    }
-    if (row.stripeCheckoutId && !row.stripeSubscriptionId) {
-      const stripe = await getUncachableStripeClient();
-      const session = await stripe.checkout.sessions.retrieve(row.stripeCheckoutId);
-      if (session.status === "complete" && (listingRequiresSubscription(row.plan) || !["Paid", "Refunded"].includes(row.paymentStatus))) {
-        return { status: 409, body: { error: "Checkout is complete. Wait for payment processing and cancel the subscription in Stripe before deleting." } };
-      }
-      if (session.status === "open") await stripe.checkout.sessions.expire(session.id);
-    }
-    await tx.update(listingsTable).set({ deletedAt: new Date(), status: "Rejected", accessTokenHash: null,
-      ...(row.stripeCheckoutId ? { checkoutReservedUntil: null, checkoutReservationKey: null } : {}) }).where(eq(listingsTable.id, row.id));
-    return { status: 204, body: null };
-  });
+  const result = await deleteListing(params.data.id);
   if (result.status === 204) res.sendStatus(204);
   else res.status(result.status).json(result.body);
 });
 export default router;
-const listingRequiresSubscription = (plan: string) => findPlan(plan)?.billing === "yearly";

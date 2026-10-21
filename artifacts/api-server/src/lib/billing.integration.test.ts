@@ -11,6 +11,7 @@ import { beginCheckout } from "./billing";
 import { applyLifetimeSession, applyLifetimeRefund } from "./lifetime-payments";
 import { lifetimeUsage, releaseReservation, reconcileLifetimeReservations } from "./lifetime-inventory";
 import { updateFromSubscription } from "./subscription-billing";
+import { deleteListing } from "./delete-listing";
 
 const ids: number[] = [];
 const sessions = new Map<string, any>();
@@ -109,6 +110,51 @@ test("network failures retain capacity and use the same idempotency key on retry
     assert.equal(await lifetimeUsage(db), 1);
     await beginCheckout(row.reference, "https://example.invalid", uncertain);
     assert.equal(sessions.size, 1);
+  } finally { await cleanup(); }
+});
+test("admin deletion cannot orphan a lost checkout response or its late payment", async () => {
+  try {
+    const row = await insert();
+    const uncertain = { ...fake, checkout: { sessions: { ...fake.checkout.sessions,
+      create: async (...args: any[]) => {
+        await (fake.checkout.sessions.create as any)(...args);
+        throw new Error("Lost Stripe response");
+      },
+    } } } as unknown as Stripe;
+    await assert.rejects(() => beginCheckout(row.reference, "https://example.invalid", uncertain), /Lost Stripe response/);
+    const deletion = await deleteListing(row.id, fake);
+    assert.equal(deletion.status, 409);
+    assert.match(deletion.body!.error, /still being reconciled/);
+    let [saved] = await db.select().from(listingsTable).where(eq(listingsTable.id, row.id));
+    assert.equal(saved!.deletedAt, null);
+    assert.equal(saved!.stripeCheckoutId, null);
+    assert.equal(await lifetimeUsage(db), 1);
+    const session = [...sessions.values()][0];
+    session.status = "complete"; session.payment_status = "paid";
+    await assert.rejects(() => applyLifetimeSession(session, fake), /still being linked/);
+    // Recover the same session through Stripe idempotency, then deliver its
+    // retried completion. Payment attaches to an existing, reviewable listing.
+    await beginCheckout(row.reference, "https://example.invalid", fake);
+    assert.equal((await deleteListing(row.id, fake)).status, 409);
+    await applyLifetimeSession(session, fake);
+    [saved] = await db.select().from(listingsTable).where(eq(listingsTable.id, row.id));
+    assert.equal(saved!.deletedAt, null);
+    assert.equal(saved!.status, "Pending");
+    assert.equal(saved!.paymentStatus, "Paid");
+    assert.equal(await lifetimeUsage(db), 1);
+    // An explicitly deleted, already-settled lifetime listing still consumes
+    // its paid spot; deletion is not a cap bypass.
+    assert.equal((await deleteListing(row.id, fake)).status, 204);
+    assert.equal(await lifetimeUsage(db), 1);
+  } finally { await cleanup(); }
+});
+test("unresolved yearly checkouts also block deletion; expired known sessions can be removed", async () => {
+  try {
+    const row = await insert({ plan: "Indie Partner", checkoutReservationKey: randomUUID() });
+    assert.equal((await deleteListing(row.id, fake)).status, 409);
+    sessions.set("cs_safely_expired", { id: "cs_safely_expired", status: "expired" });
+    await db.update(listingsTable).set({ stripeCheckoutId: "cs_safely_expired" }).where(eq(listingsTable.id, row.id));
+    assert.equal((await deleteListing(row.id, fake)).status, 204);
   } finally { await cleanup(); }
 });
 test("historical founding price remains valid; scheduled Standard switches at renewal", async () => {
