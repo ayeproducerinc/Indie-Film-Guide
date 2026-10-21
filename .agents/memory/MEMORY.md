@@ -1,7 +1,7 @@
 - [Census place data imports](census-imports.md) — inspect Gazetteer headers before parsing; formats differ between releases.
 - [Listing contact rules](listing-product-rules.md) — website and phone are required; public email requires provider opt-in, superseding the initial brief.
 - [Payment waiver scope](payment-waiver-scope.md) — owner authorized a temporary exception for one listing, not a global bypass or later automatic charge.
-- [Single-line directory layout](directory-single-line-layout.md) — full desktop wording; shorter mobile labels and sentence; neither wraps nor scrolls sideways.
+- [Responsive directory layout](directory-single-line-layout.md) — larger multirow mobile categories now approved; desktop categories and intro stay single-line, without sideways scrolling.
 - [Business ownership](ownership.md) — Indie Film Guide is owned and operated by AYe Producer, Inc.
 - [Lifetime and deal management](lifetime-and-deal-management.md) — reserve lifetime capacity during checkout; promo-code changes remain admin-managed.
 - [Stripe SDK contracts](stripe-sdk-contract.md) — check installed resource types before copying older Checkout or subscription-schedule examples.
