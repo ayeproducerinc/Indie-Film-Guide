@@ -9,8 +9,8 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-[100dvh] flex flex-col">
       <header className="sticky top-0 z-30 border-b-2 border-foreground bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 h-14">
-          <Link href="/" data-testid="link-home" className="font-display text-xl sm:text-2xl text-foreground flex items-center gap-2">
-            <span className="hidden sm:inline-block h-5 w-5 bg-primary" aria-hidden="true" />
+          <Link href="/" data-testid="link-home" className="font-display text-xl sm:text-2xl text-foreground flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
+            <img src={`${import.meta.env.BASE_URL}favicon.svg?v=clapperboard`} className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" alt="" aria-hidden="true" width="24" height="24" />
             Indie Film Guide
           </Link>
           <nav className="flex items-center gap-1" aria-label="Main">

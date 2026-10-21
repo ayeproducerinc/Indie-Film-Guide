@@ -1,3 +1,15 @@
-<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="slate"><rect x="3" y="5" width="26" height="8" rx="1"/></clipPath>
+  </defs>
+  <rect x="3" y="14" width="26" height="16" rx="2" fill="#163DE8"/>
+  <path d="M3 14h26v6H3z" fill="#111520"/>
+  <path d="m7 14 4 6h4l-4-6H7Zm10 0 4 6h4l-4-6h-4Z" fill="#FFF"/>
+  <g transform="rotate(-12 3 13)">
+    <rect x="3" y="5" width="26" height="8" rx="1" fill="#111520"/>
+    <g clip-path="url(#slate)" fill="#FFF">
+      <path d="m5 5 5 8h5l-5-8H5Zm11 0 5 8h5l-5-8h-5Zm11 0 5 8h5l-5-8h-5Z"/>
+    </g>
+  </g>
+  <path d="M8 24h16" stroke="#FFF" stroke-width="2" stroke-linecap="round"/>
 </svg>
