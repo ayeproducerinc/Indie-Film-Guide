@@ -21,6 +21,9 @@ export interface Listing {
   providerType: ListingProviderType;
   indieRate: boolean;
   indieRateDetails: string;
+  indiePromoCode?: string;
+  indieRedeemHow?: string;
+  indieWhoQualifies?: string;
   website: string;
   phone: string;
   email?: string;

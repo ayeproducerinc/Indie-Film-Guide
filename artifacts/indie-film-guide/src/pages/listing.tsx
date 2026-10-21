@@ -4,6 +4,7 @@ import { ArrowLeft, Globe, Phone, Mail } from 'lucide-react';
 import { Layout, Badge } from '@/components/layout';
 import { placeLabel } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
+import { DealBox } from '@/components/deal-box';
 
 export default function ListingPage() {
   const { slug = '' } = useParams<{ slug: string }>();
@@ -39,12 +40,7 @@ export default function ListingPage() {
             </ul>
             <p className="mt-5 text-lg leading-relaxed" data-testid="text-description">{l.description}</p>
 
-            <section className="mt-6 border-l-4 border-primary bg-card p-4" aria-labelledby="indie-h">
-              <h2 id="indie-h" className="font-display text-2xl">Indie filmmaker rate</h2>
-              <p className="mt-1 text-muted-foreground" data-testid="text-indie-rate">
-                {l.indieRate && l.indieRateDetails ? l.indieRateDetails : "This provider hasn't posted an indie rate."}
-              </p>
-            </section>
+            <DealBox listing={l} />
 
             {(l.phone || l.website || l.email) && (
               <div className="mt-6 flex flex-wrap gap-3">

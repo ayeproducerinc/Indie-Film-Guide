@@ -6,9 +6,16 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ListingConfigBillingMode } from './listingConfigBillingMode';
+import type { PlanDefinition } from './planDefinition';
 
 export interface ListingConfig {
   specialActive: boolean;
   billingAvailable: boolean;
   billingMode?: ListingConfigBillingMode;
+  plans: PlanDefinition[];
+  /**
+     * @minimum 0
+     * @maximum 10
+     */
+  lifetimeSpotsLeft: number;
 }

@@ -44,4 +44,13 @@ export interface ListingInput {
   plan: ListingInputPlan;
   /** @maxLength 200 */
   indieRateDetails?: string;
+  /** @maxLength 20 */
+  indiePromoCode?: string;
+  /** @maxLength 120 */
+  indieRedeemHow?: string;
+  /** @maxLength 120 */
+  indieWhoQualifies?: string;
+  /** @maxLength 10 */
+  ein?: string;
+  einVerified?: boolean;
 }

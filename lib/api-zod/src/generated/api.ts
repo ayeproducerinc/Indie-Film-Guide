@@ -45,6 +45,9 @@ export const GetAdminDashboardResponse = zod.object({
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
   "website": zod.string(),
   "phone": zod.string(),
   "email": zod.string()
@@ -58,11 +61,22 @@ export const GetAdminDashboardResponse = zod.object({
   "paymentStatus": zod.string(),
   "createdAt": zod.string(),
   "foundingPriceLocked": zod.boolean(),
-  "stripeSubscriptionId": zod.string().nullable()
+  "stripeSubscriptionId": zod.string().nullable(),
+  "stripePaymentIntentId": zod.string().nullish(),
+  "stripeCheckoutId": zod.string().nullish(),
+  "stripePriceId": zod.string().nullish(),
+  "pendingPlan": zod.string().nullish(),
+  "pendingPlanAt": zod.string().nullish(),
+  "pastDueSince": zod.string().nullish(),
+  "graceDaysLeft": zod.number().int().optional(),
+  "ein": zod.string().optional(),
+  "einVerified": zod.boolean().optional()
 }))),
   "liveCount": zod.number().int(),
   "paidCount": zod.number().int(),
-  "yearlyRevenue": zod.number(),
+  "recurringRevenue": zod.number(),
+  "lifetimeRevenue": zod.number(),
+  "lifetimeSpotsLeft": zod.number().int(),
   "billingMode": zod.string(),
   "paymentLinks": zod.array(zod.object({
   "plan": zod.string(),
@@ -85,6 +99,14 @@ export const addAdminListingBodyEmailMax = 254;
 export const addAdminListingBodyPublicEmailDefault = false;
 export const addAdminListingBodyIndieRateDetailsMax = 200;
 
+export const addAdminListingBodyIndiePromoCodeMax = 20;
+
+export const addAdminListingBodyIndieRedeemHowMax = 120;
+
+export const addAdminListingBodyIndieWhoQualifiesMax = 120;
+
+export const addAdminListingBodyEinMax = 10;
+
 
 
 export const AddAdminListingBody = zod.object({
@@ -99,8 +121,13 @@ export const AddAdminListingBody = zod.object({
   "email": zod.string().email().max(addAdminListingBodyEmailMax),
   "publicEmail": zod.boolean().default(addAdminListingBodyPublicEmailDefault),
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
-  "plan": zod.enum(['Indie Partner', 'Standard', 'Government']),
-  "indieRateDetails": zod.string().max(addAdminListingBodyIndieRateDetailsMax).optional()
+  "plan": zod.enum(['Indie Partner', 'Standard', 'Lifetime Indie Partner', 'Nonprofit Indie Partner', 'Nonprofit Standard', 'Government']),
+  "indieRateDetails": zod.string().max(addAdminListingBodyIndieRateDetailsMax).optional(),
+  "indiePromoCode": zod.string().max(addAdminListingBodyIndiePromoCodeMax).optional(),
+  "indieRedeemHow": zod.string().max(addAdminListingBodyIndieRedeemHowMax).optional(),
+  "indieWhoQualifies": zod.string().max(addAdminListingBodyIndieWhoQualifiesMax).optional(),
+  "ein": zod.string().max(addAdminListingBodyEinMax).optional(),
+  "einVerified": zod.boolean().optional()
 })
 
 export const AddAdminListingResponse = zod.object({
@@ -116,6 +143,9 @@ export const AddAdminListingResponse = zod.object({
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
   "website": zod.string(),
   "phone": zod.string(),
   "email": zod.string()
@@ -129,7 +159,16 @@ export const AddAdminListingResponse = zod.object({
   "paymentStatus": zod.string(),
   "createdAt": zod.string(),
   "foundingPriceLocked": zod.boolean(),
-  "stripeSubscriptionId": zod.string().nullable()
+  "stripeSubscriptionId": zod.string().nullable(),
+  "stripePaymentIntentId": zod.string().nullish(),
+  "stripeCheckoutId": zod.string().nullish(),
+  "stripePriceId": zod.string().nullish(),
+  "pendingPlan": zod.string().nullish(),
+  "pendingPlanAt": zod.string().nullish(),
+  "pastDueSince": zod.string().nullish(),
+  "graceDaysLeft": zod.number().int().optional(),
+  "ein": zod.string().optional(),
+  "einVerified": zod.boolean().optional()
 }))
 
 
@@ -154,6 +193,14 @@ export const updateAdminListingBodyEmailMax = 254;
 export const updateAdminListingBodyPublicEmailDefault = false;
 export const updateAdminListingBodyIndieRateDetailsMax = 200;
 
+export const updateAdminListingBodyIndiePromoCodeMax = 20;
+
+export const updateAdminListingBodyIndieRedeemHowMax = 120;
+
+export const updateAdminListingBodyIndieWhoQualifiesMax = 120;
+
+export const updateAdminListingBodyEinMax = 10;
+
 
 
 export const UpdateAdminListingBody = zod.object({
@@ -168,8 +215,13 @@ export const UpdateAdminListingBody = zod.object({
   "email": zod.string().email().max(updateAdminListingBodyEmailMax),
   "publicEmail": zod.boolean().default(updateAdminListingBodyPublicEmailDefault),
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
-  "plan": zod.enum(['Indie Partner', 'Standard', 'Government']),
-  "indieRateDetails": zod.string().max(updateAdminListingBodyIndieRateDetailsMax).optional()
+  "plan": zod.enum(['Indie Partner', 'Standard', 'Lifetime Indie Partner', 'Nonprofit Indie Partner', 'Nonprofit Standard', 'Government']),
+  "indieRateDetails": zod.string().max(updateAdminListingBodyIndieRateDetailsMax).optional(),
+  "indiePromoCode": zod.string().max(updateAdminListingBodyIndiePromoCodeMax).optional(),
+  "indieRedeemHow": zod.string().max(updateAdminListingBodyIndieRedeemHowMax).optional(),
+  "indieWhoQualifies": zod.string().max(updateAdminListingBodyIndieWhoQualifiesMax).optional(),
+  "ein": zod.string().max(updateAdminListingBodyEinMax).optional(),
+  "einVerified": zod.boolean().optional()
 })
 
 export const UpdateAdminListingResponse = zod.object({
@@ -185,6 +237,9 @@ export const UpdateAdminListingResponse = zod.object({
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
   "website": zod.string(),
   "phone": zod.string(),
   "email": zod.string()
@@ -198,7 +253,16 @@ export const UpdateAdminListingResponse = zod.object({
   "paymentStatus": zod.string(),
   "createdAt": zod.string(),
   "foundingPriceLocked": zod.boolean(),
-  "stripeSubscriptionId": zod.string().nullable()
+  "stripeSubscriptionId": zod.string().nullable(),
+  "stripePaymentIntentId": zod.string().nullish(),
+  "stripeCheckoutId": zod.string().nullish(),
+  "stripePriceId": zod.string().nullish(),
+  "pendingPlan": zod.string().nullish(),
+  "pendingPlanAt": zod.string().nullish(),
+  "pastDueSince": zod.string().nullish(),
+  "graceDaysLeft": zod.number().int().optional(),
+  "ein": zod.string().optional(),
+  "einVerified": zod.boolean().optional()
 }))
 
 
@@ -236,6 +300,9 @@ export const SetAdminListingStatusResponse = zod.object({
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
   "website": zod.string(),
   "phone": zod.string(),
   "email": zod.string()
@@ -249,7 +316,16 @@ export const SetAdminListingStatusResponse = zod.object({
   "paymentStatus": zod.string(),
   "createdAt": zod.string(),
   "foundingPriceLocked": zod.boolean(),
-  "stripeSubscriptionId": zod.string().nullable()
+  "stripeSubscriptionId": zod.string().nullable(),
+  "stripePaymentIntentId": zod.string().nullish(),
+  "stripeCheckoutId": zod.string().nullish(),
+  "stripePriceId": zod.string().nullish(),
+  "pendingPlan": zod.string().nullish(),
+  "pendingPlanAt": zod.string().nullish(),
+  "pastDueSince": zod.string().nullish(),
+  "graceDaysLeft": zod.number().int().optional(),
+  "ein": zod.string().optional(),
+  "einVerified": zod.boolean().optional()
 }))
 
 
@@ -263,6 +339,77 @@ export const CreateAdminListingCheckoutParams = zod.object({
 export const CreateAdminListingCheckoutResponse = zod.object({
   "url": zod.string()
 })
+
+
+
+
+
+export const PreviewAdminRenewalPlanParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const PreviewAdminRenewalPlanResponse = zod.object({
+  "currentPlan": zod.string(),
+  "targetPlan": zod.string(),
+  "currentAmount": zod.number().int(),
+  "targetAmount": zod.number().int(),
+  "effectiveAt": zod.coerce.date()
+})
+
+
+
+
+
+export const ScheduleAdminRenewalPlanParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const ScheduleAdminRenewalPlanBody = zod.object({
+  "confirmed": zod.boolean(),
+  "expectedEffectiveAt": zod.coerce.date(),
+  "expectedAmount": zod.number().int()
+})
+
+export const ScheduleAdminRenewalPlanResponse = zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "stages": zod.array(zod.string()),
+  "city": zod.string(),
+  "state": zod.string(),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "indieRate": zod.boolean(),
+  "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
+  "website": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+}).and(zod.object({
+  "reference": zod.string(),
+  "email": zod.string(),
+  "publicEmail": zod.boolean(),
+  "locationId": zod.string().nullable(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "paymentStatus": zod.string(),
+  "createdAt": zod.string(),
+  "foundingPriceLocked": zod.boolean(),
+  "stripeSubscriptionId": zod.string().nullable(),
+  "stripePaymentIntentId": zod.string().nullish(),
+  "stripeCheckoutId": zod.string().nullish(),
+  "stripePriceId": zod.string().nullish(),
+  "pendingPlan": zod.string().nullish(),
+  "pendingPlanAt": zod.string().nullish(),
+  "pastDueSince": zod.string().nullish(),
+  "graceDaysLeft": zod.number().int().optional(),
+  "ein": zod.string().optional(),
+  "einVerified": zod.boolean().optional()
+}))
 
 
 export const GetSubmissionStatusParams = zod.object({
@@ -322,6 +469,9 @@ export const GetDirectoryResponse = zod.object({
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
   "website": zod.string(),
   "phone": zod.string(),
   "email": zod.string().optional()
@@ -349,6 +499,9 @@ export const GetListingResponse = zod.object({
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
   "indieRate": zod.boolean(),
   "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
   "website": zod.string(),
   "phone": zod.string(),
   "email": zod.string().optional()
@@ -377,6 +530,14 @@ export const submitListingBodyEmailMax = 254;
 export const submitListingBodyPublicEmailDefault = false;
 export const submitListingBodyIndieRateDetailsMax = 200;
 
+export const submitListingBodyIndiePromoCodeMax = 20;
+
+export const submitListingBodyIndieRedeemHowMax = 120;
+
+export const submitListingBodyIndieWhoQualifiesMax = 120;
+
+export const submitListingBodyEinMax = 10;
+
 
 
 export const SubmitListingBody = zod.object({
@@ -391,8 +552,13 @@ export const SubmitListingBody = zod.object({
   "email": zod.string().email().max(submitListingBodyEmailMax),
   "publicEmail": zod.boolean().default(submitListingBodyPublicEmailDefault),
   "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
-  "plan": zod.enum(['Indie Partner', 'Standard', 'Government']),
-  "indieRateDetails": zod.string().max(submitListingBodyIndieRateDetailsMax).optional()
+  "plan": zod.enum(['Indie Partner', 'Standard', 'Lifetime Indie Partner', 'Nonprofit Indie Partner', 'Nonprofit Standard', 'Government']),
+  "indieRateDetails": zod.string().max(submitListingBodyIndieRateDetailsMax).optional(),
+  "indiePromoCode": zod.string().max(submitListingBodyIndiePromoCodeMax).optional(),
+  "indieRedeemHow": zod.string().max(submitListingBodyIndieRedeemHowMax).optional(),
+  "indieWhoQualifies": zod.string().max(submitListingBodyIndieWhoQualifiesMax).optional(),
+  "ein": zod.string().max(submitListingBodyEinMax).optional(),
+  "einVerified": zod.boolean().optional()
 })
 
 export const SubmitListingResponse = zod.object({
@@ -404,10 +570,25 @@ export const SubmitListingResponse = zod.object({
 })
 
 
+export const getListingConfigResponseLifetimeSpotsLeftMin = 0;
+export const getListingConfigResponseLifetimeSpotsLeftMax = 10;
+
+
+
 export const GetListingConfigResponse = zod.object({
   "specialActive": zod.boolean(),
   "billingAvailable": zod.boolean(),
-  "billingMode": zod.enum(['test', 'live', 'unavailable']).optional()
+  "billingMode": zod.enum(['test', 'live', 'unavailable']).optional(),
+  "plans": zod.array(zod.object({
+  "name": zod.string(),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "amount": zod.number().int(),
+  "currency": zod.string(),
+  "billing": zod.enum(['yearly', 'lifetime', 'free']),
+  "indie": zod.boolean(),
+  "lookupKey": zod.string().nullable()
+})),
+  "lifetimeSpotsLeft": zod.number().int().min(getListingConfigResponseLifetimeSpotsLeftMin).max(getListingConfigResponseLifetimeSpotsLeftMax)
 })
 
 

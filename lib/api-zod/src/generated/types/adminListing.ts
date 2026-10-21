@@ -20,4 +20,19 @@ export type AdminListing = Listing & ({
   foundingPriceLocked: boolean;
   /** @nullable */
   stripeSubscriptionId: string | null;
+  /** @nullable */
+  stripePaymentIntentId?: string | null;
+  /** @nullable */
+  stripeCheckoutId?: string | null;
+  /** @nullable */
+  stripePriceId?: string | null;
+  /** @nullable */
+  pendingPlan?: string | null;
+  /** @nullable */
+  pendingPlanAt?: string | null;
+  /** @nullable */
+  pastDueSince?: string | null;
+  graceDaysLeft?: number;
+  ein?: string;
+  einVerified?: boolean;
 });

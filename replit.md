@@ -41,7 +41,25 @@ A mobile-first Georgia film-resource directory: providers submit listings, and o
 
 ## Product
 
-Public listing search, city/category/stage/rate filters, listing details, and pending provider submissions. Standard $499/year, Indie Partner $199/year, Government free. Payment never changes alphabetical ordering.
+Public listing search, city/category/stage/rate filters, listing details, and pending provider submissions. Payment never changes alphabetical ordering. `/pricing` explains all plans. Central application plan definitions live in `lib/db/src/plans.ts`; `/api/listing-config` exposes them to the UI. Stripe remains the owner of its catalog; no parallel catalog tables.
+
+| Plan | Provider | Price | Stripe lookup key |
+| --- | --- | --- | --- |
+| Indie Partner | Business | $199/year | `ifg_indie_annual` |
+| Standard | Business | $499/year | `ifg_standard_annual` |
+| Lifetime Indie Partner | Business | $1,999 once | `ifg_lifetime_once` |
+| Nonprofit Indie Partner | Nonprofit | $99/year | `ifg_nonprofit_indie_annual` |
+| Nonprofit Standard | Nonprofit | $199/year | `ifg_nonprofit_standard_annual` |
+| Government | Government | Free | none |
+
+- Indie plans require a 3–20 uppercase-alphanumeric promo code, deal ≤200 characters, redemption instructions ≤120, optional qualification ≤120. Code edits are admin-managed, with no provider account system.
+- Nonprofits require a private EIN in `12-3456789` format. Admin must verify the EIN before approval; changing the EIN resets verification.
+- Lifetime is capped at 10 paid listings plus durable in-flight reservations, including hidden/deleted paid listings. Serialize allocations with the inventory advisory lock. Reserve before Stripe requests; network failures retain capacity. Release only after authoritative expiry/reconciliation or refund. Lifetime share links MUST go through Get Listed; never create unrestricted lifetime Stripe Payment Links.
+- Lifetime payment and refund state comes only from verified webhooks and authoritative Stripe objects. One-time mode, exact amount, currency, price, metadata and saved checkout must match; a replay cannot resurrect a refunded payment. No lifetime renewals or Past due.
+- Founding yearly prices accept explicitly owned historical Stripe price IDs. A failed renewal has one 30-day grace period, not reset by repeat events; expiry is evaluated at query time. Cancellation or a failure unresolved for 30 days ends the lock, including late recovery.
+- Removing a yearly promo code requires an admin-confirmed Standard price change scheduled at renewal, with date and current/next prices shown. Preserve the current deal until renewal; never charge immediately or create a duplicate subscription. Lifetime must retain a deal.
+- `pnpm --filter @workspace/scripts run setup:stripe` creates/validates five paid prices, four annual generic links and the capacity-aware lifetime app link. All required catalog entries must be ready before enabling checkout. Generic annual links require manual attribution.
+- Lifetime is nontransferable and lasts while the guide operates, contingent on accuracy and honoring the deal. Terms promise a prorated refund if the guide shuts down within 3 years; no automated shutdown-refund system is implemented.
 
 ## User preferences
 

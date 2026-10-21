@@ -1,11 +1,29 @@
 import { useState } from 'react';
-import { useLocation } from 'wouter';
-import { useGetListingConfig, useGetLocations, useSubmitListing } from '@workspace/api-client-react';
+import { Link, useLocation } from 'wouter';
+import { getGetListingConfigQueryKey, useGetListingConfig, useGetLocations, useSubmitListing } from '@workspace/api-client-react';
 import type { ListingInput, Location } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
 import { LocationCombobox } from '@/components/location-combobox';
-import { CATEGORIES, PRICES, STAGES } from '@/lib/constants';
+import { CATEGORIES, STAGES } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
+import { DealFields } from '@/components/deal-fields';
+import { planPrice } from '@/lib/plan-price';
+
+type Offer = 'yes' | 'no' | '';
+type Cadence = 'yearly' | 'lifetime';
+const INDIE_PLANS = ['Indie Partner', 'Lifetime Indie Partner', 'Nonprofit Indie Partner'];
+function parsePlan(): { provider: ListingInput['providerType']; offer: Offer; cadence: Cadence } {
+  const p = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('plan');
+  switch (p) {
+    case 'Indie Partner': return { provider: 'Business', offer: 'yes', cadence: 'yearly' };
+    case 'Lifetime Indie Partner': return { provider: 'Business', offer: 'yes', cadence: 'lifetime' };
+    case 'Standard': return { provider: 'Business', offer: 'no', cadence: 'yearly' };
+    case 'Nonprofit Indie Partner': return { provider: 'Nonprofit', offer: 'yes', cadence: 'yearly' };
+    case 'Nonprofit Standard': return { provider: 'Nonprofit', offer: 'no', cadence: 'yearly' };
+    case 'Government': return { provider: 'Government', offer: '', cadence: 'yearly' };
+    default: return { provider: 'Business', offer: '', cadence: 'yearly' };
+  }
+}
 
 type Plan = ListingInput['plan'];
 type Errors = Partial<Record<string, string>>;
@@ -17,7 +35,7 @@ function Err({ id, msg }: { id: string; msg?: string }) {
 export default function GetListed() {
   useMeta('Get Listed | Indie Film Guide', 'Submit your business, nonprofit or government office to the Indie Film Guide directory.');
   const [, nav] = useLocation();
-  const { data: cfg } = useGetListingConfig();
+  const { data: cfg, isError: cfgError, refetch: refetchCfg } = useGetListingConfig({ query: { queryKey: getGetListingConfigQueryKey(), refetchInterval: 15000, staleTime: 0 } });
   const { data: locations = [], isLoading: locLoading, isError: locError, refetch } = useGetLocations();
   const submit = useSubmitListing();
 
@@ -31,19 +49,34 @@ export default function GetListed() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [publicEmail, setPublicEmail] = useState(false);
-  const [providerType, setProviderType] = useState<ListingInput['providerType']>('Business');
-  const [plan, setPlan] = useState<Plan | ''>('');
+  const [pre] = useState(parsePlan);
+  const [providerType, setProviderType] = useState<ListingInput['providerType']>(pre.provider);
+  const [offer, setOffer] = useState<Offer>(pre.offer);
+  const [cadence, setCadence] = useState<Cadence>(pre.cadence);
+  const [ein, setEin] = useState('');
   const [indie, setIndie] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [redeemHow, setRedeemHow] = useState('');
+  const [qualifies, setQualifies] = useState('');
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState('');
 
   const gov = providerType === 'Government';
   const toggleStage = (s: string) => setStages((c) => (c.includes(s) ? c.filter((x) => x !== s) : [...c, s]));
+  const lifetimeLeft = cfg?.lifetimeSpotsLeft ?? 0;
+  const lifetimeOpen = !!cfg && lifetimeLeft > 0;
+  const lifetimeBlocked = cadence === 'lifetime' && !!cfg && !lifetimeOpen;
+  const effCadence: Cadence = cadence === 'lifetime' && !lifetimeOpen ? 'yearly' : cadence;
+  const plan: Plan | '' = gov ? 'Government'
+    : providerType === 'Nonprofit' ? (offer === 'yes' ? 'Nonprofit Indie Partner' : offer === 'no' ? 'Nonprofit Standard' : '')
+    : offer === 'yes' ? (effCadence === 'lifetime' ? 'Lifetime Indie Partner' : 'Indie Partner') : offer === 'no' ? 'Standard' : '';
+  const isIndie = INDIE_PLANS.includes(plan);
+  const planDef = cfg?.plans.find((d) => d.name === plan);
   const pickProvider = (p: ListingInput['providerType']) => {
-    setProviderType(p);
-    if (p === 'Government') setPlan('Government');
-    else if (plan === 'Government') setPlan('');
+    setProviderType(p); setOffer(''); setCadence('yearly');
+    setErrors((e) => ({ ...e, plan: undefined, ein: undefined }));
   };
+  const planLabel = (n: string) => planPrice(cfg?.plans.find((d) => d.name === n));
 
   const validate = (): Errors => {
     const e: Errors = {};
@@ -65,10 +98,14 @@ export default function GetListed() {
     else if (!/^[+\d\s().-]+$/.test(phone) || !(phoneDigits.length === 10 || (phoneDigits.length === 11 && phoneDigits.startsWith('1')))) e.phone = 'Enter a 10-digit U.S. phone number.';
     if (!email.trim()) e.email = 'Enter your email address.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Enter a valid email address.';
-    if (!plan) e.plan = 'Choose a plan.';
-    if (gov && plan !== 'Government') e.plan = 'Government providers use the Government plan.';
-    if (!gov && plan === 'Government') e.plan = 'The Government plan is only for government providers.';
-    if (plan === 'Indie Partner' && !indie.trim()) e.indie = 'Describe your indie rate in one line.';
+    if (!cfg) e.plan = 'Pricing is unavailable right now. Retry before submitting.';
+    else if (!plan) e.plan = 'Choose a plan.';
+    else if (!planDef) e.plan = 'That plan is not available right now.';
+    else if (plan === 'Lifetime Indie Partner' && !lifetimeOpen) e.plan = 'All 10 lifetime spots are taken.';
+    if (providerType === 'Nonprofit' && !/^\d{2}-\d{7}$/.test(ein.trim())) e.ein = 'Enter your EIN as 12-3456789.';
+    if (isIndie && !indie.trim()) e.indie = 'Describe your indie rate in one line.';
+    if (isIndie && !/^[A-Z0-9]{3,20}$/.test(promoCode)) e.indiePromoCode = 'Use 3–20 uppercase letters or numbers.';
+    if (isIndie && !redeemHow.trim()) e.indieRedeemHow = 'Explain how to redeem the code.';
     return e;
   };
 
@@ -87,7 +124,8 @@ export default function GetListed() {
       ...(coverage === 'City' && loc ? { locationId: loc.id } : {}),
       website: website.trim(), phone: phone.trim(),
       email: email.trim(), publicEmail, providerType, plan: plan as Plan,
-      ...(plan === 'Indie Partner' ? { indieRateDetails: indie.trim() } : {}),
+      ...(providerType === 'Nonprofit' ? { ein: ein.trim() } : {}),
+      ...(isIndie ? { indieRateDetails: indie.trim(), indiePromoCode: promoCode, indieRedeemHow: redeemHow.trim(), indieWhoQualifies: qualifies.trim() } : {}),
     };
     submit.mutate({ data }, {
       onSuccess: (r) => {
@@ -114,6 +152,13 @@ export default function GetListed() {
       <div className="mx-auto max-w-2xl px-4 py-8">
         <h1 className="font-display mt-2 text-5xl sm:text-6xl">Get listed</h1>
         <p className="mt-3 text-muted-foreground">Listings are reviewed before they go live. Your email stays private unless you choose to list it publicly.</p>
+        <div className="mt-4 border-2 border-input bg-card p-3 text-sm" data-testid="summary-pricing">
+          {cfg ? (
+            <p><span className="font-bold">Pricing: </span>Indie Partner {planLabel('Indie Partner')}, Standard {planLabel('Standard')}, Lifetime {planLabel('Lifetime Indie Partner')}, Nonprofit {planLabel('Nonprofit Indie Partner')} or {planLabel('Nonprofit Standard')}, Government {planLabel('Government')}. <Link href="/pricing" data-testid="link-see-pricing" className="font-bold text-primary underline underline-offset-4">See full pricing</Link></p>
+          ) : cfgError ? (
+            <p role="alert" className="font-semibold text-destructive">Couldn't load pricing. <button type="button" onClick={() => refetchCfg()} data-testid="button-retry-config" className="underline">Retry</button></p>
+          ) : <p className="text-muted-foreground">Loading pricing</p>}
+        </div>
         {cfg?.specialActive && <p className="mt-3 inline-block bg-primary px-3 py-1 text-sm font-bold uppercase tracking-wide text-primary-foreground" data-testid="text-special">Lock in your price for life</p>}
         {cfg?.billingMode === 'test' && <p className="mt-3 border-l-4 border-primary bg-card p-3 text-sm">Test checkout mode. Live billing requires Stripe live-account setup.</p>}
 
@@ -199,42 +244,77 @@ export default function GetListed() {
               <span>List email publicly<span className="block font-normal text-muted-foreground">Allow visitors to contact you by email from your approved listing.</span></span>
             </label>
           </div>
-          <div>
-            <label htmlFor="field-provider" className={label}>Provider type</label>
-            <select id="field-provider" data-testid="select-provider" className="field mt-1" value={providerType} onChange={(e) => pickProvider(e.target.value as ListingInput['providerType'])}>
-              <option>Business</option><option>Nonprofit</option><option>Government</option>
-            </select>
-          </div>
-
           <fieldset>
-            <legend className={label}>Do you offer an indie filmmaker rate?</legend>
-            <div id="field-plan" tabIndex={-1} className="mt-2 grid gap-2">
-              {plans.map((p) => {
-                const price = PRICES[p.id];
-                return (
-                  <div key={p.id}>
-                  <label className={`flex cursor-pointer items-center justify-between gap-3 border-2 p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${p.disabled ? 'cursor-not-allowed opacity-50' : ''} ${plan === p.id ? 'border-primary bg-accent' : 'border-input bg-card'}`}>
-                    <input type="radio" name="plan" className="sr-only" disabled={p.disabled} data-testid={`radio-plan-${p.id.replace(' ', '-')}`} checked={plan === p.id} onChange={() => setPlan(p.id)} />
-                    <span><span className="block font-bold">{p.title}</span><span className="text-sm text-muted-foreground">{p.sub}</span></span>
-                    <span className="font-display text-3xl text-primary">{price === 0 ? 'Free' : `$${price}`}{price > 0 && <span className="text-sm">/yr</span>}</span>
-                  </label>
-                  {p.id === 'Indie Partner' && plan === 'Indie Partner' && (
-                    <div className="border-x-2 border-b-2 border-primary bg-card p-4 rise">
-                      <label htmlFor="field-indie" className={label}>Describe your indie rate</label>
-                      <input id="field-indie" required data-testid="input-indie-details" className="field mt-1" maxLength={200} value={indie} onChange={(e) => setIndie(e.target.value)} placeholder="One line, e.g. discount, waived fee, free hour" aria-invalid={!!errors.indie} aria-describedby="indie" />
-                      <Err id="indie" msg={errors.indie} />
-                    </div>
-                  )}
-                  </div>
-                );
-              })}
+            <legend className={label}>Provider type</legend>
+            <div id="field-provider" className="mt-2 grid grid-cols-3 gap-2">
+              {(['Business', 'Nonprofit', 'Government'] as const).map((p) => (
+                <label key={p} className={`press flex min-h-[44px] cursor-pointer items-center justify-center border-2 px-2 text-sm font-semibold transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${providerType === p ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card'}`}>
+                  <input type="radio" name="provider" className="sr-only" data-testid={`radio-provider-${p}`} checked={providerType === p} onChange={() => pickProvider(p)} />
+                  {p}
+                </label>
+              ))}
             </div>
-            <Err id="plan" msg={errors.plan} />
           </fieldset>
 
+          {providerType === 'Nonprofit' && (
+            <div className="rise">
+              <label htmlFor="field-ein" className={label}>EIN, checked before approval</label>
+              <input id="field-ein" data-testid="input-ein" className="field mt-1" value={ein} maxLength={10} inputMode="numeric" placeholder="12-3456789" onChange={(e) => setEin(e.target.value)} aria-invalid={!!errors.ein} aria-describedby="ein" />
+              <Err id="ein" msg={errors.ein} />
+            </div>
+          )}
+
+          {gov ? (
+            <div id="field-plan" tabIndex={-1} className="border-2 border-primary bg-accent p-4" data-testid="text-gov-plan">
+              <p className="font-bold">Government office</p>
+              <p className="text-sm text-muted-foreground">Government offices list free.</p>
+            </div>
+          ) : (
+            <fieldset>
+              <legend className={label}>{providerType === 'Nonprofit' ? 'Do you offer a promo code to indie filmmakers?' : 'Do you offer a promo code to indie filmmakers?'}</legend>
+              <div id="field-plan" tabIndex={-1} className="mt-2 grid gap-2">
+                {([
+                  { v: 'yes' as const, title: 'Yes, I offer a promo code', sub: 'You give indie filmmakers a deal', price: providerType === 'Nonprofit' ? planLabel('Nonprofit Indie Partner') : planLabel(effCadence === 'lifetime' ? 'Lifetime Indie Partner' : 'Indie Partner') },
+                  { v: 'no' as const, title: 'No', sub: providerType === 'Nonprofit' ? 'Nonprofit Standard' : 'Standard', price: providerType === 'Nonprofit' ? planLabel('Nonprofit Standard') : planLabel('Standard') },
+                ]).map((o) => (
+                  <label key={o.v} className={`press flex cursor-pointer items-center justify-between gap-3 border-2 p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${offer === o.v ? 'border-primary bg-accent' : 'border-input bg-card'}`}>
+                    <input type="radio" name="offer" className="sr-only" data-testid={`radio-offer-${o.v}`} checked={offer === o.v} onChange={() => setOffer(o.v)} />
+                    <span><span className="block font-bold">{o.title}</span><span className="text-sm text-muted-foreground">{o.sub}</span></span>
+                    <span className="font-display text-2xl text-primary">{o.price}</span>
+                  </label>
+                ))}
+              </div>
+              {providerType === 'Business' && offer === 'yes' && (
+                <div className="mt-3 rise">
+                  <p className={label}>Billing</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {([['yearly', 'Yearly', planLabel('Indie Partner'), false], ['lifetime', 'Lifetime', planLabel('Lifetime Indie Partner'), !lifetimeOpen]] as const).map(([v, t, pr, dis]) => (
+                      <label key={v} className={`press flex min-h-[44px] flex-col justify-center border-2 px-3 py-2 text-sm font-semibold transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${dis ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${effCadence === v ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card'}`}>
+                        <input type="radio" name="cadence" className="sr-only" disabled={dis} data-testid={`radio-cadence-${v}`} checked={effCadence === v} onChange={() => setCadence(v)} />
+                        <span>{t}</span>
+                        <span className="text-xs font-normal">{v === 'lifetime' && !lifetimeOpen ? (cfg ? 'Sold out' : 'Checking spots') : pr}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {cfg && lifetimeOpen && <p className="mt-1 text-xs text-muted-foreground" data-testid="text-lifetime-left">{lifetimeLeft} of 10 lifetime spots left.</p>}
+                  {lifetimeBlocked && <p role="status" className="mt-1 text-sm font-semibold text-destructive" data-testid="text-lifetime-soldout">All 10 lifetime spots are taken. Choose Yearly instead.</p>}
+                </div>
+              )}
+              {offer === 'yes' && (
+                <div className="mt-3 rise">
+                  <DealFields value={{ indiePromoCode: promoCode, indieRateDetails: indie, indieRedeemHow: redeemHow, indieWhoQualifies: qualifies }}
+                    errors={{ ...errors, indieRateDetails: errors.indie }} onChange={v => { setPromoCode(v.indiePromoCode); setIndie(v.indieRateDetails); setRedeemHow(v.indieRedeemHow); setQualifies(v.indieWhoQualifies); }} />
+                </div>
+              )}
+              <Err id="plan" msg={errors.plan} />
+            </fieldset>
+          )}
+          {gov && <Err id="plan" msg={errors.plan} />}
+
           {serverError && <p role="alert" data-testid="error-server" className="border-2 border-destructive p-3 text-sm font-semibold text-destructive">{serverError}</p>}
-          <button type="submit" disabled={submit.isPending} data-testid="button-submit" className="btn w-full text-base">{submit.isPending ? 'Saving' : gov ? 'Submit for review' : 'Continue to payment'}</button>
-          <p className="text-xs text-muted-foreground">{gov ? 'Government offices list free and are reviewed before publication.' : 'Paid plans renew annually. Complete your secure Stripe checkout, then your listing will be reviewed.'}</p>
+          <p className="border-l-4 border-primary bg-card p-3 text-sm font-bold" data-testid="text-your-plan" aria-live="polite">Your plan: {plan && planDef ? `${plan} · ${planPrice(planDef)}` : plan ? `${plan} · ${cfg ? 'unavailable' : 'Loading price…'}` : 'Choose a plan above'}</p>
+          <button type="submit" disabled={submit.isPending || !cfg || (plan === 'Lifetime Indie Partner' && !lifetimeOpen)} data-testid="button-submit" className="btn w-full text-base">{submit.isPending ? 'Saving' : gov ? 'Submit for review' : 'Continue to payment'}</button>
+          <p className="text-xs text-muted-foreground">{gov ? 'Government offices list free and are reviewed before publication.' : planDef?.billing === 'lifetime' ? 'One-time payment. No renewals. Complete your secure Stripe checkout, then your listing will be reviewed.' : 'Yearly plans renew annually. Complete your secure Stripe checkout, then your listing will be reviewed.'}</p>
         </form>
       </div>
     </Layout>

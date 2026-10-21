@@ -111,6 +111,32 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CheckoutLink" }
+  /admin/listings/{id}/renewal-plan:
+    get:
+      operationId: previewAdminRenewalPlan
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Current subscription and renewal-only Standard price
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RenewalPlanPreview" }
+    post:
+      operationId: scheduleAdminRenewalPlan
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RenewalPlanInput" }
+      responses:
+        "200":
+          description: Confirmed Standard plan change at renewal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminListing" }
   /submissions/{reference}/status:
     post:
       operationId: getSubmissionStatus
@@ -237,6 +263,9 @@ components:
         providerType: { type: string, enum: [Business, Nonprofit, Government] }
         indieRate: { type: boolean }
         indieRateDetails: { type: string }
+        indiePromoCode: { type: string }
+        indieRedeemHow: { type: string }
+        indieWhoQualifies: { type: string }
         website: { type: string }
         phone: { type: string }
         email: { type: string }
@@ -266,8 +295,13 @@ components:
         email: { type: string, format: email, maxLength: 254 }
         publicEmail: { type: boolean, default: false }
         providerType: { type: string, enum: [Business, Nonprofit, Government] }
-        plan: { type: string, enum: [Indie Partner, Standard, Government] }
+        plan: { type: string, enum: [Indie Partner, Standard, Lifetime Indie Partner, Nonprofit Indie Partner, Nonprofit Standard, Government] }
         indieRateDetails: { type: string, maxLength: 200 }
+        indiePromoCode: { type: string, maxLength: 20 }
+        indieRedeemHow: { type: string, maxLength: 120 }
+        indieWhoQualifies: { type: string, maxLength: 120 }
+        ein: { type: string, maxLength: 10 }
+        einVerified: { type: boolean }
     Submission:
       type: object
       required: [reference, status, paymentStatus, message, accessToken]
@@ -279,11 +313,40 @@ components:
         accessToken: { type: string }
     ListingConfig:
       type: object
-      required: [specialActive, billingAvailable]
+      required: [specialActive, billingAvailable, plans, lifetimeSpotsLeft]
       properties:
         specialActive: { type: boolean }
         billingAvailable: { type: boolean }
         billingMode: { type: string, enum: [test, live, unavailable] }
+        plans: { type: array, items: { $ref: "#/components/schemas/PlanDefinition" } }
+        lifetimeSpotsLeft: { type: integer, minimum: 0, maximum: 10 }
+    PlanDefinition:
+      type: object
+      required: [name, providerType, amount, currency, billing, indie, lookupKey]
+      properties:
+        name: { type: string }
+        providerType: { type: string, enum: [Business, Nonprofit, Government] }
+        amount: { type: integer }
+        currency: { type: string }
+        billing: { type: string, enum: [yearly, lifetime, free] }
+        indie: { type: boolean }
+        lookupKey: { type: ["string", "null"] }
+    RenewalPlanInput:
+      type: object
+      required: [confirmed, expectedEffectiveAt, expectedAmount]
+      properties:
+        confirmed: { type: boolean }
+        expectedEffectiveAt: { type: string, format: date-time }
+        expectedAmount: { type: integer }
+    RenewalPlanPreview:
+      type: object
+      required: [currentPlan, targetPlan, currentAmount, targetAmount, effectiveAt]
+      properties:
+        currentPlan: { type: string }
+        targetPlan: { type: string }
+        currentAmount: { type: integer }
+        targetAmount: { type: integer }
+        effectiveAt: { type: string, format: date-time }
     AdminSession:
       type: object
       required: [authenticated, configured]
@@ -338,14 +401,25 @@ components:
             createdAt: { type: string }
             foundingPriceLocked: { type: boolean }
             stripeSubscriptionId: { type: ["string", "null"] }
+            stripePaymentIntentId: { type: ["string", "null"] }
+            stripeCheckoutId: { type: ["string", "null"] }
+            stripePriceId: { type: ["string", "null"] }
+            pendingPlan: { type: ["string", "null"] }
+            pendingPlanAt: { type: ["string", "null"] }
+            pastDueSince: { type: ["string", "null"] }
+            graceDaysLeft: { type: integer }
+            ein: { type: string }
+            einVerified: { type: boolean }
     AdminDashboard:
       type: object
-      required: [listings, liveCount, paidCount, yearlyRevenue, billingMode, paymentLinks]
+      required: [listings, liveCount, paidCount, recurringRevenue, lifetimeRevenue, lifetimeSpotsLeft, billingMode, paymentLinks]
       properties:
         listings: { type: array, items: { $ref: "#/components/schemas/AdminListing" } }
         liveCount: { type: integer }
         paidCount: { type: integer }
-        yearlyRevenue: { type: number }
+        recurringRevenue: { type: number }
+        lifetimeRevenue: { type: number }
+        lifetimeSpotsLeft: { type: integer }
         billingMode: { type: string }
         paymentLinks: { type: array, items: { $ref: "#/components/schemas/PlanPaymentLink" } }
     PlanPaymentLink:

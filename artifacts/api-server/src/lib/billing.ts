@@ -1,10 +1,15 @@
 import type Stripe from "stripe";
+import { randomUUID } from "node:crypto";
 import { runMigrations } from "stripe-replit-sync";
-import { and, eq, isNull } from "drizzle-orm";
-import { db, pool, listingsTable, paymentEventsTable } from "@workspace/db";
+import { and, eq, isNull, sql } from "drizzle-orm";
+import { db, pool, listingsTable, paymentEventsTable, PLANS, findPlan } from "@workspace/db";
 import { getStripeSync, getUncachableStripeClient } from "./stripe-client";
 import { billingState } from "./listing-config";
 import { logger } from "./logger";
+import { validPrice } from "./payment-policy";
+import { idOf, updateFromSubscription } from "./subscription-billing";
+import { applyLifetimeSession, applyLifetimeRefund } from "./lifetime-payments";
+import { lifetimeLock, lifetimeUsage, LIFETIME_CAP, RESERVATION_MS, reconcileLifetimeReservations, releaseReservation } from "./lifetime-inventory";
 
 export async function initializeBilling() {
   try {
@@ -15,69 +20,53 @@ export async function initializeBilling() {
     if (!domain) throw new Error("No application domain is available for the payment webhook.");
     await sync.findOrCreateManagedWebhook(`https://${domain}/api/stripe/webhook`);
     await sync.syncBackfill({ object: "all" });
-    // Stripe owns the catalog; read the synced price data, never a duplicate app catalog.
-    const { rows } = await pool.query(
-      `SELECT id, unit_amount, currency, recurring, livemode, lookup_key FROM stripe.prices
-       WHERE active = true AND lookup_key = ANY($1::text[])`,
-      [["ifg_indie_annual", "ifg_standard_annual"]],
-    );
-    for (const [plan, key, amount] of [["Indie Partner", "ifg_indie_annual", 19900], ["Standard", "ifg_standard_annual", 49900]] as const) {
-      const price = rows.find(p => p.lookup_key === key);
-      if (!price || Number(price.unit_amount) !== amount || price.currency !== "usd" || price.recurring?.interval !== "year" || price.recurring?.interval_count !== 1)
-        throw new Error(`Create the approved ${plan} annual Stripe price before enabling checkout.`);
-      billingState.prices[plan] = price.id;
+    const { rows } = await pool.query(`SELECT id, unit_amount, currency, recurring, livemode, lookup_key, metadata FROM stripe.prices`);
+    const prices: Record<string, string> = {};
+    const allowed: Record<string, Set<string>> = {};
+    const modes = new Set<boolean>();
+    for (const plan of PLANS.filter(p => p.billing !== "free")) {
+      const current = (await stripe.prices.list({ lookup_keys: [plan.lookupKey!], active: true, limit: 1 })).data[0];
+      if (!current || !validPrice(current, plan.name)) throw new Error(`Create the approved ${plan.name} Stripe price before enabling checkout.`);
+      prices[plan.name] = current.id; allowed[plan.name] = new Set([current.id]); modes.add(current.livemode);
+      // Historical prices need explicit catalog ownership and yearly cadence, not
+      // just an arbitrary ID saved by a browser or an untrusted webhook.
+      for (const old of rows) {
+        if (plan.billing === "yearly" && old.metadata?.app === "indie-film-guide" && old.metadata?.plan === plan.name &&
+          old.currency === "usd" && old.recurring?.interval === "year" && old.recurring?.interval_count === 1 && Number(old.unit_amount) > 0 && old.livemode === current.livemode)
+          allowed[plan.name]!.add(old.id);
+      }
     }
-    const links = await stripe.paymentLinks.list({ active: true, limit: 100 });
-    billingState.paymentLinks = links.data.filter(l => l.metadata.app === "indie-film-guide")
-      .map(l => ({ plan: l.metadata.plan!, url: l.url }));
-    if (!["Indie Partner", "Standard"].every(plan => billingState.paymentLinks.some(l => l.plan === plan)))
-      throw new Error("Create the two Stripe payment links before enabling checkout.");
-    const modes = new Set(rows.map(p => p.livemode));
     if (modes.size !== 1) throw new Error("Stripe price modes are inconsistent.");
-    billingState.mode = rows[0].livemode ? "live" : "test";
-    billingState.available = true;
+    billingState.prices = prices; billingState.allowedPrices = allowed;
+    const links: { plan: string; url: string }[] = [];
+    for await (const link of stripe.paymentLinks.list({ active: true, limit: 100 })) {
+      if (link.metadata.app !== "indie-film-guide") continue;
+      if (link.metadata.plan === "Lifetime Indie Partner") {
+        // Legacy/unrestricted lifetime links must never bypass capacity.
+        await stripe.paymentLinks.update(link.id, { active: false });
+      } else if (PLANS.some(p => p.name === link.metadata.plan && p.billing === "yearly")) {
+        const items = await stripe.paymentLinks.listLineItems(link.id, { limit: 2 });
+        if (items.data.length !== 1 || items.data[0]?.price?.id !== prices[link.metadata.plan!] || items.data[0]?.quantity !== 1)
+          throw new Error(`The ${link.metadata.plan} generic payment link uses the wrong price.`);
+        links.push({ plan: link.metadata.plan!, url: link.url });
+      }
+    }
+    if (!PLANS.filter(p => p.billing === "yearly").every(p => links.some(l => l.plan === p.name))) throw new Error("Create all annual Stripe payment links before enabling checkout.");
+    links.push({ plan: "Lifetime Indie Partner", url: "/get-listed?plan=Lifetime%20Indie%20Partner" });
+    billingState.paymentLinks = links; billingState.mode = [...modes][0] ? "live" : "test"; billingState.available = true;
+    await reconcileLifetimeReservations();
+    const timer = setInterval(() => void reconcileLifetimeReservations(), 60000);
+    timer.unref();
     logger.info({ mode: billingState.mode }, "Stripe checkout and verified webhooks are ready");
   } catch (error) {
-    billingState.available = false;
-    billingState.mode = "unavailable";
+    billingState.available = false; billingState.mode = "unavailable";
     logger.warn({ reason: error instanceof Error ? error.message : "Stripe setup failed" }, "Checkout unavailable; connect/configure Stripe and restart");
   }
 }
 
-const idOf = (object: string | { id: string } | null) => typeof object === "string" ? object : object?.id ?? null;
-
-// Use the current subscription rather than an old event's embedded object. The
-// subscription lock serializes invoice/session events, including out-of-order delivery.
-async function updateFromSubscription(subscriptionId: string, reference?: string) {
-  const stripe = await getUncachableStripeClient();
-  await db.transaction(async tx => {
-    await tx.execute((await import("drizzle-orm")).sql`select pg_advisory_xact_lock(hashtext(${subscriptionId}))`);
-    const sub = await stripe.subscriptions.retrieve(subscriptionId, { expand: ["latest_invoice"] });
-    let [listing] = await tx.select().from(listingsTable).where(eq(listingsTable.stripeSubscriptionId, subscriptionId));
-    if (!listing && reference) {
-      [listing] = await tx.select().from(listingsTable).where(eq(listingsTable.reference, reference));
-    }
-    if (!listing || listing.deletedAt || listing.plan === "Government" || listing.paymentStatus === "Payment waived") return;
-    if (listing.stripeSubscriptionId && listing.stripeSubscriptionId !== sub.id) return;
-    const item = sub.items.data[0];
-    const expectedPrice = billingState.prices[listing.plan];
-    if (!expectedPrice || sub.items.data.length !== 1 || item?.price.id !== expectedPrice) throw new Error("Subscription price does not match the saved listing.");
-    if (sub.metadata.listingReference !== listing.reference || sub.metadata.app !== "indie-film-guide") throw new Error("Subscription is not bound to this listing.");
-    const invoice = typeof sub.latest_invoice === "object" ? sub.latest_invoice : null;
-    const currentPeriodEnd = item?.current_period_end ?? 0;
-    const paid = sub.status === "active" && invoice?.status === "paid" && currentPeriodEnd * 1000 > Date.now();
-    const paymentStatus = paid ? "Paid" : ["canceled", "unpaid", "incomplete_expired"].includes(sub.status)
-      ? "Cancelled" : sub.status === "past_due" ? "Past due" : "Unpaid";
-    await tx.update(listingsTable).set({
-      stripeSubscriptionId: sub.id, stripeCustomerId: idOf(sub.customer), paymentStatus,
-    }).where(eq(listingsTable.id, listing.id));
-  });
-}
-
 export async function processListingWebhook(payload: Buffer, signature: string) {
   const sync = await getStripeSync();
-  // This verifies the signature against the managed secret BEFORE JSON is trusted.
-  await sync.processWebhook(payload, signature);
+  await sync.processWebhook(payload, signature); // verifies raw payload first
   const event = JSON.parse(payload.toString("utf8")) as Stripe.Event;
   const [already] = await db.select().from(paymentEventsTable).where(eq(paymentEventsTable.eventId, event.id));
   if (already) return;
@@ -86,13 +75,19 @@ export async function processListingWebhook(payload: Buffer, signature: string) 
     const session = await stripe.checkout.sessions.retrieve((event.data.object as Stripe.Checkout.Session).id);
     const reference = session.metadata?.listingReference;
     if (reference && session.metadata?.app === "indie-film-guide") {
-      const [listing] = await db.select().from(listingsTable).where(eq(listingsTable.reference, reference));
-      if (listing && listing.stripeCheckoutId === session.id && !listing.deletedAt) {
-        const subscriptionId = idOf(session.subscription);
-        if (subscriptionId) await updateFromSubscription(subscriptionId, reference);
+      if (session.mode === "payment") await applyLifetimeSession(session);
+      else {
+        const [row] = await db.select().from(listingsTable).where(eq(listingsTable.reference, reference));
+        if (row && row.stripeCheckoutId === session.id && !row.deletedAt && idOf(session.subscription))
+          await updateFromSubscription(idOf(session.subscription)!, reference);
+      }
+      if (session.status === "expired" && session.metadata?.reservationKey) {
+        const [row] = await db.select().from(listingsTable).where(eq(listingsTable.reference, reference));
+        if (row) await releaseReservation(row.id, session.metadata.reservationKey);
       }
     }
-  } else if (event.type.startsWith("customer.subscription.")) {
+  } else if (event.type === "charge.refunded") await applyLifetimeRefund((event.data.object as Stripe.Charge).id);
+  else if (event.type.startsWith("customer.subscription.")) {
     const sub = event.data.object as Stripe.Subscription;
     await updateFromSubscription(sub.id, sub.metadata.listingReference);
   } else if (event.type.startsWith("invoice.")) {
@@ -103,34 +98,52 @@ export async function processListingWebhook(payload: Buffer, signature: string) 
   await db.insert(paymentEventsTable).values({ eventId: event.id }).onConflictDoNothing();
 }
 
-export async function beginCheckout(reference: string, origin: string) {
-  return db.transaction(async tx => {
-    const [listing] = await tx.select().from(listingsTable).where(and(eq(listingsTable.reference, reference), isNull(listingsTable.deletedAt))).for("update");
-    if (!listing) throw new Error("Submission not found.");
-    if (listing.plan === "Government") throw new Error("Government listings do not require payment.");
-    if (listing.paymentStatus === "Payment waived") throw new Error("Payment is temporarily waived for this listing. Checkout is not required.");
-    if (!billingState.available) throw new Error("Checkout is temporarily unavailable. Please try again shortly.");
-    const stripe = await getUncachableStripeClient();
-    if (listing.stripeSubscriptionId || listing.paymentStatus === "Paid") throw new Error("A subscription is already associated with this listing. Contact the administrator rather than paying again.");
-    if (listing.stripeCheckoutId) {
-      const previous = await stripe.checkout.sessions.retrieve(listing.stripeCheckoutId);
-      if (previous.status === "open" && previous.url) return previous.url;
+export async function beginCheckout(reference: string, origin: string, client?: Stripe) {
+  const stripe = billingState.available ? client ?? await getUncachableStripeClient() : null;
+  // Commit a durable inventory reservation BEFORE making a network request:
+  // even a lost response or DB commit failure cannot free a still-payable spot.
+  const reserved = await db.transaction(async tx => {
+    await tx.execute(lifetimeLock);
+    const [row] = await tx.select().from(listingsTable).where(and(eq(listingsTable.reference, reference), isNull(listingsTable.deletedAt))).for("update");
+    if (!row) throw new Error("Submission not found.");
+    const plan = findPlan(row.plan);
+    if (!plan || plan.billing === "free") throw new Error("Government listings do not require payment.");
+    if (row.paymentStatus === "Payment waived") throw new Error("Payment is temporarily waived for this listing. Checkout is not required.");
+    if (!stripe) throw new Error("Checkout is temporarily unavailable. Please try again shortly.");
+    if (row.stripeSubscriptionId || row.stripePaymentIntentId || ["Paid", "Refunded"].includes(row.paymentStatus))
+      throw new Error("Payment is already associated with this listing. Contact the administrator rather than paying again.");
+    if (row.stripeCheckoutId) {
+      const previous = await stripe.checkout.sessions.retrieve(row.stripeCheckoutId);
+      if (previous.status === "open" && previous.url) return { row, existingUrl: previous.url };
       if (previous.status === "complete") throw new Error("Your checkout is complete. Payment confirmation is being processed; do not pay again.");
     }
-    const price = billingState.prices[listing.plan];
-    if (!price) throw new Error("The selected plan is unavailable.");
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer_email: listing.email,
-      client_reference_id: listing.reference,
-      line_items: [{ price, quantity: 1 }],
-      metadata: { app: "indie-film-guide", listingReference: listing.reference },
-      subscription_data: { metadata: { app: "indie-film-guide", listingReference: listing.reference, foundingPriceLocked: String(listing.foundingPriceLocked) } },
-      success_url: `${origin}/submitted?checkout=success`,
-      cancel_url: `${origin}/submitted?checkout=cancelled`,
-    }, { idempotencyKey: `ifg-checkout-${listing.reference}-${listing.stripeCheckoutId ?? "first"}` });
-    if (!session.url) throw new Error("Stripe did not return a checkout URL.");
-    await tx.update(listingsTable).set({ stripeCheckoutId: session.id }).where(eq(listingsTable.id, listing.id));
-    return session.url;
+    if (row.checkoutReservationKey && !row.stripeCheckoutId) {
+      if (row.checkoutReservedUntil && row.checkoutReservedUntil.getTime() < Date.now() + 30 * 60000) throw new Error("Your previous checkout is being reconciled. Please try again shortly.");
+      return { row, existingUrl: null };
+    }
+    if (plan.billing === "lifetime" && await lifetimeUsage(tx) >= LIFETIME_CAP) throw new Error("All 10 lifetime spots are taken.");
+    const [updated] = await tx.update(listingsTable).set({
+      checkoutReservationKey: randomUUID(), stripeCheckoutId: null,
+      checkoutReservedUntil: plan.billing === "lifetime" ? new Date(Date.now() + RESERVATION_MS) : null,
+    }).where(eq(listingsTable.id, row.id)).returning();
+    return { row: updated!, existingUrl: null };
   });
+  if (reserved.existingUrl) return reserved.existingUrl;
+  const row = reserved.row;
+  const price = billingState.prices[row.plan];
+  if (!stripe || !price) throw new Error("The selected plan is unavailable.");
+  const lifetime = findPlan(row.plan)?.billing === "lifetime";
+  const metadata = { app: "indie-film-guide", listingReference: row.reference, reservationKey: row.checkoutReservationKey! };
+  const session = await stripe.checkout.sessions.create({
+    mode: lifetime ? "payment" : "subscription", customer_email: row.email,
+    client_reference_id: row.reference, line_items: [{ price, quantity: 1 }], metadata,
+    ...(lifetime ? { allowed_payment_method_types: ["card"] as NonNullable<Stripe.Checkout.SessionCreateParams["allowed_payment_method_types"]>,
+      expires_at: Math.floor(row.checkoutReservedUntil!.getTime() / 1000), payment_intent_data: { metadata } }
+      : { subscription_data: { metadata: { ...metadata, foundingPriceLocked: String(row.foundingPriceLocked) } } }),
+    success_url: `${origin}/submitted?checkout=success`, cancel_url: `${origin}/submitted?checkout=cancelled`,
+  }, { idempotencyKey: `ifg-checkout-${row.reference}-${row.checkoutReservationKey}` });
+  if (!session.url) throw new Error("Stripe did not return a checkout URL.");
+  await db.update(listingsTable).set({ stripeCheckoutId: session.id, stripePriceId: price })
+    .where(and(eq(listingsTable.id, row.id), eq(listingsTable.checkoutReservationKey, row.checkoutReservationKey!)));
+  return session.url;
 }

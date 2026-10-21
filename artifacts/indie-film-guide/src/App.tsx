@@ -7,6 +7,7 @@ import NotFound from '@/pages/not-found';
 import Directory from '@/pages/directory';
 import ListingPage from '@/pages/listing';
 import GetListed from '@/pages/get-listed';
+import Pricing from '@/pages/pricing';
 import Submitted from '@/pages/submitted';
 import About from '@/pages/about';
 import Terms from '@/pages/terms';
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/" component={Directory} />
         <Route path="/listing/:slug" component={ListingPage} />
         <Route path="/get-listed" component={GetListed} />
+        <Route path="/pricing" component={Pricing} />
         <Route path="/submitted" component={Submitted} />
         <Route path="/about" component={About} />
         <Route path="/terms" component={Terms} />

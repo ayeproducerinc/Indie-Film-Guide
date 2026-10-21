@@ -7,7 +7,6 @@ export const CATEGORIES = [
   { value: 'Distribution & Marketing', short: 'Distribution & Marketing', mobile: 'Release' },
 ] as const;
 export const STAGES = ['Idea', 'Production', 'Post-Production', 'Distribution'] as const;
-export const PRICES = { 'Indie Partner': 199, Standard: 499, Government: 0 } as const;
 export function shortCategory(c: string) {
   return CATEGORIES.find((x) => x.value === c)?.short ?? c;
 }

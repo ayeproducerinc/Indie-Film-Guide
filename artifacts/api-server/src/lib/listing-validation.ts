@@ -1,5 +1,6 @@
 import { SubmitListingBody } from "@workspace/api-zod";
 import locations from "../data/georgia-locations.json";
+import { findPlan } from "@workspace/db";
 
 const locationMap = new Map(locations.map(location => [location.id, location]));
 export class FieldError extends Error {
@@ -7,7 +8,7 @@ export class FieldError extends Error {
     super(Object.values(fields)[0]?.[0] ?? "Check the form fields.");
   }
 }
-export function validateListing(body: unknown) {
+export function validateListing(body: unknown, admin = false) {
   const parsed = SubmitListingBody.safeParse(body);
   if (!parsed.success) throw new FieldError(parsed.error.flatten().fieldErrors as Record<string, string[]>);
   const input = parsed.data;
@@ -18,10 +19,19 @@ export function validateListing(body: unknown) {
   if (!description) fail("description", "Describe what you offer.");
   const location = input.locationId ? locationMap.get(input.locationId) : undefined;
   if (input.coverage === "City" && !location) fail("locationId", "Choose a city from the Georgia suggestions.");
-  if ((input.providerType === "Government") !== (input.plan === "Government"))
-    fail("plan", "The free plan is available only to government offices.");
-  const indieRateDetails = input.plan === "Indie Partner" ? input.indieRateDetails?.trim() ?? "" : "";
-  if (input.plan === "Indie Partner" && !indieRateDetails) fail("indieRateDetails", "Describe your indie filmmaker rate.");
+  const plan = findPlan(input.plan);
+  if (!plan || plan.providerType !== input.providerType)
+    return fail("plan", input.plan.startsWith("Nonprofit") ? "Nonprofit plans are only for verified nonprofits." : "Choose a plan available for your provider type.");
+  const indieRateDetails = plan.indie ? input.indieRateDetails?.trim() ?? "" : "";
+  const indiePromoCode = plan.indie ? input.indiePromoCode?.trim().toUpperCase() ?? "" : "";
+  const indieRedeemHow = plan.indie ? input.indieRedeemHow?.trim() ?? "" : "";
+  const indieWhoQualifies = plan.indie ? input.indieWhoQualifies?.trim() ?? "" : "";
+  if (plan.indie && !/^[A-Z0-9]{3,20}$/.test(indiePromoCode)) fail("indiePromoCode", "Use 3–20 uppercase letters or numbers.");
+  if (plan.indie && !indieRateDetails) fail("indieRateDetails", "Describe what filmmakers get.");
+  if (plan.indie && !indieRedeemHow) fail("indieRedeemHow", "Explain how to redeem the code.");
+  const ein = input.providerType === "Nonprofit" ? input.ein?.trim() ?? "" : "";
+  if (input.providerType === "Nonprofit" && !/^\d{2}-\d{7}$/.test(ein)) fail("ein", "Enter an EIN in 12-3456789 format.");
+  if (!admin && input.einVerified) fail("einVerified", "Only an administrator can verify an EIN.");
   let website = input.website.trim();
   if (!website) fail("website", "Enter your website.");
   if (!/^[a-z][a-z0-9+.-]*:/i.test(website)) website = `https://${website}`;
@@ -43,7 +53,8 @@ export function validateListing(body: unknown) {
     city: input.coverage === "City" ? location!.city : input.coverage,
     state: input.coverage === "Nationwide" ? "" : "GA",
     website, phone, email: input.email.trim().toLowerCase(), publicEmail: input.publicEmail ?? false,
-    providerType: input.providerType, indieRate: input.plan === "Indie Partner",
-    indieRateDetails, plan: input.plan,
+    providerType: input.providerType, indieRate: plan.indie,
+    indieRateDetails, indiePromoCode, indieRedeemHow, indieWhoQualifies, ein,
+    einVerified: admin && input.providerType === "Nonprofit" && (input.einVerified ?? false), plan: input.plan,
   };
 }

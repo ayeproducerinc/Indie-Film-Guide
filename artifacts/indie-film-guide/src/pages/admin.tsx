@@ -3,13 +3,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useGetAdminSession, getGetAdminSessionQueryKey, useLoginAdmin, useLogoutAdmin,
   useGetAdminDashboard, getGetAdminDashboardQueryKey, useAddAdminListing, useUpdateAdminListing,
-  useDeleteAdminListing, useSetAdminListingStatus, useGetLocations, useCreateAdminListingCheckout,
+  useDeleteAdminListing, useSetAdminListingStatus, useGetLocations, useCreateAdminListingCheckout, useGetListingConfig,
 } from '@workspace/api-client-react';
 import type { AdminListing, ListingInput } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
 import { AdminListingForm } from '@/components/admin-listing-form';
 import { shortCategory, placeLabel } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
+import { RenewalPlanDialog } from '@/components/renewal-plan-dialog';
 
 const REQ = { request: { headers: { 'X-IFG-Admin': '1' } } };
 type Filter = 'All' | 'Pending' | 'Live' | 'Rejected';
@@ -70,9 +71,9 @@ function statusCls(s: string) {
   return s === 'Live' ? 'bg-[hsl(var(--green-bg))] text-[hsl(var(--green))]' : s === 'Rejected' ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground';
 }
 
-function Row({ l, onEdit, onDelete, onStatus, onPayment, paymentUrl, busy }: { l: AdminListing; onEdit: () => void; onDelete: () => void; onStatus: (s: 'Pending' | 'Live' | 'Rejected') => void; onPayment: () => void; paymentUrl?: string; busy: boolean }) {
+function Row({ l, onEdit, onDelete, onStatus, onPayment, onRenewal, paymentUrl, busy }: { l: AdminListing; onEdit: () => void; onDelete: () => void; onStatus: (s: 'Pending' | 'Live' | 'Rejected') => void; onPayment: () => void; onRenewal: () => void; paymentUrl?: string; busy: boolean }) {
   const [open, setOpen] = useState(false);
-  const paid = ['Paid', 'Payment waived'].includes(l.paymentStatus) || l.plan === 'Government';
+  const paid = ['Paid', 'Payment waived'].includes(l.paymentStatus) || l.plan === 'Government' || (l.paymentStatus === 'Past due' && (l.graceDaysLeft ?? 0) > 0);
   const btn = 'btn-outline !min-h-[40px] !px-3 !text-xs';
   return (
     <li data-testid={`row-listing-${l.id}`} className="border-2 border-foreground bg-card p-4">
@@ -85,6 +86,9 @@ function Row({ l, onEdit, onDelete, onStatus, onPayment, paymentUrl, busy }: { l
           <span data-testid={`status-listing-${l.id}`} className={`px-2 py-0.5 text-xs font-bold uppercase tracking-wider ${statusCls(l.status)}`}>{l.status}</span>
           <span className="bg-muted px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">{l.plan}</span>
           <span data-testid={`payment-listing-${l.id}`} className="bg-muted px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">Payment: {l.paymentStatus}</span>
+          {l.plan === 'Lifetime Indie Partner' && <span className="bg-accent px-2 py-0.5 text-xs font-bold">Lifetime</span>}
+          {l.providerType === 'Nonprofit' && !l.einVerified && <span className="bg-accent px-2 py-0.5 text-xs font-bold">Nonprofit · check EIN</span>}
+          {l.paymentStatus === 'Past due' && <span className="bg-accent px-2 py-0.5 text-xs font-bold">Past due ({l.graceDaysLeft ?? 0} days left)</span>}
         </div>
       </div>
       <p className="mt-2 break-words text-sm">{l.description}</p>
@@ -95,9 +99,14 @@ function Row({ l, onEdit, onDelete, onStatus, onPayment, paymentUrl, busy }: { l
         {l.status !== 'Rejected' && <button type="button" className={btn} disabled={busy} onClick={() => onStatus('Rejected')} data-testid={`button-reject-${l.id}`}>Reject</button>}
         {l.status !== 'Pending' && <button type="button" className={btn} disabled={busy} onClick={() => onStatus('Pending')} data-testid={`button-pending-${l.id}`}>Back to pending</button>}
         <button type="button" className="press min-h-[40px] border-2 border-destructive px-3 text-xs font-bold uppercase tracking-wide text-destructive" onClick={onDelete} data-testid={`button-delete-${l.id}`}>Delete</button>
-         {!paid && !l.stripeSubscriptionId && <button type="button" className={btn} disabled={busy} onClick={onPayment} data-testid={`button-payment-${l.id}`}>Create payment link</button>}
+         {!paid && !l.stripeSubscriptionId && !l.stripePaymentIntentId && l.paymentStatus !== 'Refunded' && <button type="button" className={btn} disabled={busy} onClick={onPayment} data-testid={`button-payment-${l.id}`}>Create payment link</button>}
+         {l.stripeSubscriptionId && !l.pendingPlan && ['Indie Partner', 'Nonprofit Indie Partner'].includes(l.plan) && l.paymentStatus === 'Paid' &&
+           <button type="button" className={btn} onClick={onRenewal} data-testid={`button-renewal-${l.id}`}>Remove code at renewal</button>}
       </div>
       {l.status !== 'Live' && !paid && <p className="mt-2 text-xs text-muted-foreground">Unpaid. The server will not approve this listing until payment is recorded.</p>}
+      {l.providerType === 'Nonprofit' && !l.einVerified && <p className="mt-2 text-xs font-semibold">Verify the EIN before approving this nonprofit.</p>}
+      {l.pendingPlan && <p className="mt-2 text-sm font-semibold">Current: {l.plan}. Pending: {l.pendingPlan} at renewal on {l.pendingPlanAt ? new Date(l.pendingPlanAt).toLocaleDateString() : 'the next renewal'}. No immediate charge.</p>}
+      {l.paymentStatus === 'Refunded' && <p className="mt-2 text-sm">Refunded — hidden from the directory.</p>}
       {paymentUrl && <p className="mt-3 break-all text-sm"><span className="font-semibold">Listing-specific checkout: </span><a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">{paymentUrl}</a></p>}
       {open && (
         <dl className="mt-3 grid gap-x-4 gap-y-1 border-t-2 border-border pt-3 text-sm sm:grid-cols-2" data-testid={`details-listing-${l.id}`}>
@@ -106,6 +115,9 @@ function Row({ l, onEdit, onDelete, onStatus, onPayment, paymentUrl, busy }: { l
             ['Website', l.website], ['Stages', l.stages.join(', ')], ['Coverage', l.coverage], ['Slug', l.slug],
             ['Indie rate', l.indieRate ? l.indieRateDetails || 'Yes' : 'No'], ['Created', new Date(l.createdAt).toLocaleString()],
             ['Founding price locked', l.foundingPriceLocked ? 'Yes' : 'No'], ['Stripe subscription', l.stripeSubscriptionId ?? 'None'],
+             ['Promo code', l.indiePromoCode ?? ''], ['How to redeem', l.indieRedeemHow ?? ''], ['Who qualifies', l.indieWhoQualifies ?? ''],
+             ['EIN (private)', l.ein ?? ''], ['EIN verified', l.einVerified ? 'Yes' : 'No'],
+             ['Stripe price', l.stripePriceId ?? 'None'], ['Payment intent', l.stripePaymentIntentId ?? 'None'],
           ] as const).map(([k, v]) => (
             <div key={k} className="min-w-0"><dt className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{k}</dt><dd className="break-all">{v || 'Not provided'}</dd></div>
           ))}
@@ -123,6 +135,9 @@ function Dashboard() {
   const loc = useGetLocations();
   const locations = loc.data ?? [];
   const [filter, setFilter] = useState<Filter>('All');
+  const config = useGetListingConfig();
+  const [planFilter, setPlanFilter] = useState('All');
+  const [renewal, setRenewal] = useState<AdminListing | null>(null);
   const [mode, setMode] = useState<{ kind: 'add' } | { kind: 'edit'; l: AdminListing } | null>(null);
   const [del, setDel] = useState<AdminListing | null>(null);
   const [notice, setNotice] = useState('');
@@ -166,7 +181,7 @@ function Dashboard() {
   const all = data?.listings ?? [];
   const counts = { All: all.length, Pending: 0, Live: 0, Rejected: 0 } as Record<Filter, number>;
   all.forEach((l) => { if (l.status in counts) counts[l.status as Filter]++; });
-  const shown = filter === 'All' ? all : all.filter((l) => l.status === filter);
+  const shown = all.filter(l => (filter === 'All' || l.status === filter) && (planFilter === 'All' || l.plan === planFilter));
   const em = add.error ? errInfo(add.error) : mode?.kind === 'edit' && update.error ? errInfo(update.error) : null;
 
   return (
@@ -194,13 +209,15 @@ function Dashboard() {
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat id="stat-live" label="Live listings" value={String(data.liveCount)} />
             <Stat id="stat-paid" label="Paid listings" value={String(data.paidCount)} />
-            <Stat id="stat-revenue" label="Yearly revenue" value={`$${data.yearlyRevenue.toLocaleString()}`} />
+            <Stat id="stat-revenue" label="Recurring annual revenue" value={`$${data.recurringRevenue.toLocaleString()}`} />
             <Stat id="stat-mode" label="Billing mode" value={data.billingMode} />
+            <Stat id="stat-lifetime-revenue" label="Lifetime revenue" value={`$${data.lifetimeRevenue.toLocaleString()}`} />
+            <Stat id="stat-lifetime-spots" label="Lifetime spots left" value={`${data.lifetimeSpotsLeft} of 10`} />
           </div>
 
           <section className="mt-6 border-2 border-foreground bg-card p-4" aria-labelledby="pay-h">
             <h2 id="pay-h" className="text-sm font-bold uppercase tracking-wider">Stripe payment links ({data.billingMode})</h2>
-            <p className="mt-1 text-sm text-muted-foreground">These are reusable generic links. A generic link alone does not approve or link a listing. Providers should start checkout from Get Listed so the payment is tied to their listing.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Annual links are reusable generic links and require manual payment attribution. Providers should start from Get Listed to tie payment to a listing. Lifetime uses the capacity-aware application link; it cannot bypass the 10-spot limit.</p>
             {data.paymentLinks.length === 0 ? (
               <p data-testid="text-no-links" className="mt-2 text-sm font-semibold">No payment links available{data.billingMode === 'unavailable' ? ' because billing is unavailable' : ''}.</p>
             ) : (
@@ -220,6 +237,13 @@ function Dashboard() {
               <button key={f} type="button" aria-pressed={filter === f} data-testid={`filter-${f}`} onClick={() => setFilter(f)} className={`press min-h-[44px] border-2 px-4 text-sm font-bold ${filter === f ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card'}`}>{f} ({counts[f]})</button>
             ))}
           </div>
+          <div className="mt-4 max-w-sm">
+            <label htmlFor="admin-plan-filter" className="text-sm font-bold">Filter by plan</label>
+            <select id="admin-plan-filter" data-testid="select-admin-plan-filter" className="field mt-1" value={planFilter} onChange={e => setPlanFilter(e.target.value)}>
+              <option value="All">All plans</option>
+              {config.data?.plans.map(p => <option key={p.name}>{p.name}</option>)}
+            </select>
+          </div>
 
           {shown.length === 0 ? (
             <div data-testid="empty-admin" className="mt-4 border-2 border-dashed border-foreground p-8 text-center">
@@ -229,7 +253,7 @@ function Dashboard() {
           ) : (
             <ul className="mt-4 space-y-3">
               {shown.map((l) => (
-                 <Row key={l.id} l={l} busy={status.isPending || checkout.isPending} onStatus={(s) => setStatus(l, s)} onEdit={() => { add.reset(); update.reset(); setMode({ kind: 'edit', l }); }} onDelete={() => { remove.reset(); setDel(l); }}
+                  <Row key={l.id} l={l} busy={status.isPending || checkout.isPending} onStatus={(s) => setStatus(l, s)} onEdit={() => { add.reset(); update.reset(); setMode({ kind: 'edit', l }); }} onDelete={() => { remove.reset(); setDel(l); }} onRenewal={() => setRenewal(l)}
                    paymentUrl={paymentUrls[l.id]} onPayment={() => {
                      setActionErr('');
                      checkout.mutate({ id: l.id }, {
@@ -270,6 +294,7 @@ function Dashboard() {
         </div>
       )}
 
+      {renewal && <RenewalPlanDialog listing={renewal} onCancel={() => setRenewal(null)} onDone={() => { setRenewal(null); onDone('Standard plan scheduled at renewal. Current deal remains active until then.'); }} />}
       {del && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4" role="alertdialog" aria-modal="true" aria-labelledby="del-h">
           <div className="w-full max-w-md border-2 border-destructive bg-background p-5">

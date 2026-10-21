@@ -12,5 +12,8 @@ export type ListingInputPlan = typeof ListingInputPlan[keyof typeof ListingInput
 export const ListingInputPlan = {
   Indie_Partner: 'Indie Partner',
   Standard: 'Standard',
+  Lifetime_Indie_Partner: 'Lifetime Indie Partner',
+  Nonprofit_Indie_Partner: 'Nonprofit Indie Partner',
+  Nonprofit_Standard: 'Nonprofit Standard',
   Government: 'Government',
 } as const;

@@ -33,6 +33,8 @@ import type {
   ListingStatusInput,
   Location,
   PaymentAccess,
+  RenewalPlanInput,
+  RenewalPlanPreview,
   Submission,
   SubmissionState
 } from './api.schemas';
@@ -738,6 +740,160 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getCreateAdminListingCheckoutMutationOptions(options));
+    }
+
+export const getPreviewAdminRenewalPlanUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/listings/${id}/renewal-plan`
+}
+
+export const previewAdminRenewalPlan = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<RenewalPlanPreview> => {
+
+  return customFetch<RenewalPlanPreview>(getPreviewAdminRenewalPlanUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getPreviewAdminRenewalPlanQueryKey = (id: number,) => {
+    return [
+    `/api/admin/listings/${id}/renewal-plan`
+    ] as const;
+    }
+
+
+export const getPreviewAdminRenewalPlanQueryOptions = <TData = Awaited<ReturnType<typeof previewAdminRenewalPlan>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof previewAdminRenewalPlan>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPreviewAdminRenewalPlanQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof previewAdminRenewalPlan>>> = ({ signal }) => previewAdminRenewalPlan(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof previewAdminRenewalPlan>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type PreviewAdminRenewalPlanQueryResult = NonNullable<Awaited<ReturnType<typeof previewAdminRenewalPlan>>>
+export type PreviewAdminRenewalPlanQueryError = ErrorType<unknown>
+
+
+
+export function usePreviewAdminRenewalPlan<TData = Awaited<ReturnType<typeof previewAdminRenewalPlan>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof previewAdminRenewalPlan>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getPreviewAdminRenewalPlanQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getScheduleAdminRenewalPlanUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/listings/${id}/renewal-plan`
+}
+
+export const scheduleAdminRenewalPlan = async (id: number,
+    renewalPlanInput: RenewalPlanInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminListing> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminListing>(getScheduleAdminRenewalPlanUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(renewalPlanInput)
+  }
+);}
+
+
+
+
+
+export const getScheduleAdminRenewalPlanMutationKey = () => ['scheduleAdminRenewalPlan'] as const;
+
+export const getScheduleAdminRenewalPlanMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scheduleAdminRenewalPlan>>, TError,ScheduleAdminRenewalPlanMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof scheduleAdminRenewalPlan>>, TError,ScheduleAdminRenewalPlanMutationVariables, TContext> => {
+
+const mutationKey = getScheduleAdminRenewalPlanMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof scheduleAdminRenewalPlan>>, ScheduleAdminRenewalPlanMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  scheduleAdminRenewalPlan(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ScheduleAdminRenewalPlanMutationResult = NonNullable<Awaited<ReturnType<typeof scheduleAdminRenewalPlan>>>
+    export type ScheduleAdminRenewalPlanMutationBody = BodyType<RenewalPlanInput>
+    export type ScheduleAdminRenewalPlanMutationError = ErrorType<unknown>
+    export type ScheduleAdminRenewalPlanMutationVariables = {id: number;data: BodyType<RenewalPlanInput>}
+
+    export const useScheduleAdminRenewalPlan = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scheduleAdminRenewalPlan>>, TError,ScheduleAdminRenewalPlanMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof scheduleAdminRenewalPlan>>,
+        TError,
+        ScheduleAdminRenewalPlanMutationVariables,
+        TContext
+      > => {
+      return useMutation(getScheduleAdminRenewalPlanMutationOptions(options));
     }
 
 export const getGetSubmissionStatusUrl = (reference: string,) => {

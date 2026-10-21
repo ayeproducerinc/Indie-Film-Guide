@@ -42,6 +42,9 @@ export interface Listing {
   providerType: ListingProviderType;
   indieRate: boolean;
   indieRateDetails: string;
+  indiePromoCode?: string;
+  indieRedeemHow?: string;
+  indieWhoQualifies?: string;
   website: string;
   phone: string;
   email?: string;
@@ -100,6 +103,9 @@ export type ListingInputPlan = typeof ListingInputPlan[keyof typeof ListingInput
 export const ListingInputPlan = {
   Indie_Partner: 'Indie Partner',
   Standard: 'Standard',
+  Lifetime_Indie_Partner: 'Lifetime Indie Partner',
+  Nonprofit_Indie_Partner: 'Nonprofit Indie Partner',
+  Nonprofit_Standard: 'Nonprofit Standard',
   Government: 'Government',
 } as const;
 
@@ -136,6 +142,15 @@ export interface ListingInput {
   plan: ListingInputPlan;
   /** @maxLength 200 */
   indieRateDetails?: string;
+  /** @maxLength 20 */
+  indiePromoCode?: string;
+  /** @maxLength 120 */
+  indieRedeemHow?: string;
+  /** @maxLength 120 */
+  indieWhoQualifies?: string;
+  /** @maxLength 10 */
+  ein?: string;
+  einVerified?: boolean;
 }
 
 export interface Submission {
@@ -155,10 +170,59 @@ export const ListingConfigBillingMode = {
   unavailable: 'unavailable',
 } as const;
 
+export type PlanDefinitionProviderType = typeof PlanDefinitionProviderType[keyof typeof PlanDefinitionProviderType];
+
+
+export const PlanDefinitionProviderType = {
+  Business: 'Business',
+  Nonprofit: 'Nonprofit',
+  Government: 'Government',
+} as const;
+
+export type PlanDefinitionBilling = typeof PlanDefinitionBilling[keyof typeof PlanDefinitionBilling];
+
+
+export const PlanDefinitionBilling = {
+  yearly: 'yearly',
+  lifetime: 'lifetime',
+  free: 'free',
+} as const;
+
+export interface PlanDefinition {
+  name: string;
+  providerType: PlanDefinitionProviderType;
+  amount: number;
+  currency: string;
+  billing: PlanDefinitionBilling;
+  indie: boolean;
+  /** @nullable */
+  lookupKey: string | null;
+}
+
 export interface ListingConfig {
   specialActive: boolean;
   billingAvailable: boolean;
   billingMode?: ListingConfigBillingMode;
+  plans: PlanDefinition[];
+  /**
+     * @minimum 0
+     * @maximum 10
+     */
+  lifetimeSpotsLeft: number;
+}
+
+export interface RenewalPlanInput {
+  confirmed: boolean;
+  expectedEffectiveAt: string;
+  expectedAmount: number;
+}
+
+export interface RenewalPlanPreview {
+  currentPlan: string;
+  targetPlan: string;
+  currentAmount: number;
+  targetAmount: number;
+  effectiveAt: string;
 }
 
 export interface AdminSession {
@@ -223,6 +287,21 @@ export type AdminListing = Listing & ({
   foundingPriceLocked: boolean;
   /** @nullable */
   stripeSubscriptionId: string | null;
+  /** @nullable */
+  stripePaymentIntentId?: string | null;
+  /** @nullable */
+  stripeCheckoutId?: string | null;
+  /** @nullable */
+  stripePriceId?: string | null;
+  /** @nullable */
+  pendingPlan?: string | null;
+  /** @nullable */
+  pendingPlanAt?: string | null;
+  /** @nullable */
+  pastDueSince?: string | null;
+  graceDaysLeft?: number;
+  ein?: string;
+  einVerified?: boolean;
 });
 
 export interface PlanPaymentLink {
@@ -234,7 +313,9 @@ export interface AdminDashboard {
   listings: AdminListing[];
   liveCount: number;
   paidCount: number;
-  yearlyRevenue: number;
+  recurringRevenue: number;
+  lifetimeRevenue: number;
+  lifetimeSpotsLeft: number;
   billingMode: string;
   paymentLinks: PlanPaymentLink[];
 }

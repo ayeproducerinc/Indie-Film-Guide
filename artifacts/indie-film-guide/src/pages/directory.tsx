@@ -98,12 +98,13 @@ export default function Directory() {
           </label>
         </div>
 
-        <div className="mt-5 flex items-center justify-between" aria-live="polite">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-2" aria-live="polite">
           <p className="text-sm font-semibold" data-testid="text-count">
             {isLoading ? 'Loading resources' : `${results.length} ${results.length === 1 ? 'resource' : 'resources'}`}
           </p>
           {filtered && <button type="button" onClick={reset} data-testid="button-clear" className="py-2 text-sm font-semibold text-primary underline underline-offset-4">Clear filters</button>}
         </div>
+        <p className="mt-1 mb-4 text-xs text-muted-foreground">Providers pay to be listed. Payment never affects the order of results.</p>
 
         {isLoading && (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">

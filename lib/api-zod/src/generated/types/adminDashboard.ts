@@ -12,7 +12,9 @@ export interface AdminDashboard {
   listings: AdminListing[];
   liveCount: number;
   paidCount: number;
-  yearlyRevenue: number;
+  recurringRevenue: number;
+  lifetimeRevenue: number;
+  lifetimeSpotsLeft: number;
   billingMode: string;
   paymentLinks: PlanPaymentLink[];
 }

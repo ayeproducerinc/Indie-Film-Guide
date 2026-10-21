@@ -1,16 +1,17 @@
 import { Router, type IRouter } from "express";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, asc, eq, isNull, or, sql } from "drizzle-orm";
-import { db, listingsTable } from "@workspace/db";
+import { db, listingsTable, GRACE_MS, findPlan } from "@workspace/db";
 import {
   GetDirectoryResponse, GetListingParams, GetListingResponse, GetLocationsResponse,
   GetListingConfigResponse, SubmitListingResponse, GetSubmissionStatusBody,
   GetSubmissionStatusResponse, CreateListingCheckoutResponse,
 } from "@workspace/api-zod";
 import locations from "../data/georgia-locations.json";
-import { billingState, categories, stages, listingConfig } from "../lib/listing-config";
+import { billingState, categories, stages, listingConfig, specialActive } from "../lib/listing-config";
 import { validateListing } from "../lib/listing-validation";
 import { beginCheckout } from "../lib/billing";
+import { reconcileLifetimeReservations } from "../lib/lifetime-inventory";
 
 const router: IRouter = Router();
 const publicFields = {
@@ -20,10 +21,15 @@ const publicFields = {
   city: listingsTable.city, state: listingsTable.state, website: listingsTable.website,
   phone: listingsTable.phone, providerType: listingsTable.providerType,
   indieRate: listingsTable.indieRate, indieRateDetails: listingsTable.indieRateDetails,
+  indiePromoCode: listingsTable.indiePromoCode, indieRedeemHow: listingsTable.indieRedeemHow,
+  indieWhoQualifies: listingsTable.indieWhoQualifies,
   email: sql<string | null>`CASE WHEN ${listingsTable.publicEmail} THEN ${listingsTable.email} ELSE NULL END`,
 };
 const visible = and(isNull(listingsTable.deletedAt), eq(listingsTable.status, "Live"),
+  or(sql`${listingsTable.providerType} <> 'Nonprofit'`, eq(listingsTable.einVerified, true)),
   or(eq(listingsTable.paymentStatus, "Paid"), eq(listingsTable.paymentStatus, "Payment waived"),
+    and(eq(listingsTable.paymentStatus, "Past due"), sql`${listingsTable.plan} <> 'Lifetime Indie Partner'`,
+      sql`${listingsTable.pastDueSince} > now() - interval '30 days'`),
     and(eq(listingsTable.providerType, "Government"), eq(listingsTable.plan, "Government"), eq(listingsTable.paymentStatus, "Not required"))));
 function publicView<T extends { email: string | null }>(row: T) {
   const { email, ...rest } = row;
@@ -49,8 +55,9 @@ router.get("/locations", (_req, res): void => {
   res.setHeader("Cache-Control", "public, max-age=86400");
   res.json(GetLocationsResponse.parse(locations));
 });
-router.get("/listing-config", (_req, res): void => {
-  res.json(GetListingConfigResponse.parse(listingConfig()));
+router.get("/listing-config", async (_req, res): Promise<void> => {
+  if (billingState.available) await reconcileLifetimeReservations();
+  res.json(GetListingConfigResponse.parse(await listingConfig()));
 });
 router.post("/submissions", async (req, res): Promise<void> => {
   const values = validateListing(req.body);
@@ -61,12 +68,12 @@ router.post("/submissions", async (req, res): Promise<void> => {
   await db.insert(listingsTable).values({
     ...values, reference, accessTokenHash: hashToken(accessToken),
     slug: `${slugBase}-${reference.slice(0, 8)}`, status: "Pending",
-    paymentStatus, foundingPriceLocked: values.plan !== "Government" && listingConfig().specialActive,
+    paymentStatus, foundingPriceLocked: findPlan(values.plan)?.billing === "yearly" && specialActive(),
   });
   res.status(201).json(SubmitListingResponse.parse({
     reference, accessToken, status: "Pending", paymentStatus,
     message: values.plan === "Government" ? "Your listing has been submitted for review."
-      : "Your listing is saved. Complete your annual subscription payment before review.",
+      : "Your listing is saved. Complete your payment before review.",
   }));
 });
 router.post("/submissions/:reference/status", async (req, res): Promise<void> => {
@@ -79,8 +86,8 @@ router.post("/submissions/:reference/status", async (req, res): Promise<void> =>
   res.json(GetSubmissionStatusResponse.parse({
     reference: listing.reference, name: listing.name, plan: listing.plan,
     status: listing.status, paymentStatus: listing.paymentStatus,
-    foundingPriceLocked: listing.foundingPriceLocked,
-    checkoutAvailable: billingState.available && listing.plan !== "Government" && !listing.stripeSubscriptionId && !["Paid", "Payment waived"].includes(listing.paymentStatus),
+    foundingPriceLocked: listing.foundingPriceLocked && !(listing.pastDueSince && Date.now() - listing.pastDueSince.getTime() >= GRACE_MS),
+    checkoutAvailable: billingState.available && findPlan(listing.plan)?.billing !== "free" && !listing.stripeSubscriptionId && !listing.stripePaymentIntentId && !["Paid", "Refunded", "Payment waived"].includes(listing.paymentStatus),
     billingMode: billingState.mode,
   }));
 });

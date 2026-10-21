@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useGetListingConfig } from '@workspace/api-client-react';
 import type { AdminListing, ListingInput, Location } from '@workspace/api-client-react';
 import { LocationCombobox } from '@/components/location-combobox';
-import { CATEGORIES, PRICES, STAGES } from '@/lib/constants';
+import { CATEGORIES, STAGES } from '@/lib/constants';
+import { DealFields, type DealValues } from '@/components/deal-fields';
+import { planPrice } from '@/lib/plan-price';
 
 type Plan = ListingInput['plan'];
 type Errors = Partial<Record<string, string>>;
@@ -25,7 +28,8 @@ export function AdminListingForm({
   submitLabel: string;
 }) {
   const p = (initial?.id ?? 'new').toString();
-  const locked = !!initial?.stripeSubscriptionId;
+  const { data: cfg } = useGetListingConfig();
+  const locked = !!(initial?.stripeSubscriptionId || initial?.stripeCheckoutId || initial?.stripePaymentIntentId);
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [category, setCategory] = useState<string>(initial?.category ?? '');
@@ -38,7 +42,13 @@ export function AdminListingForm({
   const [publicEmail, setPublicEmail] = useState(initial?.publicEmail ?? false);
   const [providerType, setProviderType] = useState<ListingInput['providerType']>(initial?.providerType ?? 'Business');
   const [plan, setPlan] = useState<Plan | ''>((initial?.plan as Plan) ?? '');
-  const [indie, setIndie] = useState(initial?.indieRateDetails ?? '');
+  const [deal, setDeal] = useState<DealValues>({
+    indieRateDetails: initial?.indieRateDetails ?? '', indiePromoCode: initial?.indiePromoCode ?? '',
+    indieRedeemHow: initial?.indieRedeemHow ?? '', indieWhoQualifies: initial?.indieWhoQualifies ?? '',
+  });
+  const [ein, setEin] = useState(initial?.ein ?? '');
+  const [einVerified, setEinVerified] = useState(initial?.einVerified ?? false);
+  const isIndie = cfg?.plans.find(d => d.name === plan)?.indie ?? false;
   const [errors, setErrors] = useState<Errors>({});
   const err = (k: string) => errors[k] ?? serverFields?.[k];
 
@@ -46,7 +56,7 @@ export function AdminListingForm({
   const pickProvider = (v: ListingInput['providerType']) => {
     setProviderType(v);
     if (v === 'Government') setPlan('Government');
-    else if (plan === 'Government') setPlan('');
+    else setPlan('');
   };
   const toggleStage = (s: string) => setStages((c) => (c.includes(s) ? c.filter((x) => x !== s) : [...c, s]));
 
@@ -65,7 +75,13 @@ export function AdminListingForm({
     if (!plan) e.plan = 'Choose a plan.';
     else if (gov && plan !== 'Government') e.plan = 'Government providers use the Government plan.';
     else if (!gov && plan === 'Government') e.plan = 'The Government plan is only for government providers.';
-    if (plan === 'Indie Partner' && !indie.trim()) e.indieRateDetails = 'Describe the indie rate in one line.';
+    if (!cfg?.plans.some(d => d.name === plan && d.providerType === providerType)) e.plan = 'Choose an available plan for this provider type.';
+    if (isIndie) {
+      if (!deal.indieRateDetails.trim()) e.indieRateDetails = 'Describe what filmmakers get.';
+      if (!/^[A-Z0-9]{3,20}$/.test(deal.indiePromoCode)) e.indiePromoCode = 'Use 3–20 uppercase letters or numbers.';
+      if (!deal.indieRedeemHow.trim()) e.indieRedeemHow = 'Explain how to redeem.';
+    }
+    if (providerType === 'Nonprofit' && !/^\d{2}-\d{7}$/.test(ein)) e.ein = 'Enter an EIN as 12-3456789.';
     return e;
   };
 
@@ -83,16 +99,16 @@ export function AdminListingForm({
       ...(coverage === 'City' && loc ? { locationId: loc.id } : {}),
       website: website.trim(), phone: phone.trim(), email: email.trim(), publicEmail,
       providerType, plan: plan as Plan,
-      ...(plan === 'Indie Partner' ? { indieRateDetails: indie.trim() } : {}),
+      ...(isIndie ? deal : {}),
+      ...(providerType === 'Nonprofit' ? { ein, einVerified } : {}),
     });
   };
 
   const chip = (on: boolean) => `press flex min-h-[44px] cursor-pointer items-center justify-center border-2 px-3 text-sm font-semibold has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${on ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card'}`;
-  const plans: { id: Plan; title: string; disabled: boolean }[] = [
-    { id: 'Indie Partner', title: 'Indie Partner', disabled: gov || locked },
-    { id: 'Standard', title: 'Standard', disabled: gov || locked },
-    { id: 'Government', title: 'Government', disabled: !gov || locked },
-  ];
+  const plans = (cfg?.plans ?? []).filter(d => d.providerType === providerType).map(d => ({
+    id: d.name as Plan, title: d.name, disabled: locked || (d.billing === 'lifetime' && cfg!.lifetimeSpotsLeft === 0 && initial?.plan !== d.name),
+    definition: d,
+  }));
 
   return (
     <form onSubmit={submit} noValidate className="space-y-5" data-testid={`form-admin-listing-${p}`}>
@@ -181,33 +197,37 @@ export function AdminListingForm({
           <option>Business</option><option>Nonprofit</option><option>Government</option>
         </select>
       </div>
+      {providerType === 'Nonprofit' && <div>
+        <label className={label} htmlFor={`${p}-ein`}>EIN (private)</label>
+        <input id={`${p}-ein`} data-testid="input-admin-ein" className="field mt-1" value={ein} maxLength={10} placeholder="12-3456789"
+          onChange={e => { setEin(e.target.value); setEinVerified(false); }} />
+        <Err id={`${p}-ein`} msg={err('ein')} />
+        <label className="mt-2 flex min-h-[44px] items-center gap-3 text-sm font-semibold">
+          <input type="checkbox" data-testid="checkbox-admin-ein-verified" checked={einVerified} disabled={!!initial && ein !== initial.ein}
+            onChange={e => setEinVerified(e.target.checked)} className="h-5 w-5" /> EIN verified
+        </label>
+        <p className="text-xs text-muted-foreground">Verify the nonprofit's EIN before approving. Save a changed EIN before marking it verified.</p>
+      </div>}
       <fieldset>
         <legend className={label}>Plan</legend>
         <div id={`${p}-plan`} tabIndex={-1} className="mt-2 grid gap-2">
           {plans.map((pl) => {
-            const price = PRICES[pl.id];
             return (
               <label key={pl.id} className={`flex cursor-pointer items-center justify-between gap-3 border-2 p-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${pl.disabled ? 'cursor-not-allowed opacity-50' : ''} ${plan === pl.id ? 'border-primary bg-accent' : 'border-input bg-card'}`}>
                 <input type="radio" name={`plan-${p}`} className="sr-only" disabled={pl.disabled} data-testid={`radio-admin-plan-${pl.id.replace(' ', '-')}`} checked={plan === pl.id} onChange={() => setPlan(pl.id)} />
                 <span className="font-bold">{pl.title}</span>
-                <span className="font-display text-2xl text-primary">{price === 0 ? 'Free' : `$${price}/yr`}</span>
+                <span className="font-display text-2xl text-primary">{planPrice(pl.definition)}</span>
               </label>
             );
           })}
         </div>
-        {locked && <p id={`${p}-lock`} data-testid="text-plan-locked" className="mt-2 border-l-4 border-primary bg-card p-3 text-sm">Plan and provider type are locked because a Stripe subscription is linked to this listing. Change the subscription in Stripe first; the server rejects edits here.</p>}
+        {locked && <p id={`${p}-lock`} data-testid="text-plan-locked" className="mt-2 border-l-4 border-primary bg-card p-3 text-sm">Plan and provider type are locked to the linked Stripe checkout or payment. Promo-code edits do not start another subscription. Use “Remove code at renewal” on the listing to change a yearly indie plan to Standard; keep the current deal until renewal. Lifetime has no renewal and must keep a deal.</p>}
         <Err id={`${p}-plan`} msg={err('plan') ?? err('providerType')} />
-        {plan === 'Indie Partner' && (
-          <div className="mt-3">
-            <label htmlFor={`${p}-indieRateDetails`} className={label}>Indie rate details</label>
-            <input id={`${p}-indieRateDetails`} data-testid="input-admin-indie" className="field mt-1" maxLength={200} value={indie} onChange={(e) => setIndie(e.target.value)} aria-invalid={!!err('indieRateDetails')} aria-describedby={`${p}-indieRateDetails-err`} />
-            <Err id={`${p}-indieRateDetails`} msg={err('indieRateDetails')} />
-          </div>
-        )}
+        {isIndie && <DealFields prefix={p} value={deal} onChange={setDeal} errors={{ ...serverFields, ...errors }} />}
       </fieldset>
       {serverError && <p role="alert" data-testid="error-admin-form" className="border-2 border-destructive p-3 text-sm font-semibold text-destructive">{serverError}</p>}
       <div className="flex flex-col gap-2 sm:flex-row">
-        <button type="submit" disabled={pending} data-testid="button-admin-save" className="btn">{pending ? 'Saving' : submitLabel}</button>
+        <button type="submit" disabled={pending || !cfg} data-testid="button-admin-save" className="btn">{pending ? 'Saving' : submitLabel}</button>
         <button type="button" onClick={onCancel} data-testid="button-admin-cancel" className="btn-outline">Cancel</button>
       </div>
     </form>
