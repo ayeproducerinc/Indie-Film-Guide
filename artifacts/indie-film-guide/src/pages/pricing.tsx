@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { getGetListingConfigQueryKey, useGetListingConfig } from '@workspace/api-client-react';
 import type { PlanDefinition } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMeta } from '@/lib/use-meta';
 import { planPrice } from '@/lib/plan-price';
 
@@ -40,7 +41,20 @@ export default function Pricing() {
         {isLoading && <div className="mt-8 grid gap-4 sm:grid-cols-2" aria-busy="true">{[0, 1, 2, 3].map((i) => <div key={i} className="h-56 animate-pulse border-2 border-input bg-muted" />)}</div>}
 
         {cfg && (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="list-plans">
+          <Tabs defaultValue="for-profit" className="mt-8 min-w-0" data-testid="list-plans">
+            <TabsList aria-label="Provider pricing" className="grid h-auto w-full grid-cols-3 gap-2 rounded-none bg-transparent p-0">
+              {[
+                ['for-profit', 'For-Profit'],
+                ['non-profit', 'Non-Profit'],
+                ['government', 'Government'],
+              ].map(([value, label]) => (
+                <TabsTrigger key={value} value={value} data-testid={`tab-pricing-${value}`} className="min-h-12 min-w-0 whitespace-normal rounded-none border-2 border-input bg-card px-1 py-3 text-[13px] font-bold leading-snug text-foreground [overflow-wrap:anywhere] sm:px-3 sm:text-sm data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:underline data-[state=active]:underline-offset-4 data-[state=active]:shadow-none">
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value="for-profit" className="mt-6" data-testid="panel-pricing-for-profit">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className={`${card} border-primary`} data-testid="card-plan-indie">
               <span className="absolute -top-3 left-4 bg-primary px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground">Most popular</span>
               <h2 className="font-display text-2xl">Indie Partner</h2>
@@ -69,7 +83,10 @@ export default function Pricing() {
                   : <button type="button" disabled data-testid="button-plan-lifetime" className="btn mt-5 block w-full cursor-not-allowed text-center opacity-50">Sold out</button>}
               </div>
             </div>
-            <div className={card} data-testid="card-plan-nonprofit">
+              </div>
+            </TabsContent>
+            <TabsContent value="non-profit" className="mt-6" data-testid="panel-pricing-non-profit">
+            <div className={`${card} max-w-xl`} data-testid="card-plan-nonprofit">
               <h2 className="font-display text-2xl">Nonprofit</h2>
               <p className="mt-2 font-display text-3xl text-primary">{planPrice(get('Nonprofit Indie Partner'))}<span className="block text-sm font-sans font-semibold text-foreground">with a promo code</span></p>
               <p className="mt-1 font-display text-3xl text-primary">{planPrice(get('Nonprofit Standard'))}<span className="block text-sm font-sans font-semibold text-foreground">without one</span></p>
@@ -80,14 +97,17 @@ export default function Pricing() {
                 <Link href={`/get-listed?plan=${encodeURIComponent('Nonprofit Standard')}`} data-testid="button-plan-nonprofit-standard" className="mt-2 block w-full border-2 border-foreground px-4 py-2 text-center text-sm font-bold">Get listed without a code</Link>
               </div>
             </div>
-            <div className={card} data-testid="card-plan-government">
+            </TabsContent>
+            <TabsContent value="government" className="mt-6" data-testid="panel-pricing-government">
+            <div className={`${card} max-w-xl`} data-testid="card-plan-government">
               <h2 className="font-display text-2xl">Government</h2>
               <p className={`mt-2 ${price}`}>{planPrice(get('Government'))}</p>
               <p className="mt-1 text-sm font-semibold">For government offices that support filming.</p>
               <ul className={ul}><li>Alphabetical listing</li><li>Reviewed before publication</li><li>No payment step</li></ul>
               <div className="mt-auto"><Cta plan="Government" id="button-plan-government">Get listed</Cta></div>
             </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         )}
 
         <section className="mt-14" aria-labelledby="faq-title">

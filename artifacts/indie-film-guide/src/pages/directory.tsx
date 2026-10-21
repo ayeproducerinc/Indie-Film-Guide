@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import { useGetDirectory, getGetDirectoryQueryKey } from '@workspace/api-client-react';
-import { ArrowRight, Phone, Search } from 'lucide-react';
+import { ArrowRight, Check, Phone, Search } from 'lucide-react';
 import { Layout, Badge } from '@/components/layout';
 import { CATEGORIES, STAGES, placeLabel, shortCategory } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
@@ -62,10 +62,10 @@ export default function Directory() {
                 key={c.value || 'all'} type="button" aria-pressed={cat === c.value} aria-label={c.value || 'All categories'} title={c.value || 'All categories'}
                 data-testid={`chip-${c.short.toLowerCase().replace(/[^a-z]+/g, '-')}`}
                 onClick={() => setCat(c.value)}
-                className={`category-button press border-2 font-bold transition-colors ${cat === c.value ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card hover:border-primary'}`}
+                className={`category-button press border-2 font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${cat === c.value ? 'border-primary bg-primary text-primary-foreground underline underline-offset-4' : 'border-border bg-card hover:border-primary'}`}
               >
-                <span className="lg:hidden" aria-hidden="true">{c.mobile}</span>
-                <span className="hidden lg:inline" aria-hidden="true">{c.short}</span>
+                <Check className={`h-3.5 w-3.5 shrink-0 lg:hidden ${cat === c.value ? '' : 'invisible'}`} aria-hidden="true" />
+                <span className="min-w-0" aria-hidden="true">{c.short}</span>
               </button>
             ))}
           </div>
