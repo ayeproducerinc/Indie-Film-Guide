@@ -15,9 +15,9 @@ import { getUncachableStripeClient } from "../lib/stripe-client";
 
 const router: IRouter = Router();
 const adminView = (row: Listing) => ({ ...row, createdAt: row.createdAt.toISOString() });
-const eligible = (row: Listing) => row.plan === "Government"
+const eligible = (row: Listing) => row.paymentStatus === "Payment waived" || (row.plan === "Government"
   ? row.providerType === "Government" && row.paymentStatus === "Not required"
-  : row.paymentStatus === "Paid";
+  : row.paymentStatus === "Paid");
 
 router.get("/admin/session", async (req, res): Promise<void> => {
   res.json(GetAdminSessionResponse.parse({ authenticated: await isAdmin(req), configured: adminConfigured() }));
@@ -62,7 +62,7 @@ router.put("/admin/listings/:id", requireAdminMutation, async (req, res): Promis
     }
     const paymentStatus = values.plan !== row.plan
       ? values.plan === "Government" ? "Not required" : "Unpaid" : row.paymentStatus;
-    const status = row.status === "Live" && paymentStatus !== "Paid" && values.plan !== "Government" ? "Pending" : row.status;
+    const status = row.status === "Live" && !["Paid", "Payment waived"].includes(paymentStatus) && values.plan !== "Government" ? "Pending" : row.status;
     const [updated] = await tx.update(listingsTable).set({ ...values, paymentStatus, status }).where(eq(listingsTable.id, row.id)).returning();
     return { status: 200, body: UpdateAdminListingResponse.parse(adminView(updated!)) };
   });

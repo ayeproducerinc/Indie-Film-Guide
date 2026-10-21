@@ -72,7 +72,7 @@ function statusCls(s: string) {
 
 function Row({ l, onEdit, onDelete, onStatus, onPayment, paymentUrl, busy }: { l: AdminListing; onEdit: () => void; onDelete: () => void; onStatus: (s: 'Pending' | 'Live' | 'Rejected') => void; onPayment: () => void; paymentUrl?: string; busy: boolean }) {
   const [open, setOpen] = useState(false);
-  const paid = l.paymentStatus.toLowerCase() === 'paid' || l.plan === 'Government';
+  const paid = ['Paid', 'Payment waived'].includes(l.paymentStatus) || l.plan === 'Government';
   const btn = 'btn-outline !min-h-[40px] !px-3 !text-xs';
   return (
     <li data-testid={`row-listing-${l.id}`} className="border-2 border-foreground bg-card p-4">

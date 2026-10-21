@@ -45,6 +45,13 @@ async function main() {
   assert.equal(status.paymentStatus, "Not required");
   assert.equal(status.status, "Pending");
   let dash = (await request("/admin/dashboard", "GET", undefined, true)).body;
+  assert.equal(dash.paidCount, dash.listings.filter((l: any) => l.paymentStatus === "Paid").length);
+  const waivedRows = dash.listings.filter((l: any) => l.paymentStatus === "Payment waived");
+  for (const waived of waivedRows) {
+    if (waived.status === "Live") assert.equal((await request(`/listings/${waived.slug}`)).body.id, waived.id);
+    const checkout = await request(`/admin/listings/${waived.id}/checkout`, "POST", undefined, true, dash.billingMode === "unavailable" ? 503 : 409);
+    assert.match(checkout.body.error, /payment is temporarily waived/i);
+  }
   let row = dash.listings.find((l: any) => l.reference === saved.reference);
   assert.ok(row);
   ownIds.push(row.id);
@@ -78,7 +85,7 @@ async function main() {
   assert.equal(added.status, "Pending");
   await request(`/admin/listings/${added.id}/status`, "POST", { status: "Live" }, true);
   assert.equal((await request(`/listings/${added.slug}`)).body.name, added.name);
-  console.log("PASS: protected admin login, CSRF, required contacts, canonical locations, submission access, private email, opt-in/out, review, unpaid approval block, add/edit/reject.");
+  console.log("PASS: protected admin login, CSRF, required contacts, canonical locations, submission access, private email, opt-in/out, review, unpaid approval block, add/edit/reject, waived listing visibility and checkout block.");
 }
 try { await main(); }
 finally {

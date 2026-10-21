@@ -15,7 +15,6 @@ export function Layout({ children }: { children: ReactNode }) {
           </Link>
           <nav className="flex items-center gap-1" aria-label="Main">
             <Link href="/about" data-testid="link-about-nav" className={`${navCls('/about')} hidden sm:block`}>About</Link>
-            <Link href="/admin" data-testid="link-admin-nav" className={navCls('/admin')}>Admin</Link>
             <Link
               href="/get-listed"
               data-testid="button-get-listed-header"

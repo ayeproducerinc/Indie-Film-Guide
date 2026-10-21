@@ -57,7 +57,7 @@ async function updateFromSubscription(subscriptionId: string, reference?: string
     if (!listing && reference) {
       [listing] = await tx.select().from(listingsTable).where(eq(listingsTable.reference, reference));
     }
-    if (!listing || listing.deletedAt || listing.plan === "Government") return;
+    if (!listing || listing.deletedAt || listing.plan === "Government" || listing.paymentStatus === "Payment waived") return;
     if (listing.stripeSubscriptionId && listing.stripeSubscriptionId !== sub.id) return;
     const item = sub.items.data[0];
     const expectedPrice = billingState.prices[listing.plan];
@@ -104,12 +104,13 @@ export async function processListingWebhook(payload: Buffer, signature: string) 
 }
 
 export async function beginCheckout(reference: string, origin: string) {
-  if (!billingState.available) throw new Error("Checkout is temporarily unavailable. Please try again shortly.");
-  const stripe = await getUncachableStripeClient();
   return db.transaction(async tx => {
     const [listing] = await tx.select().from(listingsTable).where(and(eq(listingsTable.reference, reference), isNull(listingsTable.deletedAt))).for("update");
     if (!listing) throw new Error("Submission not found.");
     if (listing.plan === "Government") throw new Error("Government listings do not require payment.");
+    if (listing.paymentStatus === "Payment waived") throw new Error("Payment is temporarily waived for this listing. Checkout is not required.");
+    if (!billingState.available) throw new Error("Checkout is temporarily unavailable. Please try again shortly.");
+    const stripe = await getUncachableStripeClient();
     if (listing.stripeSubscriptionId || listing.paymentStatus === "Paid") throw new Error("A subscription is already associated with this listing. Contact the administrator rather than paying again.");
     if (listing.stripeCheckoutId) {
       const previous = await stripe.checkout.sessions.retrieve(listing.stripeCheckoutId);

@@ -46,6 +46,7 @@ export default function Submitted() {
   };
   const government = state?.plan === 'Government';
   const paid = state?.paymentStatus === 'Paid';
+  const waived = state?.paymentStatus === 'Payment waived';
   return <Layout><div className="mx-auto max-w-2xl px-4 py-10 rise">
     {!saved ? <>
       <h1 className="font-display text-5xl">No recent submission</h1>
@@ -54,11 +55,12 @@ export default function Submitted() {
     </> : <>
       <p className="break-all text-xs font-bold uppercase tracking-wider text-primary">Reference {saved.reference}</p>
       <h1 className="font-display mt-3 text-5xl" data-testid="text-confirmation-title">
-        {!state ? 'Checking your submission' : state.status === 'Live' ? 'Your listing is live' : paid || government ? 'Submitted for review' : 'Complete your payment'}
+        {!state ? 'Checking your submission' : state.status === 'Live' ? 'Your listing is live' : paid || government || waived ? 'Submitted for review' : 'Complete your payment'}
       </h1>
       {state && <div className="mt-5 border-2 border-foreground bg-card p-5 space-y-3" data-testid="text-confirmation">
         <p><strong>{state.name}</strong> is saved.</p>
         {government ? <p>Government listings are free. Your listing will be reviewed before publication.</p>
+          : waived ? <p>Payment is temporarily waived for this listing. {state.status === 'Live' ? 'Your approved listing is now in the directory.' : 'Your listing is awaiting admin approval.'} No Stripe checkout is needed while the waiver is active.</p>
           : paid ? <p>Your payment is confirmed. {state.status === 'Live' ? 'Your approved listing is now in the directory.' : 'Your listing will go live after admin approval.'}</p>
             : <><p>{state.plan}: <strong>${state.plan === 'Indie Partner' ? '199' : '499'}/year</strong>, renewing annually.</p>
               {cancelled && <p>Checkout was cancelled. Your saved listing is ready when you want to complete payment.</p>}
@@ -70,10 +72,10 @@ export default function Submitted() {
           <dt>Review status</dt><dd data-testid="text-status">{state.status}</dd>
           <dt>Payment</dt><dd data-testid="text-payment-status">{state.paymentStatus}</dd>
         </dl>
-        {state.checkoutAvailable && !url && <button type="button" disabled={busy} onClick={() => void checkout()} className="btn" data-testid="button-checkout">{busy ? 'Preparing checkout…' : 'Continue to secure checkout'}</button>}
-        {url && !paid && <a href={url} target="_blank" rel="noopener noreferrer" className="btn" data-testid="link-stripe-checkout">Open Stripe checkout</a>}
-        {!government && !paid && state.billingMode === 'unavailable' && <p role="status">Checkout is temporarily unavailable. Your details are saved; please try again shortly.</p>}
-        {!government && !paid && !state.checkoutAvailable && state.billingMode !== 'unavailable' && <p>We are checking your subscription payment. Please do not start another subscription.</p>}
+        {state.checkoutAvailable && !waived && !url && <button type="button" disabled={busy} onClick={() => void checkout()} className="btn" data-testid="button-checkout">{busy ? 'Preparing checkout…' : 'Continue to secure checkout'}</button>}
+        {url && !paid && !waived && <a href={url} target="_blank" rel="noopener noreferrer" className="btn" data-testid="link-stripe-checkout">Open Stripe checkout</a>}
+        {!government && !paid && !waived && state.billingMode === 'unavailable' && <p role="status">Checkout is temporarily unavailable. Your details are saved; please try again shortly.</p>}
+        {!government && !paid && !waived && !state.checkoutAvailable && state.billingMode !== 'unavailable' && <p>We are checking your subscription payment. Please do not start another subscription.</p>}
       </div>}
       {error && <p role="alert" className="mt-4 text-destructive">{error}</p>}
       <Link href="/" className="btn-outline mt-6">Back to directory</Link>

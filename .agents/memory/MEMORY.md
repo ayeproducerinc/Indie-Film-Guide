@@ -1,2 +1,3 @@
 - [Census place data imports](census-imports.md) — inspect Gazetteer headers before parsing; formats differ between releases.
 - [Listing contact rules](listing-product-rules.md) — website and phone are required; public email requires provider opt-in, superseding the initial brief.
+- [Payment waiver scope](payment-waiver-scope.md) — owner authorized a temporary exception for one listing, not a global bypass or later automatic charge.

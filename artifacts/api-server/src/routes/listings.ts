@@ -23,7 +23,7 @@ const publicFields = {
   email: sql<string | null>`CASE WHEN ${listingsTable.publicEmail} THEN ${listingsTable.email} ELSE NULL END`,
 };
 const visible = and(isNull(listingsTable.deletedAt), eq(listingsTable.status, "Live"),
-  or(eq(listingsTable.paymentStatus, "Paid"),
+  or(eq(listingsTable.paymentStatus, "Paid"), eq(listingsTable.paymentStatus, "Payment waived"),
     and(eq(listingsTable.providerType, "Government"), eq(listingsTable.plan, "Government"), eq(listingsTable.paymentStatus, "Not required"))));
 function publicView<T extends { email: string | null }>(row: T) {
   const { email, ...rest } = row;
@@ -80,7 +80,7 @@ router.post("/submissions/:reference/status", async (req, res): Promise<void> =>
     reference: listing.reference, name: listing.name, plan: listing.plan,
     status: listing.status, paymentStatus: listing.paymentStatus,
     foundingPriceLocked: listing.foundingPriceLocked,
-    checkoutAvailable: billingState.available && listing.plan !== "Government" && !listing.stripeSubscriptionId && listing.paymentStatus !== "Paid",
+    checkoutAvailable: billingState.available && listing.plan !== "Government" && !listing.stripeSubscriptionId && !["Paid", "Payment waived"].includes(listing.paymentStatus),
     billingMode: billingState.mode,
   }));
 });
