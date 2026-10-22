@@ -2,6 +2,13 @@ import Stripe from "stripe";
 import { StripeSync } from "stripe-replit-sync";
 
 async function credentials(): Promise<{ secretKey: string; webhookSecret?: string }> {
+  // A preview-only key must never activate billing in the published app.
+  if (process.env.NODE_ENV !== "production" && process.env.STRIPE_TEST_SECRET_KEY) {
+    const testKey = process.env.STRIPE_TEST_SECRET_KEY;
+    if (!testKey.startsWith("sk_test_") && !testKey.startsWith("rk_test_"))
+      throw new Error("STRIPE_TEST_SECRET_KEY must be a Stripe test-mode key.");
+    return { secretKey: testKey };
+  }
   // Manual-key mode is used only when the native runtime connection isn't available.
   // Never mix keys from one account with a webhook secret from another.
   if (process.env.STRIPE_SECRET_KEY) return { secretKey: process.env.STRIPE_SECRET_KEY };

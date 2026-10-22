@@ -2,6 +2,12 @@ import Stripe from "stripe";
 import { StripeSync } from "stripe-replit-sync";
 
 async function credentials(): Promise<{ secretKey: string; webhookSecret?: string }> {
+  if (process.env.NODE_ENV !== "production" && process.env.STRIPE_TEST_SECRET_KEY) {
+    const testKey = process.env.STRIPE_TEST_SECRET_KEY;
+    if (!testKey.startsWith("sk_test_") && !testKey.startsWith("rk_test_"))
+      throw new Error("STRIPE_TEST_SECRET_KEY must be a Stripe test-mode key.");
+    return { secretKey: testKey };
+  }
   if (process.env.STRIPE_SECRET_KEY) return { secretKey: process.env.STRIPE_SECRET_KEY };
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const token = process.env.REPL_IDENTITY ? `repl ${process.env.REPL_IDENTITY}`

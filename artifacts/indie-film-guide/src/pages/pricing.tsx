@@ -42,7 +42,8 @@ export default function Pricing() {
 
         {cfg && (
           <Tabs defaultValue="for-profit" className="mt-8 min-w-0" data-testid="list-plans">
-            <TabsList aria-label="Provider pricing" className="grid h-auto w-full grid-cols-3 gap-2 rounded-none bg-transparent p-0">
+            <p id="pricing-type-label" className="mb-3 text-sm font-bold">Choose your organization type</p>
+            <TabsList aria-labelledby="pricing-type-label" className="grid h-auto w-full max-w-md grid-cols-3 gap-2 rounded-none bg-transparent p-0">
               {[
                 ['for-profit', 'For-Profit'],
                 ['non-profit', 'Non-Profit'],
@@ -53,11 +54,13 @@ export default function Pricing() {
                 </TabsTrigger>
               ))}
             </TabsList>
-            <TabsContent value="for-profit" className="mt-6" data-testid="panel-pricing-for-profit">
+            <TabsContent value="for-profit" className="mt-6 min-w-0 border-2 border-foreground/40 bg-muted/20 p-3 sm:p-6" data-testid="panel-pricing-for-profit">
+              <h2 className="font-display text-3xl">For-Profit Plans</h2>
+              <p className="mb-7 mt-1 text-sm text-muted-foreground">Choose the listing that fits your business.</p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className={`${card} border-primary`} data-testid="card-plan-indie">
               <span className="absolute -top-3 left-4 bg-primary px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground">Most popular</span>
-              <h2 className="font-display text-2xl">Indie Partner</h2>
+              <h3 className="font-display text-2xl">Indie Partner</h3>
               <p className={`mt-2 ${price}`}>{planPrice(get('Indie Partner'))}</p>
               <p className="mt-1 text-sm font-semibold">For businesses that give indie filmmakers a promo code.</p>
               <ul className={ul}><li>Alphabetical listing</li><li>Indie rate badge and filter</li><li>Your promo code, deal and redeem steps on your page</li></ul>
@@ -65,7 +68,7 @@ export default function Pricing() {
               <div className="mt-auto"><Cta plan="Indie Partner" id="button-plan-indie">Get listed</Cta></div>
             </div>
             <div className={card} data-testid="card-plan-standard">
-              <h2 className="font-display text-2xl">Standard</h2>
+              <h3 className="font-display text-2xl">Standard</h3>
               <p className={`mt-2 ${price}`}>{planPrice(get('Standard'))}</p>
               <p className="mt-1 text-sm font-semibold">For businesses without an indie promo code.</p>
               <ul className={ul}><li>Alphabetical listing</li><li>Category, stage and city filters</li><li>Website, phone and optional public email</li></ul>
@@ -73,7 +76,7 @@ export default function Pricing() {
               <div className="mt-auto"><Cta plan="Standard" id="button-plan-standard">Get listed</Cta></div>
             </div>
             <div className={card} data-testid="card-plan-lifetime">
-              <h2 className="font-display text-2xl">Lifetime Indie Partner</h2>
+              <h3 className="font-display text-2xl">Lifetime Indie Partner</h3>
               <p className={`mt-2 ${price}`}>{planPrice(get('Lifetime Indie Partner'))}</p>
               <p className="mt-1 text-sm font-bold" data-testid="text-lifetime-spots">{left > 0 ? `${left} of 10 spots left` : 'Sold out. All 10 spots are taken.'}</p>
               <p className="mt-1 text-sm font-semibold">For businesses that will honor an indie promo code for the long haul.</p>
@@ -85,9 +88,11 @@ export default function Pricing() {
             </div>
               </div>
             </TabsContent>
-            <TabsContent value="non-profit" className="mt-6" data-testid="panel-pricing-non-profit">
+            <TabsContent value="non-profit" className="mt-6 min-w-0 border-2 border-foreground/40 bg-muted/20 p-3 sm:p-6" data-testid="panel-pricing-non-profit">
+              <h2 className="font-display text-3xl">Non-Profit Plans</h2>
+              <p className="mb-6 mt-1 text-sm text-muted-foreground">Choose a listing for your verified nonprofit.</p>
             <div className={`${card} max-w-xl`} data-testid="card-plan-nonprofit">
-              <h2 className="font-display text-2xl">Nonprofit</h2>
+              <h3 className="font-display text-2xl">Nonprofit</h3>
               <p className="mt-2 font-display text-3xl text-primary">{planPrice(get('Nonprofit Indie Partner'))}<span className="block text-sm font-sans font-semibold text-foreground">with a promo code</span></p>
               <p className="mt-1 font-display text-3xl text-primary">{planPrice(get('Nonprofit Standard'))}<span className="block text-sm font-sans font-semibold text-foreground">without one</span></p>
               <p className="mt-2 text-sm font-semibold">For verified nonprofits.</p>
@@ -98,9 +103,11 @@ export default function Pricing() {
               </div>
             </div>
             </TabsContent>
-            <TabsContent value="government" className="mt-6" data-testid="panel-pricing-government">
+            <TabsContent value="government" className="mt-6 min-w-0 border-2 border-foreground/40 bg-muted/20 p-3 sm:p-6" data-testid="panel-pricing-government">
+              <h2 className="font-display text-3xl">Government</h2>
+              <p className="mb-6 mt-1 text-sm text-muted-foreground">Free listings for government offices that support filming.</p>
             <div className={`${card} max-w-xl`} data-testid="card-plan-government">
-              <h2 className="font-display text-2xl">Government</h2>
+              <h3 className="font-display text-2xl">Government</h3>
               <p className={`mt-2 ${price}`}>{planPrice(get('Government'))}</p>
               <p className="mt-1 text-sm font-semibold">For government offices that support filming.</p>
               <ul className={ul}><li>Alphabetical listing</li><li>Reviewed before publication</li><li>No payment step</li></ul>

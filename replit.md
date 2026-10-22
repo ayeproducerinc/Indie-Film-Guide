@@ -72,7 +72,8 @@ Public listing search, city/category/stage/rate filters, listing details, and pe
 ## Gotchas
 
 - Launch-special claims require a valid future `SPECIAL_END_DATE`; never invent a deadline.
-- Missing Stripe runtime credentials or catalog keep checkout explicitly unavailable. Do not claim payment links exist until the setup script has succeeded. Test-mode payments are not live billing.
+- Missing Stripe runtime credentials or catalog keep checkout explicitly unavailable. Do not claim payment links exist until they have been created and verified through the setup script or connected Stripe API. Test-mode payments are not live billing.
+- `STRIPE_TEST_SECRET_KEY` enables test checkout only in development; it must start with `sk_test_` or `rk_test_` and is ignored in production. It takes priority over other development credentials, preventing the test setup from enabling real charges. Existing production credentials are unchanged.
 - Location labels/state are derived server-side from a selected Census GEOID, not trusted client strings.
 
 ## Pointers
