@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import { useGetDirectory, getGetDirectoryQueryKey } from '@workspace/api-client-react';
 import { ArrowRight, Check, Phone, Search } from 'lucide-react';
+import { formatPhone } from '@/lib/format-phone';
 import { Layout, Badge } from '@/components/layout';
 import { CATEGORIES, STAGES, placeLabel, shortCategory } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
@@ -146,7 +147,7 @@ export default function Directory() {
                 <p className="mt-3 flex-1 text-sm text-muted-foreground">{l.description}</p>
                 <div className="mt-4 flex items-center gap-2">
                   <Link href={`/listing/${l.slug}`} data-testid={`link-details-${l.id}`} className="btn">View details <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
-                  {l.phone && <a href={`tel:${l.phone}`} aria-label={`Call ${l.name}`} className="btn-outline px-3"><Phone className="h-4 w-4" aria-hidden="true" /></a>}
+                  {l.phone && <a href={`tel:${l.phone}`} aria-label={`Call ${l.name} at ${formatPhone(l.phone)}`} title={formatPhone(l.phone)} className="btn-outline px-3"><Phone className="h-4 w-4" aria-hidden="true" /></a>}
                 </div>
               </article>
             </li>

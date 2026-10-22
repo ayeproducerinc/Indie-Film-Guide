@@ -5,6 +5,7 @@ import { Layout, Badge } from '@/components/layout';
 import { placeLabel } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
 import { DealBox } from '@/components/deal-box';
+import { formatPhone } from '@/lib/format-phone';
 
 export default function ListingPage() {
   const { slug = '' } = useParams<{ slug: string }>();
@@ -44,7 +45,7 @@ export default function ListingPage() {
 
             {(l.phone || l.website || l.email) && (
               <div className="mt-6 flex flex-wrap gap-3">
-                {l.phone && <a href={`tel:${l.phone}`} data-testid="button-call" className="btn"><Phone className="h-4 w-4" aria-hidden="true" /> Call {l.phone}</a>}
+                {l.phone && <a href={`tel:${l.phone}`} data-testid="button-call" className="btn"><Phone className="h-4 w-4" aria-hidden="true" /> Call {formatPhone(l.phone)}</a>}
                 {l.website && <a href={site} target="_blank" rel="noopener noreferrer" data-testid="button-website" className="btn-outline"><Globe className="h-4 w-4" aria-hidden="true" /> Website</a>}
                 {l.email && <a href={`mailto:${l.email}`} data-testid="button-email" className="btn-outline"><Mail className="h-4 w-4" aria-hidden="true" /> Email</a>}
               </div>
