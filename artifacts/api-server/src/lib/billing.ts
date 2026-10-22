@@ -7,7 +7,7 @@ import { getStripeSync, getUncachableStripeClient } from "./stripe-client";
 import { billingState } from "./listing-config";
 import { logger } from "./logger";
 import { validPrice } from "./payment-policy";
-import { idOf, updateFromSubscription } from "./subscription-billing";
+import { idOf, updateFromSubscription, applyAnnualRefund, applyAnnualRefundUpdate } from "./subscription-billing";
 import { applyLifetimeSession, applyLifetimeRefund } from "./lifetime-payments";
 import { lifetimeLock, lifetimeUsage, LIFETIME_CAP, RESERVATION_MS, reconcileLifetimeReservations, releaseReservation } from "./lifetime-inventory";
 
@@ -86,8 +86,13 @@ export async function processListingWebhook(payload: Buffer, signature: string) 
         if (row) await releaseReservation(row.id, session.metadata.reservationKey);
       }
     }
-  } else if (event.type === "charge.refunded") await applyLifetimeRefund((event.data.object as Stripe.Charge).id);
-  else if (event.type.startsWith("customer.subscription.")) {
+  } else if (event.type === "charge.refunded") {
+    const chargeId = (event.data.object as Stripe.Charge).id;
+    await applyLifetimeRefund(chargeId, stripe);
+    await applyAnnualRefund(chargeId, stripe);
+  } else if (["refund.created", "refund.updated", "refund.failed", "charge.refund.updated"].includes(event.type)) {
+    await applyAnnualRefundUpdate((event.data.object as Stripe.Refund).id, stripe);
+  } else if (event.type.startsWith("customer.subscription.")) {
     const sub = event.data.object as Stripe.Subscription;
     await updateFromSubscription(sub.id, sub.metadata.listingReference);
   } else if (event.type.startsWith("invoice.")) {

@@ -3,6 +3,7 @@ import { db, listingsTable, findPlan } from "@workspace/db";
 import { getUncachableStripeClient } from "./stripe-client";
 import { billingState } from "./listing-config";
 import { subscriptionTransition } from "./payment-policy";
+import { invoiceFullyRefunded } from "./annual-refunds";
 import type Stripe from "stripe";
 
 export const idOf = (object: string | { id: string } | null) => typeof object === "string" ? object : object?.id ?? null;
@@ -45,8 +46,13 @@ export async function updateFromSubscription(subscriptionId: string, reference?:
       throw new Error("Unexpected subscription price change.");
     const invoice = typeof sub.latest_invoice === "object" ? sub.latest_invoice : null;
     const paid = sub.status === "active" && invoice?.status === "paid" && item.current_period_end * 1000 > Date.now();
-    const paymentStatus = paid ? "Paid" : ["canceled", "unpaid", "incomplete_expired"].includes(sub.status)
-      ? "Cancelled" : sub.status === "past_due" ? "Past due" : "Unpaid";
+    if (paid && (idOf(invoice.parent?.subscription_details?.subscription ?? null) !== sub.id ||
+        invoice.livemode !== sub.livemode))
+      throw new Error("The paid invoice is not bound to this subscription and billing mode.");
+    const fullyRefunded = paid && await invoiceFullyRefunded(stripe, invoice);
+    const paymentStatus = paid ? fullyRefunded ? "Refunded" : "Paid"
+      : ["canceled", "unpaid", "incomplete_expired"].includes(sub.status) ? "Cancelled"
+      : listing.paymentStatus === "Refunded" ? "Refunded" : sub.status === "past_due" ? "Past due" : "Unpaid";
     // Use invoice time for first failed renewal; webhook delivery delays must not extend grace.
     const firstDue = !listing.pastDueSince && paymentStatus === "Past due"
       ? new Date((invoice?.status_transitions.finalized_at ?? invoice?.created ?? Math.floor(Date.now() / 1000)) * 1000) : listing.pastDueSince;
@@ -57,6 +63,36 @@ export async function updateFromSubscription(subscriptionId: string, reference?:
         indieRate: false, indiePromoCode: "", indieRateDetails: "", indieRedeemHow: "", indieWhoQualifies: "" } : {}),
     }).where(eq(listingsTable.id, listing.id));
   });
+}
+
+export async function applyAnnualRefund(chargeId: string, client?: Stripe) {
+  const stripe = client ?? await getUncachableStripeClient();
+  const charge = await stripe.charges.retrieve(chargeId);
+  const intent = idOf(charge.payment_intent);
+  if (!intent || !charge.amount_refunded) return;
+  const subscriptions = new Set<string>();
+  for await (const payment of stripe.invoicePayments.list({
+    payment: { type: "payment_intent", payment_intent: intent }, status: "paid", limit: 100,
+  })) {
+    const invoice = await stripe.invoices.retrieve(idOf(payment.invoice)!);
+    const subscriptionId = idOf(invoice.parent?.subscription_details?.subscription ?? null);
+    if (!subscriptionId || subscriptions.has(subscriptionId)) continue;
+    subscriptions.add(subscriptionId);
+    const [listing] = await db.select().from(listingsTable).where(and(
+      eq(listingsTable.stripeSubscriptionId, subscriptionId), isNull(listingsTable.deletedAt),
+    ));
+    if (!listing || findPlan(listing.plan)?.billing !== "yearly" || listing.paymentStatus === "Payment waived") continue;
+    // Reconcile the subscription's CURRENT invoice under the same lock as all
+    // other updates. A delayed refund of an older year cannot hide a new year.
+    await updateFromSubscription(subscriptionId, undefined, stripe);
+  }
+}
+
+export async function applyAnnualRefundUpdate(refundId: string, client?: Stripe) {
+  const stripe = client ?? await getUncachableStripeClient();
+  const refund = await stripe.refunds.retrieve(refundId);
+  const chargeId = idOf(refund.charge);
+  if (chargeId) await applyAnnualRefund(chargeId, stripe);
 }
 
 export async function scheduleStandardAtRenewal(id: number, expected: { expectedEffectiveAt: string; expectedAmount: number }) {

@@ -17,6 +17,7 @@ const ids: number[] = [];
 const sessions = new Map<string, any>();
 const idempotent = new Map<string, any>();
 let refunded = false;
+let existingLifetimeUsage = 0;
 const fake = {
   checkout: { sessions: {
     create: async (params: any, opts: any) => {
@@ -50,7 +51,8 @@ const cleanup = async () => {
 before(async () => {
   const identity = await pool.query("select current_database() as name");
   assert.equal(identity.rows[0].name, "heliumdb", "Tests may run only in development.");
-  assert.equal(await lifetimeUsage(db), 0, "Existing lifetime inventory must not be changed by tests.");
+  existingLifetimeUsage = await lifetimeUsage(db);
+  assert.ok(existingLifetimeUsage < 10, "These isolated tests need at least one available development lifetime spot.");
   billingState.available = true; billingState.prices = { "Lifetime Indie Partner": "price_lifetime", "Indie Partner": "price_current", Standard: "price_standard" };
   billingState.allowedPrices = { "Lifetime Indie Partner": new Set(["price_lifetime"]), "Indie Partner": new Set(["price_current", "price_old"]), Standard: new Set(["price_standard"]) };
 });
@@ -58,7 +60,7 @@ after(async () => { await cleanup(); await pool.end(); });
 
 test("concurrent final-spot checkouts cannot oversell; retries reuse a reservation", async () => {
   try {
-    for (let n = 0; n < 9; n++) await insert({ paymentStatus: "Paid" });
+    for (let n = 0; n < 9 - existingLifetimeUsage; n++) await insert({ paymentStatus: "Paid" });
     const a = await insert(); const b = await insert();
     const results = await Promise.allSettled([beginCheckout(a.reference, "https://example.invalid", fake), beginCheckout(b.reference, "https://example.invalid", fake)]);
     assert.equal(results.filter(r => r.status === "fulfilled").length, 1);
@@ -99,7 +101,7 @@ test("paid completion, replay and refund use authoritative payment state", async
     [saved] = await db.select().from(listingsTable).where(eq(listingsTable.id, row.id));
     assert.equal(saved!.paymentStatus, "Refunded");
     await assert.rejects(() => beginCheckout(row.reference, "https://example.invalid", fake), /already associated/);
-    assert.equal(await lifetimeUsage(db), 0);
+    assert.equal(await lifetimeUsage(db), existingLifetimeUsage);
   } finally { await cleanup(); }
 });
 test("expired reservations release; completed sessions keep capacity until webhook", async () => {
@@ -113,7 +115,7 @@ test("expired reservations release; completed sessions keep capacity until webho
     assert.equal(rows.find(r => r.id === expired.id)!.checkoutReservedUntil, null);
     assert.notEqual(rows.find(r => r.id === completed.id)!.checkoutReservedUntil, null);
     await releaseReservation(completed.id, "wrong-key");
-    assert.equal(await lifetimeUsage(db), 1);
+    assert.equal(await lifetimeUsage(db), existingLifetimeUsage + 1);
   } finally { await cleanup(); }
 });
 test("network failures retain capacity and use the same idempotency key on retry", async () => {
@@ -124,7 +126,7 @@ test("network failures retain capacity and use the same idempotency key on retry
       create: async (...args: any[]) => { const session = await (fake.checkout.sessions.create as any)(...args); if (++call === 1) throw new Error("Lost Stripe response"); return session; },
     } } } as unknown as Stripe;
     await assert.rejects(() => beginCheckout(row.reference, "https://example.invalid", uncertain), /Lost Stripe response/);
-    assert.equal(await lifetimeUsage(db), 1);
+    assert.equal(await lifetimeUsage(db), existingLifetimeUsage + 1);
     await beginCheckout(row.reference, "https://example.invalid", uncertain);
     assert.equal(sessions.size, 1);
   } finally { await cleanup(); }
@@ -145,7 +147,7 @@ test("admin deletion cannot orphan a lost checkout response or its late payment"
     let [saved] = await db.select().from(listingsTable).where(eq(listingsTable.id, row.id));
     assert.equal(saved!.deletedAt, null);
     assert.equal(saved!.stripeCheckoutId, null);
-    assert.equal(await lifetimeUsage(db), 1);
+    assert.equal(await lifetimeUsage(db), existingLifetimeUsage + 1);
     const session = [...sessions.values()][0];
     session.status = "complete"; session.payment_status = "paid";
     await assert.rejects(() => applyLifetimeSession(session, fake), /still being linked/);
@@ -158,11 +160,11 @@ test("admin deletion cannot orphan a lost checkout response or its late payment"
     assert.equal(saved!.deletedAt, null);
     assert.equal(saved!.status, "Pending");
     assert.equal(saved!.paymentStatus, "Paid");
-    assert.equal(await lifetimeUsage(db), 1);
+    assert.equal(await lifetimeUsage(db), existingLifetimeUsage + 1);
     // An explicitly deleted, already-settled lifetime listing still consumes
     // its paid spot; deletion is not a cap bypass.
     assert.equal((await deleteListing(row.id, fake)).status, 204);
-    assert.equal(await lifetimeUsage(db), 1);
+    assert.equal(await lifetimeUsage(db), existingLifetimeUsage + 1);
   } finally { await cleanup(); }
 });
 test("unresolved yearly checkouts also block deletion; expired known sessions can be removed", async () => {
@@ -180,7 +182,9 @@ test("historical founding price remains valid; scheduled Standard switches at re
     let price = "price_old";
     const subscription = { subscriptions: { retrieve: async () => ({
       id: "sub_test_locked", metadata: { app: "indie-film-guide", listingReference: row.reference }, status: "active",
-      customer: null, latest_invoice: { status: "paid" }, items: { data: [{ quantity: 1, price: { id: price }, current_period_end: Math.floor(Date.now() / 1000) + 86400 }] },
+      customer: null, livemode: false, latest_invoice: { status: "paid", amount_paid: 0, livemode: false,
+        parent: { subscription_details: { subscription: "sub_test_locked" } } },
+      items: { data: [{ quantity: 1, price: { id: price }, current_period_end: Math.floor(Date.now() / 1000) + 86400 }] },
     }) } } as unknown as Stripe;
     await updateFromSubscription("sub_test_locked", undefined, subscription);
     let [saved] = await db.select().from(listingsTable).where(eq(listingsTable.id, row.id));
