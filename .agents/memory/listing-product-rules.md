@@ -20,3 +20,9 @@ Email may be shown publicly only when the provider checks “List email publicly
 **Why:** The user explicitly requested an opt-in checkbox instead of unconditional email secrecy.
 
 **How to apply:** Default to private for new and existing listings. Preserve the consent setting through save/admin editing, and exclude email from public data when consent is absent.
+
+EIN verification must be a separate button labeled "Verify EIN" in the nonprofit listing's Private details, alongside the saved EIN. Do not require opening Edit or saving/reopening a form to verify it.
+
+**Why:** The user explicitly rejected the edit-checkbox verification flow.
+
+**How to apply:** Keep EIN editing separate from admin verification of the saved number. Show private EIN/status and an explicit verification action; never auto-verify public input.
