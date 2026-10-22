@@ -5,6 +5,7 @@ import { LocationCombobox } from '@/components/location-combobox';
 import { CATEGORIES, STAGES } from '@/lib/constants';
 import { DealFields, type DealValues } from '@/components/deal-fields';
 import { planPrice } from '@/lib/plan-price';
+import { formatPhone } from '@/lib/format-phone';
 
 type Plan = ListingInput['plan'];
 type Errors = Partial<Record<string, string>>;
@@ -37,7 +38,7 @@ export function AdminListingForm({
   const [coverage, setCoverage] = useState<ListingInput['coverage']>((initial?.coverage as ListingInput['coverage']) ?? 'City');
   const [loc, setLoc] = useState<Location | null>(() => (initial?.locationId ? locations.find((l) => l.id === initial.locationId) ?? null : null));
   const [website, setWebsite] = useState(initial?.website ?? '');
-  const [phone, setPhone] = useState(initial?.phone ?? '');
+  const [phone, setPhone] = useState(() => formatPhone(initial?.phone ?? ''));
   const [email, setEmail] = useState(initial?.email ?? '');
   const [publicEmail, setPublicEmail] = useState(initial?.publicEmail ?? false);
   const [providerType, setProviderType] = useState<ListingInput['providerType']>(initial?.providerType ?? 'Business');
@@ -178,7 +179,7 @@ export function AdminListingForm({
         </div>
         <div>
           <label htmlFor={`${p}-phone`} className={label}>Phone</label>
-          <input id={`${p}-phone`} data-testid="input-admin-phone" type="tel" className="field mt-1" value={phone} maxLength={40} onChange={(e) => setPhone(e.target.value)} aria-invalid={!!err('phone')} aria-describedby={`${p}-phone-err`} />
+          <input id={`${p}-phone`} data-testid="input-admin-phone" type="tel" className="field mt-1" value={phone} maxLength={40} onChange={(e) => setPhone(e.target.value)} onBlur={(e) => setPhone(formatPhone(e.target.value))} placeholder="(404) 555-0123" aria-invalid={!!err('phone')} aria-describedby={`${p}-phone-err`} />
           <Err id={`${p}-phone`} msg={err('phone')} />
         </div>
       </div>

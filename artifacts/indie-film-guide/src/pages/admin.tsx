@@ -8,6 +8,7 @@ import {
 import type { AdminListing, ListingInput } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
 import { AdminListingForm } from '@/components/admin-listing-form';
+import { formatPhone } from '@/lib/format-phone';
 import { shortCategory, placeLabel } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
 import { RenewalPlanDialog } from '@/components/renewal-plan-dialog';
@@ -111,7 +112,7 @@ function Row({ l, onEdit, onDelete, onStatus, onPayment, onRenewal, paymentUrl, 
       {open && (
         <dl className="mt-3 grid gap-x-4 gap-y-1 border-t-2 border-border pt-3 text-sm sm:grid-cols-2" data-testid={`details-listing-${l.id}`}>
           {([
-            ['Reference', l.reference], ['Email (private)', l.email], ['Email public', l.publicEmail ? 'Yes' : 'No'], ['Phone', l.phone],
+            ['Reference', l.reference], ['Email (private)', l.email], ['Email public', l.publicEmail ? 'Yes' : 'No'], ['Phone', formatPhone(l.phone)],
             ['Website', l.website], ['Stages', l.stages.join(', ')], ['Coverage', l.coverage], ['Slug', l.slug],
             ['Indie rate', l.indieRate ? l.indieRateDetails || 'Yes' : 'No'], ['Created', new Date(l.createdAt).toLocaleString()],
             ['Founding price locked', l.foundingPriceLocked ? 'Yes' : 'No'], ['Stripe subscription', l.stripeSubscriptionId ?? 'None'],
