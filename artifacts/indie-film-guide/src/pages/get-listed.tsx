@@ -8,6 +8,7 @@ import { CATEGORIES, STAGES } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
 import { DealFields } from '@/components/deal-fields';
 import { planPrice } from '@/lib/plan-price';
+import { formatPhone } from '@/lib/format-phone';
 
 type Offer = 'yes' | 'no' | '';
 type Cadence = 'yearly' | 'lifetime';
@@ -227,7 +228,7 @@ export default function GetListed() {
           </div>
           <div>
             <label htmlFor="field-phone" className={label}>Phone</label>
-            <input id="field-phone" required data-testid="input-phone" type="tel" className="field mt-1" value={phone} maxLength={40} onChange={(e) => setPhone(e.target.value)} aria-invalid={!!errors.phone} aria-describedby="phone" />
+            <input id="field-phone" required data-testid="input-phone" type="tel" className="field mt-1" value={phone} maxLength={40} onChange={(e) => setPhone(e.target.value)} onBlur={(e) => setPhone(formatPhone(e.target.value))} placeholder="(404) 555-0123" aria-invalid={!!errors.phone} aria-describedby="phone" />
             <Err id="phone" msg={errors.phone} />
           </div>
           <div>
