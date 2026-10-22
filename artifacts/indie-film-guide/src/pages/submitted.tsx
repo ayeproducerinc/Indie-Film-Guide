@@ -22,8 +22,13 @@ export default function Submitted() {
   const [state, setState] = useState<SubmissionState | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [url, setUrl] = useState('');
   const cancelled = new URLSearchParams(window.location.search).get('checkout') === 'cancelled';
+  useEffect(() => {
+    // Browser Back may restore this page with its pre-navigation loading state.
+    const restore = () => setBusy(false);
+    window.addEventListener('pageshow', restore);
+    return () => window.removeEventListener('pageshow', restore);
+  }, []);
   useEffect(() => {
     if (!saved) return;
     let active = true;
@@ -42,9 +47,11 @@ export default function Submitted() {
     setBusy(true); setError('');
     try {
       const result = await createListingCheckout(saved.reference, { token: saved.accessToken });
-      setUrl(result.url);
-    } catch (e) { setError(errorText(e)); }
-    finally { setBusy(false); }
+      window.location.assign(result.url);
+    } catch (e) {
+      setError(errorText(e));
+      setBusy(false);
+    }
   };
   const government = state?.plan === 'Government';
   const paid = state?.paymentStatus === 'Paid';
@@ -79,8 +86,7 @@ export default function Submitted() {
           <dt>Review status</dt><dd data-testid="text-status">{state.status}</dd>
           <dt>Payment</dt><dd data-testid="text-payment-status">{state.paymentStatus}</dd>
         </dl>
-        {state.checkoutAvailable && !waived && !url && <button type="button" disabled={busy} onClick={() => void checkout()} className="btn" data-testid="button-checkout">{busy ? 'Preparing checkout…' : 'Continue to secure checkout'}</button>}
-        {url && !paid && !waived && !refunded && <a href={url} className="btn" data-testid="link-stripe-checkout">Open Stripe checkout</a>}
+        {state.checkoutAvailable && !government && !paid && !waived && !refunded && <button type="button" disabled={busy} onClick={() => void checkout()} className="btn" data-testid="button-checkout">{busy ? 'Preparing checkout…' : 'Continue to secure checkout'}</button>}
         {!government && !paid && !waived && !refunded && state.billingMode === 'unavailable' && <p role="status">Checkout is temporarily unavailable. Your details are saved; please try again shortly.</p>}
         {!government && !paid && !waived && !refunded && !state.checkoutAvailable && state.billingMode !== 'unavailable' && <p>We are checking your payment. Please do not pay again.</p>}
       </div>}
