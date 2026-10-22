@@ -26,3 +26,9 @@ EIN verification must be a separate button labeled "Verify EIN" in the nonprofit
 **Why:** The user explicitly rejected the edit-checkbox verification flow.
 
 **How to apply:** Keep EIN editing separate from admin verification of the saved number. Show private EIN/status and an explicit verification action; never auto-verify public input.
+
+Listing changes are requested by support email and applied by the administrator; do not add a business change-request form or self-service editing for this scope.
+
+**Why:** The owner rejected a request form because they would not know whether the requester represents the business, and chose email instructions requesting name, business phone number and the requested changes.
+
+**How to apply:** Keep professional email-based update instructions visible. Do not treat receipt of an email as proof of authorization or automatically publish requested changes.
