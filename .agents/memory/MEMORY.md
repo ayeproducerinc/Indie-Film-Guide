@@ -9,3 +9,4 @@
 - [Stripe operation discovery](stripe-operation-discovery.md) — MCP search is fuzzy; verify returned HTTP method and endpoint before selecting an operation.
 - [Runtime migration assets](runtime-migration-assets.md) — keep packages that locate sibling SQL files external to server bundles.
 - [Shared Stripe account](shared-stripe-account.md) — other applications use the same live account; scope changes and review Stripe-sync webhook cleanup before publishing.
+- [Cancellation and refund policies](cancellation-refund-policies.md) — annual cancellation ends the paid period; refund requests are reviewed case by case.
