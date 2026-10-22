@@ -6,6 +6,7 @@ import {
   GetAdminSessionResponse, LoginAdminBody, GetAdminDashboardResponse, AddAdminListingResponse,
   UpdateAdminListingParams, UpdateAdminListingResponse, DeleteAdminListingParams,
   SetAdminListingStatusParams, SetAdminListingStatusBody, SetAdminListingStatusResponse, ScheduleAdminRenewalPlanBody,
+  VerifyAdminListingEinParams, VerifyAdminListingEinBody, VerifyAdminListingEinResponse,
 } from "@workspace/api-zod";
 import { isAdmin, adminConfigured, requireAdmin, requireAdminMutation, login, logout } from "../lib/admin-auth";
 import { validateListing } from "../lib/listing-validation";
@@ -62,17 +63,31 @@ router.put("/admin/listings/:id", requireAdminMutation, async (req, res): Promis
   const result = await db.transaction(async tx => {
     const [row] = await tx.select().from(listingsTable).where(and(eq(listingsTable.id, params.data.id), isNull(listingsTable.deletedAt))).for("update");
     if (!row) return { status: 404, body: { error: "Listing not found." } };
-    if (row.ein !== values.ein && values.einVerified) return { status: 409, body: { error: "Save the changed EIN first, then verify it separately." } };
     if ((row.stripeSubscriptionId || row.stripeCheckoutId || row.checkoutReservationKey || row.stripePaymentIntentId) && (values.plan !== row.plan || values.providerType !== row.providerType)) {
       return { status: 409, body: { error: "This listing has a Stripe checkout/subscription. Its plan and provider type cannot be changed." } };
     }
     const paymentStatus = values.plan !== row.plan
       ? values.plan === "Government" ? "Not required" : "Unpaid" : row.paymentStatus;
-    const status = row.status === "Live" && !eligible({ ...row, ...values, paymentStatus }) ? "Pending" : row.status;
-    const verified = row.ein === values.ein && values.einVerified;
+    // Editing cannot grant verification. Preserve it only for the same saved EIN.
+    const verified = values.providerType === "Nonprofit" && row.providerType === "Nonprofit" && row.ein === values.ein && row.einVerified;
+    const status = row.status === "Live" && !eligible({ ...row, ...values, einVerified: verified, paymentStatus }) ? "Pending" : row.status;
     const [updated] = await tx.update(listingsTable).set({ ...values, einVerified: verified, paymentStatus,
       status: values.providerType === "Nonprofit" && !verified && row.status === "Live" ? "Pending" : status }).where(eq(listingsTable.id, row.id)).returning();
     return { status: 200, body: UpdateAdminListingResponse.parse(adminView(updated!)) };
+  });
+  res.status(result.status).json(result.body);
+});
+router.post("/admin/listings/:id/verify-ein", requireAdminMutation, async (req, res): Promise<void> => {
+  const params = VerifyAdminListingEinParams.safeParse(req.params);
+  const body = VerifyAdminListingEinBody.safeParse(req.body);
+  if (!params.success || !body.success) { res.status(400).json({ error: "Review a valid saved EIN before verifying." }); return; }
+  const result = await db.transaction(async tx => {
+    const [row] = await tx.select().from(listingsTable).where(and(eq(listingsTable.id, params.data.id), isNull(listingsTable.deletedAt))).for("update");
+    if (!row) return { status: 404, body: { error: "Listing not found." } };
+    if (row.providerType !== "Nonprofit" || row.ein !== body.data.expectedEin)
+      return { status: 409, body: { error: "The saved EIN or provider type changed. Refresh Private details and review it again." } };
+    const [updated] = await tx.update(listingsTable).set({ einVerified: true }).where(eq(listingsTable.id, row.id)).returning();
+    return { status: 200, body: VerifyAdminListingEinResponse.parse(adminView(updated!)) };
   });
   res.status(result.status).json(result.body);
 });

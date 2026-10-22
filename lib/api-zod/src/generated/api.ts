@@ -332,6 +332,65 @@ export const SetAdminListingStatusResponse = zod.object({
 
 
 
+export const VerifyAdminListingEinParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const verifyAdminListingEinBodyExpectedEinMax = 10;
+
+
+export const verifyAdminListingEinBodyExpectedEinRegExp = new RegExp('^\\d{2}-\\d{7}$');
+
+
+export const VerifyAdminListingEinBody = zod.object({
+  "expectedEin": zod.string().max(verifyAdminListingEinBodyExpectedEinMax).regex(verifyAdminListingEinBodyExpectedEinRegExp)
+})
+
+export const VerifyAdminListingEinResponse = zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "stages": zod.array(zod.string()),
+  "city": zod.string(),
+  "state": zod.string(),
+  "coverage": zod.enum(['City', 'Statewide', 'Nationwide']),
+  "providerType": zod.enum(['Business', 'Nonprofit', 'Government']),
+  "indieRate": zod.boolean(),
+  "indieRateDetails": zod.string(),
+  "indiePromoCode": zod.string().optional(),
+  "indieRedeemHow": zod.string().optional(),
+  "indieWhoQualifies": zod.string().optional(),
+  "website": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+}).and(zod.object({
+  "reference": zod.string(),
+  "email": zod.string(),
+  "publicEmail": zod.boolean(),
+  "locationId": zod.string().nullable(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "paymentStatus": zod.string(),
+  "createdAt": zod.string(),
+  "foundingPriceLocked": zod.boolean(),
+  "stripeSubscriptionId": zod.string().nullable(),
+  "stripePaymentIntentId": zod.string().nullish(),
+  "stripeCheckoutId": zod.string().nullish(),
+  "stripePriceId": zod.string().nullish(),
+  "pendingPlan": zod.string().nullish(),
+  "pendingPlanAt": zod.string().nullish(),
+  "pastDueSince": zod.string().nullish(),
+  "graceDaysLeft": zod.number().int().optional(),
+  "ein": zod.string().optional(),
+  "einVerified": zod.boolean().optional()
+}))
+
+
+
+
+
 export const CreateAdminListingCheckoutParams = zod.object({
   "id": zod.coerce.number().int().min(1)
 })

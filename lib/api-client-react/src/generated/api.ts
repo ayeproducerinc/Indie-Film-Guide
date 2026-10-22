@@ -26,6 +26,7 @@ import type {
   AdminSession,
   CheckoutLink,
   Directory,
+  EinVerificationInput,
   HealthStatus,
   Listing,
   ListingConfig,
@@ -672,6 +673,89 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getSetAdminListingStatusMutationOptions(options));
+    }
+
+export const getVerifyAdminListingEinUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/listings/${id}/verify-ein`
+}
+
+export const verifyAdminListingEin = async (id: number,
+    einVerificationInput: EinVerificationInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminListing> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminListing>(getVerifyAdminListingEinUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(einVerificationInput)
+  }
+);}
+
+
+
+
+
+export const getVerifyAdminListingEinMutationKey = () => ['verifyAdminListingEin'] as const;
+
+export const getVerifyAdminListingEinMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyAdminListingEin>>, TError,VerifyAdminListingEinMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyAdminListingEin>>, TError,VerifyAdminListingEinMutationVariables, TContext> => {
+
+const mutationKey = getVerifyAdminListingEinMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyAdminListingEin>>, VerifyAdminListingEinMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  verifyAdminListingEin(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyAdminListingEinMutationResult = NonNullable<Awaited<ReturnType<typeof verifyAdminListingEin>>>
+    export type VerifyAdminListingEinMutationBody = BodyType<EinVerificationInput>
+    export type VerifyAdminListingEinMutationError = ErrorType<void>
+    export type VerifyAdminListingEinMutationVariables = {id: number;data: BodyType<EinVerificationInput>}
+
+    export const useVerifyAdminListingEin = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyAdminListingEin>>, TError,VerifyAdminListingEinMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyAdminListingEin>>,
+        TError,
+        VerifyAdminListingEinMutationVariables,
+        TContext
+      > => {
+      return useMutation(getVerifyAdminListingEinMutationOptions(options));
     }
 
 export const getCreateAdminListingCheckoutUrl = (id: number,) => {

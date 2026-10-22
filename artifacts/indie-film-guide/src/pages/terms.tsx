@@ -1,5 +1,6 @@
 import { Layout } from '@/components/layout';
 import { useMeta } from '@/lib/use-meta';
+import { LISTING_UPDATE_MAILTO, SUPPORT_EMAIL } from '@/lib/support';
 
 const items = [
   'Listings are paid advertising.',
@@ -26,6 +27,17 @@ export default function Terms() {
             </li>
           ))}
         </ol>
+        <section className="mt-8 border-t-2 border-border pt-6" aria-labelledby="listing-update-heading">
+          <h2 id="listing-update-heading" className="font-display text-3xl">Request a Listing Update</h2>
+          <p className="mt-3">To request a correction or update to your listing, email <a href={LISTING_UPDATE_MAILTO} data-testid="link-listing-update" className="break-all font-semibold text-primary underline">{SUPPORT_EMAIL}</a> and include:</p>
+          <ul className="mt-3 list-disc space-y-1 pl-5">
+            <li>Your full name</li>
+            <li>Business name</li>
+            <li>Business phone number</li>
+            <li>A clear description of the requested changes</li>
+          </ul>
+          <p className="mt-3">For security, we may contact the business using the contact information already on file to confirm authorization. All requested changes are reviewed before publication.</p>
+        </section>
       </div>
     </Layout>
   );

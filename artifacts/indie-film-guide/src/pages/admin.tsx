@@ -4,6 +4,7 @@ import {
   useGetAdminSession, getGetAdminSessionQueryKey, useLoginAdmin, useLogoutAdmin,
   useGetAdminDashboard, getGetAdminDashboardQueryKey, useAddAdminListing, useUpdateAdminListing,
   useDeleteAdminListing, useSetAdminListingStatus, useGetLocations, useCreateAdminListingCheckout, useGetListingConfig,
+  useVerifyAdminListingEin,
 } from '@workspace/api-client-react';
 import type { AdminListing, ListingInput } from '@workspace/api-client-react';
 import { Layout } from '@/components/layout';
@@ -72,7 +73,7 @@ function statusCls(s: string) {
   return s === 'Live' ? 'bg-[hsl(var(--green-bg))] text-[hsl(var(--green))]' : s === 'Rejected' ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground';
 }
 
-function Row({ l, onEdit, onDelete, onStatus, onPayment, onRenewal, paymentUrl, busy }: { l: AdminListing; onEdit: () => void; onDelete: () => void; onStatus: (s: 'Pending' | 'Live' | 'Rejected') => void; onPayment: () => void; onRenewal: () => void; paymentUrl?: string; busy: boolean }) {
+function Row({ l, onEdit, onDelete, onStatus, onPayment, onRenewal, onVerifyEin, verifyingEin, paymentUrl, busy }: { l: AdminListing; onEdit: () => void; onDelete: () => void; onStatus: (s: 'Pending' | 'Live' | 'Rejected') => void; onPayment: () => void; onRenewal: () => void; onVerifyEin: () => void; verifyingEin: boolean; paymentUrl?: string; busy: boolean }) {
   const [open, setOpen] = useState(false);
   const paid = ['Paid', 'Payment waived'].includes(l.paymentStatus) || l.plan === 'Government' || (l.paymentStatus === 'Past due' && (l.graceDaysLeft ?? 0) > 0);
   const btn = 'btn-outline !min-h-[40px] !px-3 !text-xs';
@@ -117,11 +118,22 @@ function Row({ l, onEdit, onDelete, onStatus, onPayment, onRenewal, paymentUrl, 
             ['Indie rate', l.indieRate ? l.indieRateDetails || 'Yes' : 'No'], ['Created', new Date(l.createdAt).toLocaleString()],
             ['Founding price locked', l.foundingPriceLocked ? 'Yes' : 'No'], ['Stripe subscription', l.stripeSubscriptionId ?? 'None'],
              ['Promo code', l.indiePromoCode ?? ''], ['How to redeem', l.indieRedeemHow ?? ''], ['Who qualifies', l.indieWhoQualifies ?? ''],
-             ['EIN (private)', l.ein ?? ''], ['EIN verified', l.einVerified ? 'Yes' : 'No'],
              ['Stripe price', l.stripePriceId ?? 'None'], ['Payment intent', l.stripePaymentIntentId ?? 'None'],
           ] as const).map(([k, v]) => (
             <div key={k} className="min-w-0"><dt className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{k}</dt><dd className="break-all">{v || 'Not provided'}</dd></div>
           ))}
+          {l.providerType === 'Nonprofit' && <div className="mt-2 min-w-0 border-2 border-border p-3 sm:col-span-2">
+            <dt className="text-xs font-bold uppercase tracking-wider text-muted-foreground">EIN (private)</dt>
+            <dd>
+              <p className="mt-1 font-semibold" data-testid={`text-ein-${l.id}`}>{l.ein || 'Not provided'}</p>
+              <p className="mt-1 text-sm" role="status" data-testid={`text-ein-status-${l.id}`}>{l.einVerified ? 'EIN verified' : 'Not verified'}</p>
+              {!l.einVerified && <>
+                <p className="mt-2 text-xs text-muted-foreground">Confirm that this EIN belongs to the nonprofit before marking it verified. This records your review; it does not perform an automatic IRS lookup.</p>
+                <button type="button" onClick={onVerifyEin} disabled={busy || !/^\d{2}-\d{7}$/.test(l.ein ?? '')} className="btn mt-3" data-testid={`button-verify-ein-${l.id}`}>{verifyingEin ? 'Verifying…' : 'Verify EIN'}</button>
+                {!/^\d{2}-\d{7}$/.test(l.ein ?? '') && <p className="mt-2 text-xs">Add a valid EIN using Edit, then return here to verify it.</p>}
+              </>}
+            </dd>
+          </div>}
         </dl>
       )}
     </li>
@@ -157,6 +169,7 @@ function Dashboard() {
   const status = useSetAdminListingStatus(REQ);
   const logout = useLogoutAdmin(REQ);
   const checkout = useCreateAdminListingCheckout(REQ);
+  const verifyEin = useVerifyAdminListingEin(REQ);
   useEffect(() => {
     if ((dash.error as { status?: number } | null)?.status === 401) {
       qc.setQueryData(getGetAdminSessionQueryKey(), { authenticated: false, configured: true });
@@ -254,7 +267,19 @@ function Dashboard() {
           ) : (
             <ul className="mt-4 space-y-3">
               {shown.map((l) => (
-                  <Row key={l.id} l={l} busy={status.isPending || checkout.isPending} onStatus={(s) => setStatus(l, s)} onEdit={() => { add.reset(); update.reset(); setMode({ kind: 'edit', l }); }} onDelete={() => { remove.reset(); setDel(l); }} onRenewal={() => setRenewal(l)}
+                  <Row key={l.id} l={l} busy={status.isPending || checkout.isPending || verifyEin.isPending} verifyingEin={verifyEin.isPending && verifyEin.variables?.id === l.id}
+                    onVerifyEin={() => {
+                      setNotice(''); setActionErr('');
+                      verifyEin.mutate({ id: l.id, data: { expectedEin: l.ein ?? '' } }, {
+                        onSuccess: (result) => {
+                          qc.setQueryData(getGetAdminDashboardQueryKey(), (previous: typeof dash.data) => previous ? { ...previous, listings: previous.listings.map(row => row.id === result.id ? result : row) } : previous);
+                          setNotice(`${l.name}: EIN verified. You can now approve once payment requirements are met.`);
+                          refresh();
+                        },
+                        onError: (e) => { setActionErr(errInfo(e).message); refresh(); },
+                      });
+                    }}
+                    onStatus={(s) => setStatus(l, s)} onEdit={() => { add.reset(); update.reset(); setMode({ kind: 'edit', l }); }} onDelete={() => { remove.reset(); setDel(l); }} onRenewal={() => setRenewal(l)}
                    paymentUrl={paymentUrls[l.id]} onPayment={() => {
                      setActionErr('');
                      checkout.mutate({ id: l.id }, {

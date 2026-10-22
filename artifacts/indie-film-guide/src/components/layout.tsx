@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
+import { LISTING_UPDATE_MAILTO, SUPPORT_EMAIL } from '@/lib/support';
 
 export function Layout({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
@@ -32,6 +33,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <div>
             <p className="font-display text-2xl">Indie Film Guide</p>
             <p className="mt-2 max-w-md text-xs">Providers pay to be listed. Payment never affects the order of results.</p>
+            <p className="mt-2 text-sm">Listing updates: <a href={LISTING_UPDATE_MAILTO} data-testid="link-support-footer" className="break-all underline underline-offset-4">{SUPPORT_EMAIL}</a></p>
           </div>
           <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold" aria-label="Footer">
             <Link href="/about" data-testid="link-about" className="py-2 underline-offset-4 hover:underline">About</Link>

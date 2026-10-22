@@ -12,6 +12,7 @@ export * from './adminLogin';
 export * from './adminSession';
 export * from './checkoutLink';
 export * from './directory';
+export * from './einVerificationInput';
 export * from './healthStatus';
 export * from './listing';
 export * from './listingConfig';

@@ -96,6 +96,25 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AdminListing" }
+  /admin/listings/{id}/verify-ein:
+    post:
+      operationId: verifyAdminListingEin
+      tags: [admin]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EinVerificationInput" }
+      responses:
+        "200":
+          description: EIN marked verified by the administrator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminListing" }
+        "409":
+          description: Saved EIN or provider type changed; review again
   /admin/listings/{id}/checkout:
     post:
       operationId: createAdminListingCheckout
@@ -380,6 +399,11 @@ components:
         foundingPriceLocked: { type: boolean }
         checkoutAvailable: { type: boolean }
         billingMode: { type: string }
+    EinVerificationInput:
+      type: object
+      required: [expectedEin]
+      properties:
+        expectedEin: { type: string, pattern: '^\d{2}-\d{7}$', maxLength: 10 }
     ListingStatusInput:
       type: object
       required: [status]

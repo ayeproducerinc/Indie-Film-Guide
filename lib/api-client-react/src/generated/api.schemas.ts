@@ -261,6 +261,14 @@ export interface SubmissionState {
   billingMode: string;
 }
 
+export interface EinVerificationInput {
+  /**
+     * @maxLength 10
+     * @pattern ^\d{2}-\d{7}$
+     */
+  expectedEin: string;
+}
+
 export type ListingStatusInputStatus = typeof ListingStatusInputStatus[keyof typeof ListingStatusInputStatus];
 
 

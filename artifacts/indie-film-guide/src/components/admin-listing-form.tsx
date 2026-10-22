@@ -48,7 +48,6 @@ export function AdminListingForm({
     indieRedeemHow: initial?.indieRedeemHow ?? '', indieWhoQualifies: initial?.indieWhoQualifies ?? '',
   });
   const [ein, setEin] = useState(initial?.ein ?? '');
-  const [einVerified, setEinVerified] = useState(initial?.einVerified ?? false);
   const isIndie = cfg?.plans.find(d => d.name === plan)?.indie ?? false;
   const [errors, setErrors] = useState<Errors>({});
   const err = (k: string) => errors[k] ?? serverFields?.[k];
@@ -101,7 +100,7 @@ export function AdminListingForm({
       website: website.trim(), phone: phone.trim(), email: email.trim(), publicEmail,
       providerType, plan: plan as Plan,
       ...(isIndie ? deal : {}),
-      ...(providerType === 'Nonprofit' ? { ein, einVerified } : {}),
+      ...(providerType === 'Nonprofit' ? { ein: ein.trim() } : {}),
     });
   };
 
@@ -201,13 +200,9 @@ export function AdminListingForm({
       {providerType === 'Nonprofit' && <div>
         <label className={label} htmlFor={`${p}-ein`}>EIN (private)</label>
         <input id={`${p}-ein`} data-testid="input-admin-ein" className="field mt-1" value={ein} maxLength={10} placeholder="12-3456789"
-          onChange={e => { setEin(e.target.value); setEinVerified(false); }} />
+          onChange={e => setEin(e.target.value)} />
         <Err id={`${p}-ein`} msg={err('ein')} />
-        <label className="mt-2 flex min-h-[44px] items-center gap-3 text-sm font-semibold">
-          <input type="checkbox" data-testid="checkbox-admin-ein-verified" checked={einVerified} disabled={!!initial && ein !== initial.ein}
-            onChange={e => setEinVerified(e.target.checked)} className="h-5 w-5" /> EIN verified
-        </label>
-        <p className="text-xs text-muted-foreground">Verify the nonprofit's EIN before approving. Save a changed EIN before marking it verified.</p>
+        <p className="text-xs text-muted-foreground">Save the EIN here, then use Verify EIN in the listing's Private details after reviewing it. Changing the EIN clears its previous verification.</p>
       </div>}
       <fieldset>
         <legend className={label}>Plan</legend>
