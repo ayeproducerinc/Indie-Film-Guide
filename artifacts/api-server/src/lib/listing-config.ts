@@ -8,11 +8,12 @@ export const stages = ["Idea", "Production", "Post-Production", "Distribution"];
 
 export const billingState: {
   available: boolean;
+  initializing: boolean;
   mode: "test" | "live" | "unavailable";
   prices: Record<string, string>;
   allowedPrices: Record<string, Set<string>>;
   paymentLinks: { plan: string; url: string }[];
-} = { available: false, mode: "unavailable", prices: {}, allowedPrices: {}, paymentLinks: [] };
+} = { available: false, initializing: false, mode: "unavailable", prices: {}, allowedPrices: {}, paymentLinks: [] };
 
 export function specialActive() {
   const end = process.env.SPECIAL_END_DATE;

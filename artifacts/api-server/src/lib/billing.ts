@@ -12,6 +12,8 @@ import { applyLifetimeSession, applyLifetimeRefund } from "./lifetime-payments";
 import { lifetimeLock, lifetimeUsage, LIFETIME_CAP, RESERVATION_MS, reconcileLifetimeReservations, releaseReservation } from "./lifetime-inventory";
 
 export async function initializeBilling() {
+  billingState.initializing = true;
+  billingState.available = false;
   try {
     const stripe = await getUncachableStripeClient();
     await runMigrations({ databaseUrl: process.env.DATABASE_URL! });
@@ -53,14 +55,17 @@ export async function initializeBilling() {
     }
     if (!PLANS.filter(p => p.billing === "yearly").every(p => links.some(l => l.plan === p.name))) throw new Error("Create all annual Stripe payment links before enabling checkout.");
     links.push({ plan: "Lifetime Indie Partner", url: "/get-listed?plan=Lifetime%20Indie%20Partner" });
-    billingState.paymentLinks = links; billingState.mode = [...modes][0] ? "live" : "test"; billingState.available = true;
+    billingState.paymentLinks = links; billingState.mode = [...modes][0] ? "live" : "test";
     await reconcileLifetimeReservations();
+    billingState.available = true;
     const timer = setInterval(() => void reconcileLifetimeReservations(), 60000);
     timer.unref();
     logger.info({ mode: billingState.mode }, "Stripe checkout and verified webhooks are ready");
   } catch (error) {
     billingState.available = false; billingState.mode = "unavailable";
     logger.warn({ reason: error instanceof Error ? error.message : "Stripe setup failed" }, "Checkout unavailable; connect/configure Stripe and restart");
+  } finally {
+    billingState.initializing = false;
   }
 }
 
@@ -120,6 +125,8 @@ export async function reconcileCheckoutPayment(reference: string, client?: Strip
 }
 
 export async function beginCheckout(reference: string, origin: string, client?: Stripe) {
+  if (billingState.initializing)
+    throw new Error("Billing is initializing; checkout is temporarily unavailable. Please retry shortly.");
   const stripe = billingState.available ? client ?? await getUncachableStripeClient() : null;
   // Commit a durable inventory reservation BEFORE making a network request:
   // even a lost response or DB commit failure cannot free a still-payable spot.

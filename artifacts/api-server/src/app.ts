@@ -5,6 +5,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { processListingWebhook } from "./lib/billing";
 import { FieldError } from "./lib/listing-validation";
+import { billingState } from "./lib/listing-config";
 
 const app: Express = express();
 
@@ -30,6 +31,11 @@ app.use(
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res): Promise<void> => {
   const signature = req.get("stripe-signature");
   if (!signature || !Buffer.isBuffer(req.body)) { res.status(400).json({ error: "Missing webhook signature or raw payload." }); return; }
+  if (billingState.initializing) {
+    res.setHeader("Retry-After", "5");
+    res.status(503).json({ error: "Billing is initializing. Please retry this webhook." });
+    return;
+  }
   try {
     await processListingWebhook(req.body, signature);
     res.json({ received: true });
