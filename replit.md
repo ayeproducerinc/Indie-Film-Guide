@@ -35,7 +35,7 @@ A mobile-first Georgia film-resource directory: providers submit listings, and o
 
 - Use a bundled Census place list instead of a paid geocoding service so standardized Georgia city selection requires no external credentials or runtime network dependency.
 - Preserve Statewide and Nationwide as service coverage, not pretend cities.
-- Public submissions start Pending. Paid-plan eligibility is updated only after a verified Stripe webhook checks the linked subscription and its price; redirects never grant payment or approval. Admin approval is separate.
+- Public submissions start Pending. Paid-plan eligibility requires authoritative Stripe verification of the saved checkout, linked subscription/payment and price. Webhooks handle ongoing billing; authenticated submission-status polls also recover delayed initial confirmations. Redirects never grant payment or approval. Admin approval is separate.
 - Use listing-specific checkout for automatic payment attribution. The admin can generate a checkout link for a saved listing; reusable generic Stripe links are for manual payments and do not automatically approve or link listings.
 - Do not delete a listing with an active subscription. Cancel it in Stripe first; pending checkout sessions are expired during deletion.
 

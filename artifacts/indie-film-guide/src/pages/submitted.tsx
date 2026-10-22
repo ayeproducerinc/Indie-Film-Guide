@@ -80,7 +80,7 @@ export default function Submitted() {
           <dt>Payment</dt><dd data-testid="text-payment-status">{state.paymentStatus}</dd>
         </dl>
         {state.checkoutAvailable && !waived && !url && <button type="button" disabled={busy} onClick={() => void checkout()} className="btn" data-testid="button-checkout">{busy ? 'Preparing checkout…' : 'Continue to secure checkout'}</button>}
-        {url && !paid && !waived && !refunded && <a href={url} target="_blank" rel="noopener noreferrer" className="btn" data-testid="link-stripe-checkout">Open Stripe checkout</a>}
+        {url && !paid && !waived && !refunded && <a href={url} className="btn" data-testid="link-stripe-checkout">Open Stripe checkout</a>}
         {!government && !paid && !waived && !refunded && state.billingMode === 'unavailable' && <p role="status">Checkout is temporarily unavailable. Your details are saved; please try again shortly.</p>}
         {!government && !paid && !waived && !refunded && !state.checkoutAvailable && state.billingMode !== 'unavailable' && <p>We are checking your payment. Please do not pay again.</p>}
       </div>}

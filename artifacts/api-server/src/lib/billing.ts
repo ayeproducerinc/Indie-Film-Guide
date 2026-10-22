@@ -98,6 +98,22 @@ export async function processListingWebhook(payload: Buffer, signature: string) 
   await db.insert(paymentEventsTable).values({ eventId: event.id }).onConflictDoNothing();
 }
 
+// Webhooks remain the ongoing billing path. A private status poll may recover a
+// delayed initial payment using Stripe's authoritative saved session, never a
+// success redirect or any browser-supplied payment/session ID.
+export async function reconcileCheckoutPayment(reference: string, client?: Stripe) {
+  const [row] = await db.select().from(listingsTable).where(eq(listingsTable.reference, reference));
+  if (!row || row.deletedAt || row.paymentStatus !== "Unpaid" || !row.stripeCheckoutId) return;
+  const stripe = client ?? await getUncachableStripeClient();
+  const session = await stripe.checkout.sessions.retrieve(row.stripeCheckoutId);
+  if (session.status !== "complete" || session.payment_status !== "paid") return;
+  if (session.metadata?.app !== "indie-film-guide" || session.metadata.listingReference !== row.reference)
+    throw new Error("Checkout is not bound to this listing.");
+  if (session.mode === "payment") await applyLifetimeSession(session, stripe);
+  else if (session.mode === "subscription" && idOf(session.subscription))
+    await updateFromSubscription(idOf(session.subscription)!, row.reference, stripe);
+}
+
 export async function beginCheckout(reference: string, origin: string, client?: Stripe) {
   const stripe = billingState.available ? client ?? await getUncachableStripeClient() : null;
   // Commit a durable inventory reservation BEFORE making a network request:

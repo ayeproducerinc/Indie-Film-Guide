@@ -7,7 +7,7 @@ import type Stripe from "stripe";
 import { and, eq, inArray } from "drizzle-orm";
 import { db, pool, listingsTable } from "@workspace/db";
 import { billingState } from "./listing-config";
-import { beginCheckout } from "./billing";
+import { beginCheckout, reconcileCheckoutPayment } from "./billing";
 import { applyLifetimeSession, applyLifetimeRefund } from "./lifetime-payments";
 import { lifetimeUsage, releaseReservation, reconcileLifetimeReservations } from "./lifetime-inventory";
 import { updateFromSubscription } from "./subscription-billing";
@@ -68,6 +68,23 @@ test("concurrent final-spot checkouts cannot oversell; retries reuse a reservati
     const winner = results[0]!.status === "fulfilled" ? a : b;
     await beginCheckout(winner.reference, "https://example.invalid", fake);
     assert.equal(sessions.size, 1);
+  } finally { await cleanup(); }
+});
+test("private status recovery requires a paid, bound Stripe session and never approves", async () => {
+  try {
+    const row = await insert(); await beginCheckout(row.reference, "https://example.invalid", fake);
+    await reconcileCheckoutPayment(row.reference, fake);
+    let [saved] = await db.select().from(listingsTable).where(eq(listingsTable.id, row.id));
+    assert.equal(saved!.paymentStatus, "Unpaid");
+    const session = [...sessions.values()][0];
+    session.status = "complete"; session.payment_status = "paid";
+    session.metadata.listingReference = "unrelated-listing";
+    await assert.rejects(reconcileCheckoutPayment(row.reference, fake), /not bound/);
+    session.metadata.listingReference = row.reference;
+    await reconcileCheckoutPayment(row.reference, fake);
+    [saved] = await db.select().from(listingsTable).where(eq(listingsTable.id, row.id));
+    assert.equal(saved!.paymentStatus, "Paid");
+    assert.equal(saved!.status, "Pending");
   } finally { await cleanup(); }
 });
 test("paid completion, replay and refund use authoritative payment state", async () => {

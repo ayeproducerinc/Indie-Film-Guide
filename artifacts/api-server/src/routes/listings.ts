@@ -10,7 +10,7 @@ import {
 import locations from "../data/georgia-locations.json";
 import { billingState, categories, stages, listingConfig, specialActive } from "../lib/listing-config";
 import { validateListing } from "../lib/listing-validation";
-import { beginCheckout } from "../lib/billing";
+import { beginCheckout, reconcileCheckoutPayment } from "../lib/billing";
 import { reconcileLifetimeReservations } from "../lib/lifetime-inventory";
 
 const router: IRouter = Router();
@@ -79,10 +79,21 @@ router.post("/submissions", async (req, res): Promise<void> => {
 router.post("/submissions/:reference/status", async (req, res): Promise<void> => {
   const body = GetSubmissionStatusBody.safeParse(req.body);
   if (!body.success || typeof req.params.reference !== "string") { res.status(400).json({ error: "Invalid submission access." }); return; }
-  const [listing] = await db.select().from(listingsTable).where(and(
+  let [listing] = await db.select().from(listingsTable).where(and(
     eq(listingsTable.reference, req.params.reference), eq(listingsTable.accessTokenHash, hashToken(body.data.token)), isNull(listingsTable.deletedAt),
   ));
   if (!listing) { res.status(404).json({ error: "Submission not found on this device." }); return; }
+  if (billingState.available && listing.paymentStatus === "Unpaid" && listing.stripeCheckoutId) {
+    try {
+      await reconcileCheckoutPayment(listing.reference);
+      [listing] = await db.select().from(listingsTable).where(and(
+        eq(listingsTable.reference, req.params.reference), eq(listingsTable.accessTokenHash, hashToken(body.data.token)), isNull(listingsTable.deletedAt),
+      ));
+      if (!listing) { res.status(404).json({ error: "Submission not found on this device." }); return; }
+    } catch {
+      req.log.warn("Initial checkout confirmation delayed; leaving payment unchanged");
+    }
+  }
   res.json(GetSubmissionStatusResponse.parse({
     reference: listing.reference, name: listing.name, plan: listing.plan,
     status: listing.status, paymentStatus: listing.paymentStatus,
