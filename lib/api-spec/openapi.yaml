@@ -100,6 +100,10 @@ paths:
   /admin/dashboard:
     get:
       operationId: getAdminDashboard
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 100000, default: 1 } }
+        - { name: status, in: query, schema: { type: string, enum: [Pending, Live, Rejected] } }
+        - { name: plan, in: query, schema: { type: string, maxLength: 100 } }
       responses:
         "200":
           description: Private listings and summary
@@ -251,6 +255,13 @@ paths:
   /directory:
     get:
       operationId: getDirectory
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 100000, default: 1 } }
+        - { name: q, in: query, schema: { type: string, maxLength: 200 } }
+        - { name: city, in: query, schema: { type: string, maxLength: 120 } }
+        - { name: category, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: stage, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: indieOnly, in: query, schema: { type: boolean } }
       responses:
         "200":
           description: Live directory and filter options
@@ -387,8 +398,13 @@ components:
         email: { type: string }
     Directory:
       type: object
-      required: [listings, cities, categories, stages]
+      required: [listings, cities, categories, stages, total, directoryTotal, page, pageSize, pageCount]
       properties:
+        total: { type: integer }
+        directoryTotal: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer, enum: [20] }
+        pageCount: { type: integer }
         listings: { type: array, items: { $ref: "#/components/schemas/Listing" } }
         cities: { type: array, items: { type: string } }
         categories: { type: array, items: { type: string } }
@@ -533,8 +549,13 @@ components:
             einVerified: { type: boolean }
     AdminDashboard:
       type: object
-      required: [listings, liveCount, paidCount, recurringRevenue, lifetimeRevenue, lifetimeSpotsLeft, billingMode, paymentLinks]
+      required: [listings, liveCount, paidCount, recurringRevenue, lifetimeRevenue, lifetimeSpotsLeft, billingMode, paymentLinks, total, page, pageSize, pageCount, statusCounts]
       properties:
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer, enum: [20] }
+        pageCount: { type: integer }
+        statusCounts: { $ref: "#/components/schemas/ListingStatusCounts" }
         listings: { type: array, items: { $ref: "#/components/schemas/AdminListing" } }
         liveCount: { type: integer }
         paidCount: { type: integer }
@@ -543,6 +564,14 @@ components:
         lifetimeSpotsLeft: { type: integer }
         billingMode: { type: string }
         paymentLinks: { type: array, items: { $ref: "#/components/schemas/PlanPaymentLink" } }
+    ListingStatusCounts:
+      type: object
+      required: [All, Pending, Live, Rejected]
+      properties:
+        All: { type: integer }
+        Pending: { type: integer }
+        Live: { type: integer }
+        Rejected: { type: integer }
     PlanPaymentLink:
       type: object
       required: [plan, url]

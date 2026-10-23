@@ -1,9 +1,9 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { db, listingsTable, findPlan, type Listing } from "@workspace/db";
+import { and, desc, eq, isNull, inArray, or, sql } from "drizzle-orm";
+import { db, listingsTable, findPlan, PLANS, type Listing } from "@workspace/db";
 import {
-  GetAdminSessionResponse, LoginAdminBody, GetAdminDashboardResponse, AddAdminListingResponse,
+  GetAdminSessionResponse, LoginAdminBody, GetAdminDashboardResponse, GetAdminDashboardQueryParams, AddAdminListingResponse,
   UpdateAdminListingParams, UpdateAdminListingResponse, DeleteAdminListingParams,
   SetAdminListingStatusParams, SetAdminListingStatusBody, SetAdminListingStatusResponse, ScheduleAdminRenewalPlanBody,
   VerifyAdminListingEinParams, VerifyAdminListingEinBody, VerifyAdminListingEinResponse,
@@ -16,6 +16,7 @@ import { deleteListing } from "../lib/delete-listing";
 import { eligible, graceDaysLeft } from "../lib/payment-policy";
 import { scheduleStandardAtRenewal, previewStandardAtRenewal } from "../lib/subscription-billing";
 import { GRACE_MS } from "@workspace/db";
+import { countWhere, listingPage } from "../lib/listing-pagination";
 
 const router: IRouter = Router();
 const adminView = (row: Listing) => ({ ...row, createdAt: row.createdAt.toISOString(),
@@ -32,15 +33,47 @@ router.post("/admin/session", requireAdminMutation, async (req, res): Promise<vo
 });
 router.delete("/admin/session", requireAdminMutation, logout);
 router.use("/admin", requireAdmin);
-router.get("/admin/dashboard", async (_req, res): Promise<void> => {
-  const paidRows = await db.select().from(listingsTable).where(eq(listingsTable.paymentStatus, "Paid"));
-  const rows = await db.select().from(listingsTable).where(isNull(listingsTable.deletedAt)).orderBy(desc(listingsTable.createdAt));
+router.get("/admin/dashboard", async (req, res): Promise<void> => {
+  const parsed = GetAdminDashboardQueryParams.safeParse(req.query);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid admin filters or page." }); return; }
+  const { page: requested, status, plan } = parsed.data;
+  const active = isNull(listingsTable.deletedAt);
+  const matching = and(active, status ? eq(listingsTable.status, status) : undefined, plan ? eq(listingsTable.plan, plan) : undefined);
+  const paid = eq(listingsTable.paymentStatus, "Paid");
+  // Equivalent to eligible(), including the special government-plan rule.
+  const eligibleSql = and(
+    or(sql`${listingsTable.providerType} <> 'Nonprofit'`, eq(listingsTable.einVerified, true)),
+    or(eq(listingsTable.paymentStatus, "Payment waived"),
+      and(eq(listingsTable.plan, "Government"), eq(listingsTable.providerType, "Government"), eq(listingsTable.paymentStatus, "Not required")),
+      and(sql`${listingsTable.plan} <> 'Government'`, or(paid, and(
+        inArray(listingsTable.plan, PLANS.filter(p => p.billing === "yearly").map(p => p.name)),
+        eq(listingsTable.paymentStatus, "Past due"),
+        sql`${listingsTable.pastDueSince} > now() - interval '30 days'`,
+      )))),
+  );
+  const revenue = (billing: "yearly" | "lifetime") => sql<number>`${sql.join(
+    PLANS.filter(p => p.billing === billing).map(p => sql`${countWhere(and(
+      paid, billing === "yearly" ? active : undefined, eq(listingsTable.plan, p.name),
+    ))} * ${p.amount / 100}::numeric`), sql` + `,
+  )}`.mapWith(Number);
+  const [counts] = await db.select({
+    total: countWhere(matching), All: countWhere(active),
+    Pending: countWhere(and(active, eq(listingsTable.status, "Pending"))),
+    Live: countWhere(and(active, eq(listingsTable.status, "Live"))),
+    Rejected: countWhere(and(active, eq(listingsTable.status, "Rejected"))),
+    liveCount: countWhere(and(active, eq(listingsTable.status, "Live"), eligibleSql)),
+    paidCount: countWhere(and(active, paid)),
+    recurringRevenue: revenue("yearly"), lifetimeRevenue: revenue("lifetime"),
+  }).from(listingsTable);
+  const pagination = listingPage(counts.total, requested);
+  const rows = await db.select().from(listingsTable).where(matching)
+    .orderBy(desc(listingsTable.createdAt), desc(listingsTable.id))
+    .limit(pagination.pageSize).offset((pagination.page - 1) * pagination.pageSize);
   res.json(GetAdminDashboardResponse.parse({
-    listings: rows.map(adminView),
-    liveCount: rows.filter(l => l.status === "Live" && eligible(l)).length,
-    paidCount: rows.filter(l => l.paymentStatus === "Paid").length,
-    recurringRevenue: rows.filter(l => l.paymentStatus === "Paid" && findPlan(l.plan)?.billing === "yearly").reduce((sum, l) => sum + (findPlan(l.plan)?.amount ?? 0) / 100, 0),
-    lifetimeRevenue: paidRows.filter(l => findPlan(l.plan)?.billing === "lifetime").reduce((sum, l) => sum + (findPlan(l.plan)?.amount ?? 0) / 100, 0),
+    listings: rows.map(adminView), ...pagination,
+    statusCounts: { All: counts.All, Pending: counts.Pending, Live: counts.Live, Rejected: counts.Rejected },
+    liveCount: counts.liveCount, paidCount: counts.paidCount,
+    recurringRevenue: counts.recurringRevenue, lifetimeRevenue: counts.lifetimeRevenue,
     lifetimeSpotsLeft: (await listingConfig()).lifetimeSpotsLeft,
     billingMode: billingState.mode, paymentLinks: billingState.paymentLinks,
   }));

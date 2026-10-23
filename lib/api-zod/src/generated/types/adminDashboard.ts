@@ -5,10 +5,17 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminDashboardPageSize } from './adminDashboardPageSize';
 import type { AdminListing } from './adminListing';
+import type { ListingStatusCounts } from './listingStatusCounts';
 import type { PlanPaymentLink } from './planPaymentLink';
 
 export interface AdminDashboard {
+  total: number;
+  page: number;
+  pageSize: AdminDashboardPageSize;
+  pageCount: number;
+  statusCounts: ListingStatusCounts;
   listings: AdminListing[];
   liveCount: number;
   paidCount: number;

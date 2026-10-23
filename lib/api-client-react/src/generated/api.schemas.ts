@@ -93,7 +93,19 @@ export interface Listing {
   email?: string;
 }
 
+export type DirectoryPageSize = typeof DirectoryPageSize[keyof typeof DirectoryPageSize];
+
+
+export const DirectoryPageSize = {
+  NUMBER_20: 20,
+} as const;
+
 export interface Directory {
+  total: number;
+  directoryTotal: number;
+  page: number;
+  pageSize: DirectoryPageSize;
+  pageCount: number;
   listings: Listing[];
   cities: string[];
   categories: string[];
@@ -355,12 +367,31 @@ export type AdminListing = Listing & ({
   einVerified?: boolean;
 });
 
+export type AdminDashboardPageSize = typeof AdminDashboardPageSize[keyof typeof AdminDashboardPageSize];
+
+
+export const AdminDashboardPageSize = {
+  NUMBER_20: 20,
+} as const;
+
+export interface ListingStatusCounts {
+  All: number;
+  Pending: number;
+  Live: number;
+  Rejected: number;
+}
+
 export interface PlanPaymentLink {
   plan: string;
   url: string;
 }
 
 export interface AdminDashboard {
+  total: number;
+  page: number;
+  pageSize: AdminDashboardPageSize;
+  pageCount: number;
+  statusCounts: ListingStatusCounts;
   listings: AdminListing[];
   liveCount: number;
   paidCount: number;
@@ -381,5 +412,52 @@ export type GetAdminMailingListParams = {
  * @maximum 100000
  */
 page?: number;
+};
+
+export type GetAdminDashboardParams = {
+/**
+ * @minimum 1
+ * @maximum 100000
+ */
+page?: number;
+status?: GetAdminDashboardStatus;
+/**
+ * @maxLength 100
+ */
+plan?: string;
+};
+
+export type GetAdminDashboardStatus = typeof GetAdminDashboardStatus[keyof typeof GetAdminDashboardStatus];
+
+
+export const GetAdminDashboardStatus = {
+  Pending: 'Pending',
+  Live: 'Live',
+  Rejected: 'Rejected',
+} as const;
+
+export type GetDirectoryParams = {
+/**
+ * @minimum 1
+ * @maximum 100000
+ */
+page?: number;
+/**
+ * @maxLength 200
+ */
+q?: string;
+/**
+ * @maxLength 120
+ */
+city?: string;
+/**
+ * @maxLength 100
+ */
+category?: string;
+/**
+ * @maxLength 100
+ */
+stage?: string;
+indieOnly?: boolean;
 };
 

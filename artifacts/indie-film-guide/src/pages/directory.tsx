@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { keepPreviousData } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { useGetDirectory, getGetDirectoryQueryKey } from '@workspace/api-client-react';
 import { ArrowRight, Check, Phone, Search } from 'lucide-react';
@@ -6,32 +7,28 @@ import { formatPhone } from '@/lib/format-phone';
 import { Layout, Badge } from '@/components/layout';
 import { CATEGORIES, STAGES, placeLabel, shortCategory } from '@/lib/constants';
 import { MailingListSignup } from '@/components/mailing-list-signup';
+import { ListingPagination, focusListingResults } from '@/components/listing-pagination';
 import { useMeta } from '@/lib/use-meta';
 
 export default function Directory() {
   useEffect(() => { if (window.location.hash === '#mailing-list') setTimeout(() => document.getElementById('mailing-list')?.scrollIntoView(), 300); }, []);
   useMeta('Indie Film Guide | Georgia resources for independent filmmakers', 'Free directory of locations, gear, crew, legal, funding and distribution resources for independent filmmakers in Georgia.');
-  const { data, isLoading, isError, refetch } = useGetDirectory({ query: { queryKey: getGetDirectoryQueryKey(), staleTime: 0, refetchInterval: 30000 } });
   const [q, setQ] = useState('');
   const [city, setCity] = useState('');
   const [cat, setCat] = useState('');
   const [stage, setStage] = useState('');
   const [indie, setIndie] = useState(false);
-
-  const results = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    return (data?.listings ?? [])
-      .filter((l) => !s || l.name.toLowerCase().includes(s) || l.description.toLowerCase().includes(s))
-      .filter((l) => !city || l.city === city || l.coverage === 'Statewide' || l.coverage === 'Nationwide')
-      .filter((l) => !cat || l.category === cat)
-      .filter((l) => !stage || l.stages.includes(stage))
-      .filter((l) => !indie || l.indieRate)
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [data, q, city, cat, stage, indie]);
-
-  const total = data?.listings.length ?? 0;
+  const [page, setPage] = useState(1);
+  const params = { page, q: q.trim() || undefined, city: city || undefined, category: cat || undefined,
+    stage: stage || undefined, indieOnly: indie || undefined };
+  const { data, isLoading, isFetching, isPlaceholderData, isError, refetch } = useGetDirectory(params, {
+    query: { queryKey: getGetDirectoryQueryKey(params), staleTime: 0, refetchInterval: 30000, placeholderData: keepPreviousData },
+  });
+  useEffect(() => { if (data && !isPlaceholderData && data.page !== page) setPage(data.page); }, [data, isPlaceholderData, page]);
+  const results = isError ? [] : data?.listings ?? [];
+  const total = data?.directoryTotal ?? 0;
   const filtered = !!(q || city || cat || stage || indie);
-  const reset = () => { setQ(''); setCity(''); setCat(''); setStage(''); setIndie(false); };
+  const reset = () => { setPage(1); setQ(''); setCity(''); setCat(''); setStage(''); setIndie(false); };
   const cities = [...(data?.cities ?? [])].sort((a, b) => a.localeCompare(b));
 
   return (
@@ -50,7 +47,7 @@ export default function Directory() {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <input
               type="search" aria-label="Search resources" data-testid="input-search"
-              value={q} onChange={(e) => setQ(e.target.value)}
+              maxLength={200} value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }}
               placeholder="Search by name or what they offer"
               className="field field-search"
             />
@@ -58,14 +55,14 @@ export default function Directory() {
         </div>
       </section>
 
-      <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
+      <div data-directory-categories="true" className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-5xl px-4 py-3">
           <div className="category-row" role="group" aria-label="Category">
             {[{ value: '', short: 'All', mobile: 'All' }, ...CATEGORIES].map((c) => (
               <button
                 key={c.value || 'all'} type="button" aria-pressed={cat === c.value} aria-label={c.value || 'All categories'} title={c.value || 'All categories'}
                 data-testid={`chip-${c.short.toLowerCase().replace(/[^a-z]+/g, '-')}`}
-                onClick={() => setCat(c.value)}
+                onClick={() => { setPage(1); setCat(c.value); }}
                 className={`category-button press border-2 font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${cat === c.value ? 'border-primary bg-primary text-primary-foreground underline underline-offset-4' : 'border-border bg-card hover:border-primary'}`}
               >
                 <Check className={`h-3.5 w-3.5 shrink-0 lg:hidden ${cat === c.value ? '' : 'invisible'}`} aria-hidden="true" />
@@ -79,32 +76,32 @@ export default function Directory() {
       <section className="mx-auto max-w-5xl px-4 pt-5">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <label className="text-xs font-bold uppercase tracking-wider">City
-            <select data-testid="select-city" value={city} onChange={(e) => setCity(e.target.value)} className="field mt-1 normal-case tracking-normal font-normal">
+            <select data-testid="select-city" value={city} onChange={(e) => { setPage(1); setCity(e.target.value); }} className="field mt-1 normal-case tracking-normal font-normal">
               <option value="">All cities</option>
               {cities.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </label>
           <label className="text-xs font-bold uppercase tracking-wider">Category
-            <select data-testid="select-category" value={cat} onChange={(e) => setCat(e.target.value)} className="field mt-1 normal-case tracking-normal font-normal">
+            <select data-testid="select-category" value={cat} onChange={(e) => { setPage(1); setCat(e.target.value); }} className="field mt-1 normal-case tracking-normal font-normal">
               <option value="">All categories</option>
               {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.short}</option>)}
             </select>
           </label>
           <label className="text-xs font-bold uppercase tracking-wider">Stage
-            <select data-testid="select-stage" value={stage} onChange={(e) => setStage(e.target.value)} className="field mt-1 normal-case tracking-normal font-normal">
+            <select data-testid="select-stage" value={stage} onChange={(e) => { setPage(1); setStage(e.target.value); }} className="field mt-1 normal-case tracking-normal font-normal">
               <option value="">All stages</option>
               {STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </label>
           <label className="flex items-end gap-2 pb-3 text-sm font-semibold">
-            <input type="checkbox" data-testid="checkbox-indie" checked={indie} onChange={(e) => setIndie(e.target.checked)} className="h-5 w-5 accent-[hsl(var(--primary))]" />
+            <input type="checkbox" data-testid="checkbox-indie" checked={indie} onChange={(e) => { setPage(1); setIndie(e.target.checked); }} className="h-5 w-5 accent-[hsl(var(--primary))]" />
             Indie rate only
           </label>
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-2" aria-live="polite">
-          <p className="text-sm font-semibold" data-testid="text-count">
-            {isLoading ? 'Loading resources' : `${results.length} ${results.length === 1 ? 'resource' : 'resources'}`}
+          <p id="directory-results" tabIndex={-1} className="scroll-mt-[22rem] lg:scroll-mt-36 text-sm font-semibold" data-testid="text-count">
+            {isLoading ? 'Loading resources' : isError ? 'Resources unavailable' : `${data?.total ?? 0} ${data?.total === 1 ? 'resource' : 'resources'}`}
           </p>
           {filtered && <button type="button" onClick={reset} data-testid="button-clear" className="py-2 text-sm font-semibold text-primary underline underline-offset-4">Clear filters</button>}
         </div>
@@ -133,7 +130,7 @@ export default function Directory() {
             </div>
           </div>
         )}
-        <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+        <ul className="mt-3 grid gap-3 sm:grid-cols-2" aria-busy={isFetching}>
           {results.map((l, i) => (
             <li key={l.id} className="rise" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
               <article className="lift flex h-full flex-col border-2 border-border bg-card p-4" data-testid={`card-listing-${l.id}`}>
@@ -156,6 +153,8 @@ export default function Directory() {
             </li>
           ))}
         </ul>
+        {!isError && data && <ListingPagination {...data} busy={isFetching} label="Directory pages" testId="directory-pagination"
+          onPage={(next) => { setPage(next); focusListingResults('directory-results'); }} />}
       </section>
       </div>
       <MailingListSignup />

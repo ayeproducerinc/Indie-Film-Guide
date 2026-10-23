@@ -5,9 +5,15 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DirectoryPageSize } from './directoryPageSize';
 import type { Listing } from './listing';
 
 export interface Directory {
+  total: number;
+  directoryTotal: number;
+  page: number;
+  pageSize: DirectoryPageSize;
+  pageCount: number;
   listings: Listing[];
   cities: string[];
   categories: string[];

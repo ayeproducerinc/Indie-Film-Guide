@@ -87,7 +87,7 @@ test("annual refund visibility and end-of-term cancellation across all four plan
         assert.equal(eligible(await saved()), expected);
         const response = await fetch(`${origin}/listings/${row.slug}`);
         assert.equal(response.status, expected ? 200 : 404);
-        const directory = await (await fetch(`${origin}/directory`)).json() as { listings: { id: number }[] };
+        const directory = await (await fetch(`${origin}/directory?q=${encodeURIComponent(row.name)}`)).json() as { listings: { id: number }[] };
         assert.equal(directory.listings.some(l => l.id === row.id), expected);
       };
 

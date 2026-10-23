@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { ListingPagination, focusListingResults } from '@/components/listing-pagination';
+import { keepPreviousData, useQueryClient } from '@tanstack/react-query';
 import {
   useGetAdminSession, getGetAdminSessionQueryKey, useLoginAdmin, useLogoutAdmin,
   useGetAdminDashboard, getGetAdminDashboardQueryKey, getGetAdminMailingListQueryKey, useAddAdminListing, useUpdateAdminListing,
@@ -143,14 +144,17 @@ function Row({ l, onEdit, onDelete, onStatus, onPayment, onRenewal, onVerifyEin,
 
 function Dashboard() {
   const qc = useQueryClient();
-  const dash = useGetAdminDashboard({
-    query: { queryKey: getGetAdminDashboardQueryKey(), staleTime: 0, refetchOnMount: 'always', refetchInterval: 30000 },
-  });
   const loc = useGetLocations();
   const locations = loc.data ?? [];
   const [filter, setFilter] = useState<Filter>('All');
   const config = useGetListingConfig();
   const [planFilter, setPlanFilter] = useState('All');
+  const [page, setPage] = useState(1);
+  const params = { page, status: filter === 'All' ? undefined : filter, plan: planFilter === 'All' ? undefined : planFilter };
+  const dash = useGetAdminDashboard(params, {
+    query: { queryKey: getGetAdminDashboardQueryKey(params), staleTime: 0, refetchOnMount: 'always', refetchInterval: 30000, placeholderData: keepPreviousData },
+  });
+  useEffect(() => { if (dash.data && !dash.isPlaceholderData && dash.data.page !== page) setPage(dash.data.page); }, [dash.data, dash.isPlaceholderData, page]);
   const [renewal, setRenewal] = useState<AdminListing | null>(null);
   const [mode, setMode] = useState<{ kind: 'add' } | { kind: 'edit'; l: AdminListing } | null>(null);
   const [del, setDel] = useState<AdminListing | null>(null);
@@ -195,10 +199,8 @@ function Dashboard() {
   };
 
   const data = dash.isError ? undefined : dash.data;
-  const all = data?.listings ?? [];
-  const counts = { All: all.length, Pending: 0, Live: 0, Rejected: 0 } as Record<Filter, number>;
-  all.forEach((l) => { if (l.status in counts) counts[l.status as Filter]++; });
-  const shown = all.filter(l => (filter === 'All' || l.status === filter) && (planFilter === 'All' || l.plan === planFilter));
+  const counts = data?.statusCounts ?? { All: 0, Pending: 0, Live: 0, Rejected: 0 };
+  const shown = data?.listings ?? [];
   const em = add.error ? errInfo(add.error) : mode?.kind === 'edit' && update.error ? errInfo(update.error) : null;
 
   return (
@@ -250,14 +252,14 @@ function Dashboard() {
           {notice && <p role="status" data-testid="text-admin-notice" className="mt-4 border-l-4 border-primary bg-card p-3 text-sm font-semibold">{notice}</p>}
           {actionErr && <p role="alert" data-testid="error-admin-action" className="mt-4 border-2 border-destructive p-3 text-sm font-semibold text-destructive">{actionErr}</p>}
 
-          <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Filter listings">
+          <div id="admin-listing-results" tabIndex={-1} className="mt-6 scroll-mt-20 flex flex-wrap gap-2" role="group" aria-label="Filter listings">
             {(['All', 'Pending', 'Live', 'Rejected'] as Filter[]).map((f) => (
-              <button key={f} type="button" aria-pressed={filter === f} data-testid={`filter-${f}`} onClick={() => setFilter(f)} className={`press min-h-[44px] border-2 px-4 text-sm font-bold ${filter === f ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card'}`}>{f} ({counts[f]})</button>
+              <button key={f} type="button" aria-pressed={filter === f} data-testid={`filter-${f}`} onClick={() => { setPage(1); setFilter(f); }} className={`press min-h-[44px] border-2 px-4 text-sm font-bold ${filter === f ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card'}`}>{f} ({counts[f]})</button>
             ))}
           </div>
           <div className="mt-4 max-w-sm">
             <label htmlFor="admin-plan-filter" className="text-sm font-bold">Filter by plan</label>
-            <select id="admin-plan-filter" data-testid="select-admin-plan-filter" className="field mt-1" value={planFilter} onChange={e => setPlanFilter(e.target.value)}>
+            <select id="admin-plan-filter" data-testid="select-admin-plan-filter" className="field mt-1" value={planFilter} onChange={e => { setPage(1); setPlanFilter(e.target.value); }}>
               <option value="All">All plans</option>
               {config.data?.plans.map(p => <option key={p.name}>{p.name}</option>)}
             </select>
@@ -269,14 +271,14 @@ function Dashboard() {
               <p className="mt-1 text-sm text-muted-foreground">{filter === 'All' ? 'No listings yet. Add the first one.' : `No ${filter.toLowerCase()} listings.`}</p>
             </div>
           ) : (
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-4 space-y-3" aria-busy={dash.isFetching}>
               {shown.map((l) => (
                   <Row key={l.id} l={l} busy={status.isPending || checkout.isPending || verifyEin.isPending} verifyingEin={verifyEin.isPending && verifyEin.variables?.id === l.id}
                     onVerifyEin={() => {
                       setNotice(''); setActionErr('');
                       verifyEin.mutate({ id: l.id, data: { expectedEin: l.ein ?? '' } }, {
                         onSuccess: (result) => {
-                          qc.setQueryData(getGetAdminDashboardQueryKey(), (previous: typeof dash.data) => previous ? { ...previous, listings: previous.listings.map(row => row.id === result.id ? result : row) } : previous);
+                          qc.setQueriesData({ queryKey: getGetAdminDashboardQueryKey() }, (previous: typeof dash.data) => previous ? { ...previous, listings: previous.listings.map(row => row.id === result.id ? result : row) } : previous);
                           setNotice(`${l.name}: EIN verified. You can now approve once payment requirements are met.`);
                           refresh();
                         },
@@ -294,6 +296,8 @@ function Dashboard() {
               ))}
             </ul>
           )}
+          <ListingPagination {...data} busy={dash.isFetching} label="Admin listing pages" testId="admin-pagination"
+            onPage={(next) => { setPage(next); focusListingResults('admin-listing-results'); }} />
         </>
       )}
 

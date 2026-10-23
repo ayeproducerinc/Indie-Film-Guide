@@ -3,7 +3,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, asc, eq, isNull, or, sql } from "drizzle-orm";
 import { db, listingsTable, GRACE_MS, findPlan } from "@workspace/db";
 import {
-  GetDirectoryResponse, GetListingParams, GetListingResponse, GetLocationsResponse,
+  GetDirectoryResponse, GetDirectoryQueryParams, GetListingParams, GetListingResponse, GetLocationsResponse,
   GetListingConfigResponse, SubmitListingResponse, GetSubmissionStatusBody,
   GetSubmissionStatusResponse, CreateListingCheckoutResponse,
 } from "@workspace/api-zod";
@@ -12,6 +12,7 @@ import { billingState, categories, stages, listingConfig, specialActive } from "
 import { validateListing } from "../lib/listing-validation";
 import { beginCheckout, reconcileCheckoutPayment } from "../lib/billing";
 import { reconcileLifetimeReservations } from "../lib/lifetime-inventory";
+import { countWhere, listingPage } from "../lib/listing-pagination";
 
 const router: IRouter = Router();
 const publicFields = {
@@ -37,11 +38,36 @@ function publicView<T extends { email: string | null }>(row: T) {
 }
 const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
-router.get("/directory", async (_req, res): Promise<void> => {
-  const rows = await db.select(publicFields).from(listingsTable).where(visible).orderBy(asc(listingsTable.name));
-  const listings = rows.map(publicView);
-  const cities = [...new Set(listings.filter(l => l.coverage === "City").map(l => l.city))].sort((a, b) => a.localeCompare(b));
-  res.json(GetDirectoryResponse.parse({ listings, cities, categories, stages }));
+router.get("/directory", async (req, res): Promise<void> => {
+  const rawIndie = req.query.indieOnly;
+  if (rawIndie !== undefined && rawIndie !== "true" && rawIndie !== "false") {
+    res.status(400).json({ error: "Invalid indie-rate filter." }); return;
+  }
+  const parsed = GetDirectoryQueryParams.safeParse({
+    ...req.query, ...(rawIndie !== undefined ? { indieOnly: rawIndie === "true" } : {}),
+  });
+  if (!parsed.success) { res.status(400).json({ error: "Invalid directory filters or page." }); return; }
+  const { page: requested, q, city, category, stage, indieOnly } = parsed.data;
+  // strpos treats %, _, and backslashes literally, like the original browser search.
+  const search = q?.trim().toLowerCase();
+  const matching = and(
+    search ? or(sql`strpos(lower(${listingsTable.name}), ${search}) > 0`, sql`strpos(lower(${listingsTable.description}), ${search}) > 0`) : undefined,
+    city ? or(eq(listingsTable.city, city), eq(listingsTable.coverage, "Statewide"), eq(listingsTable.coverage, "Nationwide")) : undefined,
+    category ? eq(listingsTable.category, category) : undefined,
+    stage ? sql`${stage} = any(${listingsTable.stages})` : undefined,
+    indieOnly ? eq(listingsTable.indieRate, true) : undefined,
+  );
+  const [[counts], cityRows] = await Promise.all([
+    db.select({ directoryTotal: countWhere(visible), total: countWhere(and(visible, matching)) }).from(listingsTable),
+    db.selectDistinct({ city: listingsTable.city }).from(listingsTable).where(and(visible, eq(listingsTable.coverage, "City"))),
+  ]);
+  const pagination = listingPage(counts.total, requested);
+  const rows = await db.select(publicFields).from(listingsTable).where(and(visible, matching))
+    .orderBy(asc(sql`lower(${listingsTable.name})`), asc(listingsTable.name), asc(listingsTable.id))
+    .limit(pagination.pageSize).offset((pagination.page - 1) * pagination.pageSize);
+  const cities = cityRows.map(row => row.city).sort((a, b) => a.localeCompare(b));
+  res.json(GetDirectoryResponse.parse({ listings: rows.map(publicView), cities, categories, stages,
+    directoryTotal: counts.directoryTotal, ...pagination }));
 });
 
 router.get("/listings/:slug", async (req, res): Promise<void> => {

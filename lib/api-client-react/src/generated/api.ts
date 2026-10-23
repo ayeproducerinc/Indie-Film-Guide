@@ -27,7 +27,9 @@ import type {
   CheckoutLink,
   Directory,
   EinVerificationInput,
+  GetAdminDashboardParams,
   GetAdminMailingListParams,
+  GetDirectoryParams,
   HealthStatus,
   Listing,
   ListingConfig,
@@ -660,17 +662,24 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getLogoutAdminMutationOptions(options));
     }
 
-export const getGetAdminDashboardUrl = () => {
+export const getGetAdminDashboardUrl = (params?: GetAdminDashboardParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/admin/dashboard`
+  return stringifiedParams.length > 0 ? `/api/admin/dashboard?${stringifiedParams}` : `/api/admin/dashboard`
 }
 
-export const getAdminDashboard = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminDashboard> => {
+export const getAdminDashboard = async (params?: GetAdminDashboardParams, options?: Parameters<typeof customFetch>[1]): Promise<AdminDashboard> => {
 
-  return customFetch<AdminDashboard>(getGetAdminDashboardUrl(),
+  return customFetch<AdminDashboard>(getGetAdminDashboardUrl(params),
   {
     ...options,
     method: 'GET'
@@ -683,23 +692,23 @@ export const getAdminDashboard = async ( options?: Parameters<typeof customFetch
 
 
 
-export const getGetAdminDashboardQueryKey = () => {
+export const getGetAdminDashboardQueryKey = (params?: GetAdminDashboardParams,) => {
     return [
-    `/api/admin/dashboard`
+    `/api/admin/dashboard`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetAdminDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetAdminDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = ErrorType<unknown>>(params?: GetAdminDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminDashboardQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminDashboardQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDashboard>>> = ({ signal }) => getAdminDashboard({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDashboard>>> = ({ signal }) => getAdminDashboard(params, { signal, ...requestOptions });
 
 
 
@@ -714,11 +723,11 @@ export type GetAdminDashboardQueryError = ErrorType<unknown>
 
 
 export function useGetAdminDashboard<TData = Awaited<ReturnType<typeof getAdminDashboard>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: GetAdminDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetAdminDashboardQueryOptions(options)
+  const queryOptions = getGetAdminDashboardQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1518,17 +1527,24 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getCreateListingCheckoutMutationOptions(options));
     }
 
-export const getGetDirectoryUrl = () => {
+export const getGetDirectoryUrl = (params?: GetDirectoryParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/directory`
+  return stringifiedParams.length > 0 ? `/api/directory?${stringifiedParams}` : `/api/directory`
 }
 
-export const getDirectory = async ( options?: Parameters<typeof customFetch>[1]): Promise<Directory> => {
+export const getDirectory = async (params?: GetDirectoryParams, options?: Parameters<typeof customFetch>[1]): Promise<Directory> => {
 
-  return customFetch<Directory>(getGetDirectoryUrl(),
+  return customFetch<Directory>(getGetDirectoryUrl(params),
   {
     ...options,
     method: 'GET'
@@ -1541,23 +1557,23 @@ export const getDirectory = async ( options?: Parameters<typeof customFetch>[1])
 
 
 
-export const getGetDirectoryQueryKey = () => {
+export const getGetDirectoryQueryKey = (params?: GetDirectoryParams,) => {
     return [
-    `/api/directory`
+    `/api/directory`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetDirectoryQueryOptions = <TData = Awaited<ReturnType<typeof getDirectory>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetDirectoryQueryOptions = <TData = Awaited<ReturnType<typeof getDirectory>>, TError = ErrorType<unknown>>(params?: GetDirectoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDirectoryQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetDirectoryQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectory>>> = ({ signal }) => getDirectory({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectory>>> = ({ signal }) => getDirectory(params, { signal, ...requestOptions });
 
 
 
@@ -1572,11 +1588,11 @@ export type GetDirectoryQueryError = ErrorType<unknown>
 
 
 export function useGetDirectory<TData = Awaited<ReturnType<typeof getDirectory>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: GetDirectoryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetDirectoryQueryOptions(options)
+  const queryOptions = getGetDirectoryQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

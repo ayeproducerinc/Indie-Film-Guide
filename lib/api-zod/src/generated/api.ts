@@ -107,7 +107,30 @@ export const LoginAdminResponse = zod.object({
 export const LogoutAdminResponse = zod.void()
 
 
+export const getAdminDashboardQueryPageDefault = 1;
+export const getAdminDashboardQueryPageMax = 100000;
+
+export const getAdminDashboardQueryPlanMax = 100;
+
+
+
+export const GetAdminDashboardQueryParams = zod.object({
+  "page": zod.coerce.number().int().min(1).max(getAdminDashboardQueryPageMax).default(getAdminDashboardQueryPageDefault),
+  "status": zod.enum(['Pending', 'Live', 'Rejected']).optional(),
+  "plan": zod.coerce.string().max(getAdminDashboardQueryPlanMax).optional()
+})
+
 export const GetAdminDashboardResponse = zod.object({
+  "total": zod.number().int(),
+  "page": zod.number().int(),
+  "pageSize": zod.literal(20),
+  "pageCount": zod.number().int(),
+  "statusCounts": zod.object({
+  "All": zod.number().int(),
+  "Pending": zod.number().int(),
+  "Live": zod.number().int(),
+  "Rejected": zod.number().int()
+}),
   "listings": zod.array(zod.object({
   "id": zod.number().int(),
   "slug": zod.string(),
@@ -590,7 +613,34 @@ export const CreateListingCheckoutResponse = zod.object({
 })
 
 
+export const getDirectoryQueryPageDefault = 1;
+export const getDirectoryQueryPageMax = 100000;
+
+export const getDirectoryQueryQMax = 200;
+
+export const getDirectoryQueryCityMax = 120;
+
+export const getDirectoryQueryCategoryMax = 100;
+
+export const getDirectoryQueryStageMax = 100;
+
+
+
+export const GetDirectoryQueryParams = zod.object({
+  "page": zod.coerce.number().int().min(1).max(getDirectoryQueryPageMax).default(getDirectoryQueryPageDefault),
+  "q": zod.coerce.string().max(getDirectoryQueryQMax).optional(),
+  "city": zod.coerce.string().max(getDirectoryQueryCityMax).optional(),
+  "category": zod.coerce.string().max(getDirectoryQueryCategoryMax).optional(),
+  "stage": zod.coerce.string().max(getDirectoryQueryStageMax).optional(),
+  "indieOnly": zod.coerce.boolean().optional()
+})
+
 export const GetDirectoryResponse = zod.object({
+  "total": zod.number().int(),
+  "directoryTotal": zod.number().int(),
+  "page": zod.number().int(),
+  "pageSize": zod.literal(20),
+  "pageCount": zod.number().int(),
   "listings": zod.array(zod.object({
   "id": zod.number().int(),
   "slug": zod.string(),
