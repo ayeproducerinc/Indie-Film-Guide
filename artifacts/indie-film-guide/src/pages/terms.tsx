@@ -1,6 +1,6 @@
 import { Layout } from '@/components/layout';
 import { useMeta } from '@/lib/use-meta';
-import { CANCELLATION_MAILTO, REFUND_MAILTO, LISTING_UPDATE_MAILTO, SUPPORT_EMAIL } from '@/lib/support';
+import { CANCELLATION_MAILTO, REFUND_MAILTO, LISTING_UPDATE_MAILTO, MAILING_OPT_OUT_MAILTO, SUPPORT_EMAIL } from '@/lib/support';
 
 const items = [
   'Listings are paid advertising.',
@@ -49,6 +49,11 @@ export default function Terms() {
             <li>A clear description of the requested changes</li>
           </ul>
           <p className="mt-3">For security, we may contact the business using the contact information already on file to confirm authorization. All requested changes are reviewed before publication.</p>
+        </section>
+        <section className="mt-8 border-t-2 border-border pt-6" aria-labelledby="mailing-heading">
+          <h2 id="mailing-heading" className="font-display text-3xl">Mailing List</h2>
+          <p className="mt-3">Joining the mailing list is voluntary and requires you to check a consent box. We store your email, optional first name, the time of consent, the consent wording version and the signup source. This information is kept private, is not shown in the directory, and is not collected from business listing submissions.</p>
+          <p className="mt-3">Signups are self-submitted and email addresses are not verified. At this time we only record contacts; we are not yet sending emails. To withdraw consent, <a href={MAILING_OPT_OUT_MAILTO} data-testid="link-terms-mailing-opt-out" className="break-all font-semibold text-primary underline">email {SUPPORT_EMAIL}</a>. Opt-outs and deletion requests are handled manually by an administrator, so opening an email draft does not by itself remove you.</p>
         </section>
       </div>
     </Layout>

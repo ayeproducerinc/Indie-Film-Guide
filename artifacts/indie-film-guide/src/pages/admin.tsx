@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useGetAdminSession, getGetAdminSessionQueryKey, useLoginAdmin, useLogoutAdmin,
-  useGetAdminDashboard, getGetAdminDashboardQueryKey, useAddAdminListing, useUpdateAdminListing,
+  useGetAdminDashboard, getGetAdminDashboardQueryKey, getGetAdminMailingListQueryKey, useAddAdminListing, useUpdateAdminListing,
   useDeleteAdminListing, useSetAdminListingStatus, useGetLocations, useCreateAdminListingCheckout, useGetListingConfig,
   useVerifyAdminListingEin,
 } from '@workspace/api-client-react';
@@ -12,6 +12,7 @@ import { AdminListingForm } from '@/components/admin-listing-form';
 import { formatPhone } from '@/lib/format-phone';
 import { shortCategory, placeLabel } from '@/lib/constants';
 import { useMeta } from '@/lib/use-meta';
+import { AdminMailingList } from '@/components/admin-mailing-list';
 import { RenewalPlanDialog } from '@/components/renewal-plan-dialog';
 
 const REQ = { request: { headers: { 'X-IFG-Admin': '1' } } };
@@ -174,12 +175,14 @@ function Dashboard() {
     if ((dash.error as { status?: number } | null)?.status === 401) {
       qc.setQueryData(getGetAdminSessionQueryKey(), { authenticated: false, configured: true });
       qc.removeQueries({ queryKey: getGetAdminDashboardQueryKey() });
+      qc.removeQueries({ queryKey: getGetAdminMailingListQueryKey() });
     }
   }, [dash.error, qc]);
 
   const signOut = () => {
     const clear = () => {
       qc.removeQueries({ queryKey: getGetAdminDashboardQueryKey() });
+      qc.removeQueries({ queryKey: getGetAdminMailingListQueryKey() });
       qc.setQueryData(getGetAdminSessionQueryKey(), { authenticated: false, configured: true });
     };
     logout.mutate(undefined, { onSuccess: clear, onError: (e) => setActionErr(errInfo(e).message) });
@@ -205,7 +208,8 @@ function Dashboard() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Private</p>
           <h1 className="font-display mt-2 text-5xl">Admin</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <a href="#mailing-list-admin" data-testid="link-admin-mailing-list" className="btn-outline">Mailing list</a>
           <button type="button" className="btn" data-testid="button-admin-add" onClick={() => { add.reset(); update.reset(); setMode({ kind: 'add' }); }}>Add listing</button>
           <button type="button" className="btn-outline" data-testid="button-admin-logout" disabled={logout.isPending} onClick={signOut}>{logout.isPending ? 'Signing out' : 'Sign out'}</button>
         </div>
@@ -292,6 +296,8 @@ function Dashboard() {
           )}
         </>
       )}
+
+      <div id="mailing-list-admin" className="scroll-mt-20"><AdminMailingList /></div>
 
       {mode && (
         <div className="fixed inset-0 z-40 overflow-y-auto bg-foreground/60" role="dialog" aria-modal="true" aria-labelledby="form-h">

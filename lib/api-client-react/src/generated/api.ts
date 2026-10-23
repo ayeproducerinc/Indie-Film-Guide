@@ -27,12 +27,17 @@ import type {
   CheckoutLink,
   Directory,
   EinVerificationInput,
+  GetAdminMailingListParams,
   HealthStatus,
   Listing,
   ListingConfig,
   ListingInput,
   ListingStatusInput,
   Location,
+  MailingContact,
+  MailingContactPage,
+  MailingOptInInput,
+  MailingOptInResult,
   PaymentAccess,
   RenewalPlanInput,
   RenewalPlanPreview,
@@ -66,6 +71,373 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getCreateMailingOptInUrl = () => {
+
+
+
+
+  return `/api/mailing-list/opt-ins`
+}
+
+export const createMailingOptIn = async (mailingOptInInput: MailingOptInInput, options?: Parameters<typeof customFetch>[1]): Promise<MailingOptInResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<MailingOptInResult>(getCreateMailingOptInUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(mailingOptInInput)
+  }
+);}
+
+
+
+
+
+export const getCreateMailingOptInMutationKey = () => ['createMailingOptIn'] as const;
+
+export const getCreateMailingOptInMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMailingOptIn>>, TError,CreateMailingOptInMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createMailingOptIn>>, TError,CreateMailingOptInMutationVariables, TContext> => {
+
+const mutationKey = getCreateMailingOptInMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMailingOptIn>>, CreateMailingOptInMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createMailingOptIn(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateMailingOptInMutationResult = NonNullable<Awaited<ReturnType<typeof createMailingOptIn>>>
+    export type CreateMailingOptInMutationBody = BodyType<MailingOptInInput>
+    export type CreateMailingOptInMutationError = ErrorType<unknown>
+    export type CreateMailingOptInMutationVariables = {data: BodyType<MailingOptInInput>}
+
+    export const useCreateMailingOptIn = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMailingOptIn>>, TError,CreateMailingOptInMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createMailingOptIn>>,
+        TError,
+        CreateMailingOptInMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateMailingOptInMutationOptions(options));
+    }
+
+export const getGetAdminMailingListUrl = (params?: GetAdminMailingListParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/mailing-list?${stringifiedParams}` : `/api/admin/mailing-list`
+}
+
+export const getAdminMailingList = async (params?: GetAdminMailingListParams, options?: Parameters<typeof customFetch>[1]): Promise<MailingContactPage> => {
+
+  return customFetch<MailingContactPage>(getGetAdminMailingListUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminMailingListQueryKey = (params?: GetAdminMailingListParams,) => {
+    return [
+    `/api/admin/mailing-list`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetAdminMailingListQueryOptions = <TData = Awaited<ReturnType<typeof getAdminMailingList>>, TError = ErrorType<unknown>>(params?: GetAdminMailingListParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminMailingList>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminMailingListQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminMailingList>>> = ({ signal }) => getAdminMailingList(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminMailingList>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminMailingListQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminMailingList>>>
+export type GetAdminMailingListQueryError = ErrorType<unknown>
+
+
+
+export function useGetAdminMailingList<TData = Awaited<ReturnType<typeof getAdminMailingList>>, TError = ErrorType<unknown>>(
+ params?: GetAdminMailingListParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminMailingList>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminMailingListQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDownloadMailingListCsvUrl = () => {
+
+
+
+
+  return `/api/admin/mailing-list/export`
+}
+
+export const downloadMailingListCsv = async ( options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadMailingListCsvUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadMailingListCsvQueryKey = () => {
+    return [
+    `/api/admin/mailing-list/export`
+    ] as const;
+    }
+
+
+export const getDownloadMailingListCsvQueryOptions = <TData = Awaited<ReturnType<typeof downloadMailingListCsv>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadMailingListCsv>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadMailingListCsvQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadMailingListCsv>>> = ({ signal }) => downloadMailingListCsv({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadMailingListCsv>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type DownloadMailingListCsvQueryResult = NonNullable<Awaited<ReturnType<typeof downloadMailingListCsv>>>
+export type DownloadMailingListCsvQueryError = ErrorType<unknown>
+
+
+
+export function useDownloadMailingListCsv<TData = Awaited<ReturnType<typeof downloadMailingListCsv>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadMailingListCsv>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getDownloadMailingListCsvQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getOptOutMailingContactUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/mailing-list/${id}/opt-out`
+}
+
+export const optOutMailingContact = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<MailingContact> => {
+
+  return customFetch<MailingContact>(getOptOutMailingContactUrl(id),
+  {
+    ...options,
+    method: 'PATCH'
+
+
+  }
+);}
+
+
+
+
+
+export const getOptOutMailingContactMutationKey = () => ['optOutMailingContact'] as const;
+
+export const getOptOutMailingContactMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof optOutMailingContact>>, TError,OptOutMailingContactMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof optOutMailingContact>>, TError,OptOutMailingContactMutationVariables, TContext> => {
+
+const mutationKey = getOptOutMailingContactMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof optOutMailingContact>>, OptOutMailingContactMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  optOutMailingContact(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type OptOutMailingContactMutationResult = NonNullable<Awaited<ReturnType<typeof optOutMailingContact>>>
+
+    export type OptOutMailingContactMutationError = ErrorType<unknown>
+    export type OptOutMailingContactMutationVariables = {id: string}
+
+    export const useOptOutMailingContact = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof optOutMailingContact>>, TError,OptOutMailingContactMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof optOutMailingContact>>,
+        TError,
+        OptOutMailingContactMutationVariables,
+        TContext
+      > => {
+      return useMutation(getOptOutMailingContactMutationOptions(options));
+    }
+
+export const getDeleteMailingContactUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/mailing-list/${id}`
+}
+
+export const deleteMailingContact = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteMailingContactUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteMailingContactMutationKey = () => ['deleteMailingContact'] as const;
+
+export const getDeleteMailingContactMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMailingContact>>, TError,DeleteMailingContactMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteMailingContact>>, TError,DeleteMailingContactMutationVariables, TContext> => {
+
+const mutationKey = getDeleteMailingContactMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMailingContact>>, DeleteMailingContactMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteMailingContact(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteMailingContactMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMailingContact>>>
+
+    export type DeleteMailingContactMutationError = ErrorType<unknown>
+    export type DeleteMailingContactMutationVariables = {id: string}
+
+    export const useDeleteMailingContact = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMailingContact>>, TError,DeleteMailingContactMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteMailingContact>>,
+        TError,
+        DeleteMailingContactMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteMailingContactMutationOptions(options));
+    }
 
 export const getGetAdminSessionUrl = () => {
 

@@ -5,6 +5,49 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface MailingOptInInput {
+  /** @maxLength 254 */
+  email: string;
+  /** @maxLength 80 */
+  firstName?: string;
+  consent: boolean;
+  /** @maxLength 200 */
+  website?: string;
+}
+
+export interface MailingOptInResult {
+  message: string;
+}
+
+export type MailingContactStatus = typeof MailingContactStatus[keyof typeof MailingContactStatus];
+
+
+export const MailingContactStatus = {
+  active: 'active',
+  opted_out: 'opted_out',
+} as const;
+
+export interface MailingContact {
+  id: string;
+  email: string;
+  firstName: string;
+  createdAt: string;
+  consentAt: string;
+  consentVersion: string;
+  consentText: string;
+  source: string;
+  status: MailingContactStatus;
+  /** @nullable */
+  optedOutAt: string | null;
+}
+
+export interface MailingContactPage {
+  contacts: MailingContact[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface Location {
   id: string;
   city: string;
@@ -331,4 +374,12 @@ export interface AdminDashboard {
 export interface HealthStatus {
   status: string;
 }
+
+export type GetAdminMailingListParams = {
+/**
+ * @minimum 1
+ * @maximum 100000
+ */
+page?: number;
+};
 

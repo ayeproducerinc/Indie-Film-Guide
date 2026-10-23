@@ -1,13 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import { useGetDirectory, getGetDirectoryQueryKey } from '@workspace/api-client-react';
 import { ArrowRight, Check, Phone, Search } from 'lucide-react';
 import { formatPhone } from '@/lib/format-phone';
 import { Layout, Badge } from '@/components/layout';
 import { CATEGORIES, STAGES, placeLabel, shortCategory } from '@/lib/constants';
+import { MailingListSignup } from '@/components/mailing-list-signup';
 import { useMeta } from '@/lib/use-meta';
 
 export default function Directory() {
+  useEffect(() => { if (window.location.hash === '#mailing-list') setTimeout(() => document.getElementById('mailing-list')?.scrollIntoView(), 300); }, []);
   useMeta('Indie Film Guide | Georgia resources for independent filmmakers', 'Free directory of locations, gear, crew, legal, funding and distribution resources for independent filmmakers in Georgia.');
   const { data, isLoading, isError, refetch } = useGetDirectory({ query: { queryKey: getGetDirectoryQueryKey(), staleTime: 0, refetchInterval: 30000 } });
   const [q, setQ] = useState('');
@@ -34,6 +36,7 @@ export default function Directory() {
 
   return (
     <Layout>
+      <div>
       <section className="border-b border-border">
         <div className="mx-auto max-w-5xl px-4 pt-10 pb-8 rise">
           <h1 className="font-display mt-3 text-[3.2rem] sm:text-7xl text-balance" data-testid="text-headline">
@@ -154,6 +157,8 @@ export default function Directory() {
           ))}
         </ul>
       </section>
+      </div>
+      <MailingListSignup />
     </Layout>
   );
 }

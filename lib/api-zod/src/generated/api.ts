@@ -8,6 +8,82 @@
 import * as zod from 'zod';
 
 
+export const createMailingOptInBodyEmailMax = 254;
+
+export const createMailingOptInBodyFirstNameMax = 80;
+
+export const createMailingOptInBodyWebsiteMax = 200;
+
+
+
+export const CreateMailingOptInBody = zod.object({
+  "email": zod.string().email().max(createMailingOptInBodyEmailMax),
+  "firstName": zod.string().max(createMailingOptInBodyFirstNameMax).optional(),
+  "consent": zod.boolean(),
+  "website": zod.string().max(createMailingOptInBodyWebsiteMax).optional()
+})
+
+export const CreateMailingOptInResponse = zod.object({
+  "message": zod.string()
+})
+
+
+export const getAdminMailingListQueryPageDefault = 1;
+export const getAdminMailingListQueryPageMax = 100000;
+
+
+
+export const GetAdminMailingListQueryParams = zod.object({
+  "page": zod.coerce.number().int().min(1).max(getAdminMailingListQueryPageMax).default(getAdminMailingListQueryPageDefault)
+})
+
+export const GetAdminMailingListResponse = zod.object({
+  "contacts": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "email": zod.string(),
+  "firstName": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "consentAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "consentText": zod.string(),
+  "source": zod.string(),
+  "status": zod.enum(['active', 'opted_out']),
+  "optedOutAt": zod.coerce.date().nullable()
+})),
+  "total": zod.number().int(),
+  "page": zod.number().int(),
+  "pageSize": zod.number().int()
+})
+
+
+export const DownloadMailingListCsvResponse = zod.unknown()
+
+
+export const OptOutMailingContactParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const OptOutMailingContactResponse = zod.object({
+  "id": zod.string().uuid(),
+  "email": zod.string(),
+  "firstName": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "consentAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "consentText": zod.string(),
+  "source": zod.string(),
+  "status": zod.enum(['active', 'opted_out']),
+  "optedOutAt": zod.coerce.date().nullable()
+})
+
+
+export const DeleteMailingContactParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteMailingContactResponse = zod.void()
+
+
 export const GetAdminSessionResponse = zod.object({
   "authenticated": zod.boolean(),
   "configured": zod.boolean()

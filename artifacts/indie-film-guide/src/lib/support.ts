@@ -14,3 +14,6 @@ const billingDraft = (subject: string, request: string) => `mailto:${SUPPORT_EMA
 ].join('\n'))}`;
 export const CANCELLATION_MAILTO = billingDraft('Annual Listing Cancellation Request', 'Cancellation request details: ');
 export const REFUND_MAILTO = billingDraft('Listing Refund Request', 'Refund request details and reason: ');
+
+export const MAILING_CONSENT_TEXT = 'I agree to receive email updates from Indie Film Guide. I can withdraw my consent by emailing support@ayeproducer.com.';
+export const MAILING_OPT_OUT_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Mailing list opt-out')}`;

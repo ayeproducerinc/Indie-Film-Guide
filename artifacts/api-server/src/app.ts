@@ -54,6 +54,14 @@ app.use((error: unknown, req: express.Request, res: express.Response, _next: exp
   if (error instanceof FieldError) {
     res.status(400).json({ error: error.message, fields: error.fields }); return;
   }
+  if (req.path.startsWith("/api/mailing-list") || req.path.startsWith("/api/admin/mailing-list")) {
+    // Database/parser errors can contain input values; don't log private contact details.
+    req.log.error("Mailing list request failed");
+    const status = (error as { status?: number })?.status;
+    res.status(status === 413 ? 413 : status === 400 ? 400 : 503)
+      .json({ error: "We couldn't process this mailing list request. Please try again." });
+    return;
+  }
   req.log.error({ message: error instanceof Error ? error.message : "Unknown server error" }, "Request failed");
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });

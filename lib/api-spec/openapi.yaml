@@ -11,6 +11,66 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /mailing-list/opt-ins:
+    post:
+      operationId: createMailingOptIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MailingOptInInput" }
+      responses:
+        "200":
+          description: Opt-in request received
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailingOptInResult" }
+  /admin/mailing-list:
+    get:
+      operationId: getAdminMailingList
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, maximum: 100000, default: 1 }
+      responses:
+        "200":
+          description: Private paginated contact list
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailingContactPage" }
+  /admin/mailing-list/export:
+    get:
+      operationId: downloadMailingListCsv
+      responses:
+        "200":
+          description: Active opt-ins only
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+  /admin/mailing-list/{id}/opt-out:
+    patch:
+      operationId: optOutMailingContact
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Contact opted out
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MailingContact" }
+  /admin/mailing-list/{id}:
+    delete:
+      operationId: deleteMailingContact
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "204": { description: Contact deleted }
   /admin/session:
     get:
       operationId: getAdminSession
@@ -259,6 +319,43 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    MailingOptInInput:
+      type: object
+      required: [email, consent]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        firstName: { type: string, maxLength: 80 }
+        consent: { type: boolean }
+        website: { type: string, maxLength: 200 }
+    MailingOptInResult:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    MailingContact:
+      type: object
+      required: [id, email, firstName, createdAt, consentAt, consentVersion, consentText, source, status, optedOutAt]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string }
+        firstName: { type: string }
+        createdAt: { type: string, format: date-time }
+        consentAt: { type: string, format: date-time }
+        consentVersion: { type: string }
+        consentText: { type: string }
+        source: { type: string }
+        status: { type: string, enum: [active, opted_out] }
+        optedOutAt: { type: [string, "null"], format: date-time }
+    MailingContactPage:
+      type: object
+      required: [contacts, total, page, pageSize]
+      properties:
+        contacts:
+          type: array
+          items: { $ref: "#/components/schemas/MailingContact" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
     Location:
       type: object
       required: [id, city, state]

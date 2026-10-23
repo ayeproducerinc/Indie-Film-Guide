@@ -38,6 +38,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold" aria-label="Footer">
             <Link href="/about" data-testid="link-about" className="py-2 underline-offset-4 hover:underline">About</Link>
             <Link href="/pricing" data-testid="link-pricing" className="py-2 underline-offset-4 hover:underline">Pricing</Link>
+            <a href={`${import.meta.env.BASE_URL}#mailing-list`} data-testid="link-mailing-list-footer" className="py-2 underline-offset-4 hover:underline">Join the mailing list</a>
             <Link href="/terms" data-testid="link-terms" className="py-2 underline-offset-4 hover:underline">Terms</Link>
              <Link href="/admin" className="py-2 underline-offset-4 hover:underline">Admin</Link>
             <Link href="/get-listed" data-testid="link-get-listed-footer" className="py-2 underline-offset-4 hover:underline">Get Listed</Link>

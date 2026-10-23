@@ -4,6 +4,7 @@
 - [Responsive directory layout](directory-single-line-layout.md) — larger multirow mobile categories now approved; desktop categories and intro stay single-line, without sideways scrolling.
 - [Business ownership](ownership.md) — Indie Film Guide is owned and operated by AYe Producer, Inc.
 - [Community support commitment](community-support.md) — CSR is a focus; a portion of listing fees goes to local filmmakers and their productions.
+- [Mailing list scope](mailing-list-scope.md) — owner chose private admin capture and CSV first; no sending service, implied listing consent, or anonymous opt-out reactivation.
 - [Lifetime and deal management](lifetime-and-deal-management.md) — reserve lifetime capacity during checkout; promo-code changes remain admin-managed.
 - [Stripe SDK contracts](stripe-sdk-contract.md) — check installed resource types before copying older Checkout or subscription-schedule examples.
 - [Pricing group layout](pricing-group-layout.md) — compact organization tabs above a labeled group panel; desktop cards side by side and mobile cards stacked inside it.
